@@ -1,4 +1,4 @@
-const { NODES } = require("../config");
+const { PM2_NODES } = require("../config");
 module.exports = {
   apps: [
     {
@@ -21,7 +21,7 @@ module.exports = {
   deploy: {
     production: {
       user: "ubuntu",
-      host: NODES.CHENGDU,
+      host: PM2_NODES.CHENGDU,
       ref: "origin/master",
       repo: "https://github.com/RayMoore/storyboard.git",
       path: "/home/ubuntu/app",
