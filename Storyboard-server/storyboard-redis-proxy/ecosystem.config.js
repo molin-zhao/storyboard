@@ -24,7 +24,7 @@ module.exports = {
       host: PM2_NODES.CHENGDU,
       ref: "origin/master",
       repo: "https://github.com/RayMoore/storyboard.git",
-      path: "/home/ubuntu/app",
+      path: "/home/ubuntu/app/storyboard",
       "post-deploy":
         "cd Storyboard-server/ && npm install && pm2 reload ecosystem.config.js --env production",
       env: {
