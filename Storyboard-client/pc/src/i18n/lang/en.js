@@ -90,6 +90,8 @@ export default {
   PASSWORD_ERROR:
     "Password should contain both alphanumberic characters and symbols, length 8 - 16.",
   CONFIRM_PASSWORD_ERROR: "Entered passwords are inconsistent",
+  SLIDE_TO_RIGHT: "Slide to the right side",
+  VERIFY_SUCCESS: "Verification successful",
 
   // actions
   ADD_DESCRIPTION: "Add a description...",

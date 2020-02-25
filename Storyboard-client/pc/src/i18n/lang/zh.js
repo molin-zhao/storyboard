@@ -90,6 +90,8 @@ export default {
   CODE_ERROR: "验证码格式不正确",
   PASSWORD_ERROR: "密码应该必须包含字母数字和特殊符号, 长度8-16位",
   CONFIRM_PASSWORD_ERROR: "两次输入的密码不一致",
+  SLIDE_TO_RIGHT: "拖动滑块到最右边",
+  VERIFY_SUCCESS: "验证成功",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",

@@ -45,7 +45,7 @@
               :disabled="computedCodeBtnDisabled"
               type="button"
               :value="computedBtnText"
-              @click.stop="sendCode"
+              @click.stop="verify"
               class="input-group-append input-group-text code-btn"
               :style="`color: ${computedCodeBtnDisabled ? 'grey' : 'black'}`"
             />
@@ -53,33 +53,39 @@
         </div>
         <span class="form-text text-danger error-text">{{ codeError }}</span>
       </div>
+      <div v-if="showVerification" class="form-group form-left-centered">
+        <drag-verify
+          :on-success="verifySuccess"
+          :on-failure="verifyFailure"
+          :start-text="$t('SLIDE_TO_RIGHT')"
+          :success-text="$t('VERIFY_SUCCESS')"
+        />
+      </div>
       <div class="form-group form-left-centered">
-        <div class="form-group form-left-centered">
-          <label>{{ $t("PASSWORD") }}</label>
-          <div class="form-row-div">
-            <ajax-input
-              type="password"
-              class="form-control"
-              :style="computedInputStyle(passwordError)"
-              @on-change="checkPasswordError"
-            />
-          </div>
-          <span class="form-text text-danger error-text">{{
-            passwordError
-          }}</span>
-          <label>{{ $t("CONFIRM_PASSWORD") }}</label>
-          <div class="form-row-div">
-            <ajax-input
-              type="password"
-              class="form-control"
-              :style="computedInputStyle(confirmPasswordError)"
-              @on-change="checkConfirmPasswordError"
-            />
-          </div>
-          <span class="form-text text-danger error-text">{{
-            confirmPasswordError
-          }}</span>
+        <label>{{ $t("PASSWORD") }}</label>
+        <div class="form-row-div">
+          <ajax-input
+            type="password"
+            class="form-control"
+            :style="computedInputStyle(passwordError)"
+            @on-change="checkPasswordError"
+          />
         </div>
+        <span class="form-text text-danger error-text">{{
+          passwordError
+        }}</span>
+        <label>{{ $t("CONFIRM_PASSWORD") }}</label>
+        <div class="form-row-div">
+          <ajax-input
+            type="password"
+            class="form-control"
+            :style="computedInputStyle(confirmPasswordError)"
+            @on-change="checkConfirmPasswordError"
+          />
+        </div>
+        <span class="form-text text-danger error-text">{{
+          confirmPasswordError
+        }}</span>
       </div>
     </form>
     <div style="width: 26%; margin-top: 30px;">
@@ -105,9 +111,11 @@
 <script>
 import { isEmailOrPhone, isCode, isPassword } from "@/common/utils/form";
 import ajaxInput from "@/components/ajaxInput";
+import dragVerify from "@/components/dragVerify";
 export default {
   components: {
-    ajaxInput
+    ajaxInput,
+    dragVerify
   },
   data() {
     return {
@@ -124,7 +132,8 @@ export default {
       resendTimer: null,
       resendCount: 60,
       renderInterval: null,
-      registeredEmailOrPhone: []
+      registeredEmailOrPhone: [],
+      showVerification: false
     };
   },
   computed: {
@@ -140,7 +149,6 @@ export default {
     computedCodeBtnDisabled() {
       const { sent, emailOrPhoneValue, emailOrPhoneError } = this;
       let disabled = sent || !emailOrPhoneValue || emailOrPhoneError;
-      console.log(disabled);
       return disabled ? true : false;
     },
     computedBtnDisabled() {
@@ -175,6 +183,9 @@ export default {
   methods: {
     changeLoginMode() {
       this.registerByPassword = !this.registerByPassword;
+    },
+    verify() {
+      this.showVerification = true;
     },
     sendCode() {
       this.sent = true;
@@ -220,6 +231,13 @@ export default {
         this.registeredEmailOrPhone.push("844973523@qq.com");
         clearTimeout(this.registerTimer);
       }, 3000);
+    },
+    verifySuccess() {
+      console.log("verification successful");
+      return this.sendCode();
+    },
+    verifyFailure() {
+      console.log("failed");
     }
   }
 };
