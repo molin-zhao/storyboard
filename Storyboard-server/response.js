@@ -16,7 +16,10 @@ const ERROR = {
     "Email address or username already registered.",
   USER_PASSWORD_INCORRECT: "Password incorrect.",
   USER_NAME_NOT_FOUND: "Username or email address not found.",
-  SOCKET_CONNECTION_FAILED: "Cannot connecte to the server."
+  SOCKET_CONNECTION_FAILED: "Cannot connecte to the server.",
+  SEVICE_ERROR: {
+    ARGUMENTS_INVALID: "Arguments invalid"
+  }
 };
 const SUCCESS = {
   OK: "success.",
