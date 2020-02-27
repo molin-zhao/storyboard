@@ -16,7 +16,7 @@ router.post("/set", async (req, res) => {
   }
   try {
     let result = ex
-      ? await cluster.set(key, value, "ex", ex)
+      ? await cluster.set(key, value, "EX", ex)
       : await cluster.set(key, value);
     return res.status(200).json({
       message: SUCCESS.OK,
@@ -63,7 +63,7 @@ router.get("/set", async (req, res) => {
   }
   try {
     let result = ex
-      ? await cluster.set(key, value, "ex", ex)
+      ? await cluster.set(key, value, "EX", ex)
       : await cluster.set(key, value);
     return res.status(200).json({
       message: SUCCESS.OK,
