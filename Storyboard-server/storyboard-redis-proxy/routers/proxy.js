@@ -4,39 +4,37 @@ const { ERROR, SUCCESS } = require("../../response");
 const { REDIS_CLUSTER } = require("../../config");
 const router = express.Router();
 
-router.post("/set", (req, res) => {
+router.post("/set", async (req, res) => {
   let auth = req.body.auth;
   let key = req.body.key;
   let value = req.body.value;
+  let exp = req.body.expire;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
   }
-  cluster
-    .set(key, value)
-    .then(result => {
-      console.log(result);
-      return res.status(200).json({
-        message: SUCCESS.OK
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      return res.status(500).json({
-        message: ERROR.SERVER_ERROR
-      });
+  try {
+    let result = exp
+      ? await cluster.set(key, value, "exp", exp)
+      : await cluster.set(key, value);
+    return res.status(200).json({
+      message: SUCCESS.OK,
+      data: result
     });
+  } catch (err) {
+    return res.status(500).json({
+      message: ERROR.SERVER_ERROR
+    });
+  }
 });
 
 router.post("/get", (req, res) => {
   let auth = req.body.auth;
   let key = req.body.key;
-  let value = req.body.value;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
-      message: ERROR.UNAUTHORIZED,
-      body: req.body
+      message: ERROR.UNAUTHORIZED
     });
   }
   cluster.get(key, (err, result) => {
@@ -53,29 +51,29 @@ router.post("/get", (req, res) => {
   });
 });
 
-router.get("/set", (req, res) => {
+router.get("/set", async (req, res) => {
   let auth = req.params.auth;
   let key = req.params.key;
   let value = req.params.value;
+  let exp = req.params.expire;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
   }
-  cluster
-    .set(key, value)
-    .then(result => {
-      console.log(result);
-      return res.status(200).json({
-        message: SUCCESS.OK
-      });
-    })
-    .catch(err => {
-      console.log(err);
-      return res.status(500).json({
-        message: ERROR.SERVER_ERROR
-      });
+  try {
+    let result = exp
+      ? await cluster.set(key, value, "exp", exp)
+      : await cluster.set(key, value);
+    return res.status(200).json({
+      message: SUCCESS.OK,
+      data: result
     });
+  } catch (err) {
+    return res.status(500).json({
+      message: ERROR.SERVER_ERROR
+    });
+  }
 });
 
 router.get("/get", (req, res) => {
