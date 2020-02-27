@@ -8,15 +8,15 @@ router.post("/set", async (req, res) => {
   let auth = req.body.auth;
   let key = req.body.key;
   let value = req.body.value;
-  let exp = req.body.expire;
+  let ex = req.body.expire;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
   }
   try {
-    let result = exp
-      ? await cluster.set(key, value, "exp", exp)
+    let result = ex
+      ? await cluster.set(key, value, "ex", ex)
       : await cluster.set(key, value);
     return res.status(200).json({
       message: SUCCESS.OK,
@@ -55,15 +55,15 @@ router.get("/set", async (req, res) => {
   let auth = req.params.auth;
   let key = req.params.key;
   let value = req.params.value;
-  let exp = req.params.expire;
+  let ex = req.params.expire;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
   }
   try {
-    let result = exp
-      ? await cluster.set(key, value, "exp", exp)
+    let result = ex
+      ? await cluster.set(key, value, "ex", ex)
       : await cluster.set(key, value);
     return res.status(200).json({
       message: SUCCESS.OK,
