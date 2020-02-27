@@ -21,7 +21,7 @@ module.exports = {
   deploy: {
     production: {
       user: "ubuntu",
-      host: PM2_NODES.CHENGDU,
+      host: PM2_NODES.REDIS_PROXY,
       ref: "origin/master",
       repo: "https://github.com/RayMoore/storyboard.git",
       path: "/home/ubuntu/app/storyboard",

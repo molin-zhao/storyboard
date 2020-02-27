@@ -35,7 +35,8 @@ router.post("/get", (req, res) => {
   let value = req.body.value;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
-      message: ERROR.UNAUTHORIZED
+      message: ERROR.UNAUTHORIZED,
+      body: req.body
     });
   }
   cluster.get(key, (err, result) => {
