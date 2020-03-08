@@ -1,2 +1,4 @@
 **/config.js
 *test/
+**/*.config.js
+config/

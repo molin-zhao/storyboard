@@ -17,8 +17,11 @@ const ERROR = {
   USER_PASSWORD_INCORRECT: "Password incorrect.",
   USER_NAME_NOT_FOUND: "Username or email address not found.",
   SOCKET_CONNECTION_FAILED: "Cannot connecte to the server.",
-  SEVICE_ERROR: {
-    ARGUMENTS_INVALID: "Arguments invalid"
+  SERVICE_ERROR: {
+    ARGUMENTS_INVALID: "Arguments invalid",
+    PARAM_NOT_PROVIDED: "Params not provided",
+    SERVICE_NOT_AVAILABLE: "Service not available",
+    SERVICE_NOT_ACCEPTABLE: "Service not acceptable"
   }
 };
 const SUCCESS = {

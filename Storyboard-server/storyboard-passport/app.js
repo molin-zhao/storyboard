@@ -4,41 +4,42 @@ const mongoose = require("mongoose");
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const geoip = require("geoip-lite");
+const cors = require("cors");
+const amqp = require("amqp-connection-manager");
 
-const { normalizePort, getMongoUrl } = require("../utils");
+const { normalizePort, getMongoUrl, getRabbitmqUrl } = require("../utils");
 const { ERROR } = require("../response");
-const { SERVER_PASSPORT_PORT, MONGO_CLUSTER } = require("../config");
+const { SERVER_PASSPORT_PORT } = require("../config/server.config");
+const MONGO_CLUSTER = require("../config/mongo-cluster.config");
+const RABBITMQ_CLUSTER = require("../config/rabbitmq-cluster.config");
 
 const indexRouter = require("./routers/index");
 const userRouter = require("./routers/user");
-const loginRouter = require("./routers/login");
-const registerRouter = require("./routers/register");
 
 const app = express();
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(cors());
 
 // 1. setup routers
 app.use("/", indexRouter);
 app.use("/user", userRouter);
-app.use("/login", loginRouter);
-app.use("/register", registerRouter);
 
 // 2. setup error 404 and 500
 app.use((req, res) => {
   console.log(req.url);
   return res.status(404).json({
-    message: ERROR.NOT_FOUND
+    message: ERROR.NOT_FOUND,
+    data: req.url
   });
 });
 
 app.use((err, req, res, next) => {
-  console.log(`${err.message} ${req.url}`);
   return res.status(500).json({
-    message: ERROR.SERVER_ERROR
+    message: err.message ? err.message : ERROR.SERVER_ERROR,
+    data: req.url
   });
 });
 
@@ -48,13 +49,40 @@ mongoose
   .connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
     authSource: MONGO_CLUSTER.AUTH_DB,
     auth: MONGO_CLUSTER.AUTH
   })
   .then(() => console.log("connected to mongodb"))
   .catch(err => console.log(`connect to mongodb error: ${err}`));
 
-// 4. start server
+// 4. setup rabbitmq connection
+let rabbitHost = getRabbitmqUrl(
+  RABBITMQ_CLUSTER.HOST,
+  RABBITMQ_CLUSTER.USER,
+  RABBITMQ_CLUSTER.PASSWORD
+);
+const rabbitmqConn = amqp.connect(rabbitHost);
+rabbitmqConn.on("connect", () => {
+  console.log("rabbitmq cluster connected");
+});
+rabbitmqConn.on("disconnect", err => {
+  console.log(`rabbitmq cluster disconnected with err: ${err}`);
+});
+const channelWrapper = rabbitmqConn.createChannel({
+  json: true,
+  setup: channel =>
+    Promise.all([
+      channel.assertExchange(
+        RABBITMQ_CLUSTER.EXCHANGE.RPC.NAME,
+        RABBITMQ_CLUSTER.EXCHANGE.RPC.TYPE,
+        { durable: true }
+      )
+    ])
+});
+app.locals.rabbitmq = channelWrapper;
+
+// 5. start server
 let port = normalizePort(process.env.PORT || SERVER_PASSPORT_PORT);
 app.set("port", port);
 const server = http.createServer(app);

@@ -9,4 +9,5 @@ router.get("/", (req, res) => {
     message: { ip, geo }
   });
 });
+
 module.exports = router;

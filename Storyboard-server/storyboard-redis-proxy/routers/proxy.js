@@ -52,10 +52,10 @@ router.post("/get", (req, res) => {
 });
 
 router.get("/set", async (req, res) => {
-  let auth = req.params.auth;
-  let key = req.params.key;
-  let value = req.params.value;
-  let ex = req.params.expire;
+  let auth = req.query.auth;
+  let key = req.query.key;
+  let value = req.query.value;
+  let ex = req.query.expire;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
@@ -77,8 +77,8 @@ router.get("/set", async (req, res) => {
 });
 
 router.get("/get", (req, res) => {
-  let auth = req.params.auth;
-  let key = req.params.key;
+  let auth = req.query.auth;
+  let key = req.query.key;
   if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
@@ -96,6 +96,50 @@ router.get("/get", (req, res) => {
       data: result
     });
   });
+});
+
+router.get("/del", async (req, res) => {
+  let auth = req.query.auth;
+  let key = req.query.key;
+  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+    return res.status(401).json({
+      message: ERROR.UNAUTHORIZED
+    });
+  }
+  try {
+    const resp = await cluster.del(key);
+    return res.status(200).json({
+      message: SUCCESS.OK,
+      data: resp
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: ERROR.SERVER_ERROR,
+      data: err
+    });
+  }
+});
+
+router.post("/del", async (req, res) => {
+  let auth = req.body.auth;
+  let key = req.body.key;
+  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+    return res.status(401).json({
+      message: ERROR.UNAUTHORIZED
+    });
+  }
+  try {
+    const resp = await cluster.del(key);
+    return res.status(200).json({
+      message: SUCCESS.OK,
+      data: resp
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: ERROR.SERVER_ERROR,
+      data: err
+    });
+  }
 });
 
 module.exports = router;

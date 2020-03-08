@@ -4,15 +4,11 @@ const mongoose = require("mongoose");
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const FastDFSClient = require("fdfs");
 
 const { normalizePort, getMongoUrl } = require("../utils");
 const { ERROR } = require("../response");
-const {
-  SERVER_PASSPORT_PORT,
-  MONGO_CLUSTER,
-  FASTDFS_CLUSTER
-} = require("../config");
+const MONGO_CLUSTER = require("../config/mongo-cluster.config");
+const { SERVER_DFS_PORT } = require("../config/server.config");
 
 const indexRouter = require("./routers/index");
 const dfsRouter = require("./routers/dfs");
@@ -56,7 +52,7 @@ mongoose
   .catch(err => console.log(`connect to mongodb error: ${err}`));
 
 // 4. start server
-let port = normalizePort(process.env.PORT || SERVER_PASSPORT_PORT);
+let port = normalizePort(process.env.PORT || SERVER_DFS_PORT);
 app.set("port", port);
 const server = http.createServer(app);
 server.listen(port, "0.0.0.0", () => {
