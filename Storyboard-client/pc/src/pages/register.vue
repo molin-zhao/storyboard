@@ -41,19 +41,29 @@
               :style="`${codeError ? 'border-color:lightcoral' : null}`"
               @on-change="checkCodeError"
             />
-            <input
-              :disabled="computedCodeBtnDisabled"
-              type="button"
-              :value="computedBtnText"
-              @click.stop="verify"
+            <a
+              @click.stop="getSMSPassword"
               class="input-group-append input-group-text code-btn"
-              :style="`color: ${computedCodeBtnDisabled ? 'grey' : 'black'}`"
-            />
+              :style="
+                `
+                 pointer-events: ${computedCodeBtnDisabled ? 'none' : 'auto'};
+                 color: ${computedCodeBtnDisabled ? 'grey' : 'black'};
+                `
+              "
+            >
+              <span
+                v-if="processing"
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              <span v-else>{{ computedBtnText }}</span>
+            </a>
           </div>
         </div>
         <span class="form-text text-danger error-text">{{ codeError }}</span>
       </div>
-      <div v-if="showVerification" class="form-group form-left-centered">
+      <div v-if="smsPassword" class="form-group form-left-centered">
         <drag-verify
           :on-success="verifySuccess"
           :on-failure="verifyFailure"
@@ -90,10 +100,10 @@
     </form>
     <div style="width: 26%; margin-top: 30px;">
       <button
-        :disabled="status === 'todo' ? false : true"
+        :disabled="computedRegisterBtnDisabled"
         type="submit"
         :class="computedRegisterBtnClass"
-        @click="register"
+        @click.stop="register"
       >
         <span
           v-show="status === 'doing'"
@@ -109,7 +119,14 @@
 </template>
 
 <script>
-import { isEmailOrPhone, isCode, isPassword } from "@/common/utils/form";
+import {
+  isEmailOrPhone,
+  isEmail,
+  isPhone,
+  isCode,
+  isPassword,
+  encrypt
+} from "@/common/utils/form";
 import ajaxInput from "@/components/ajaxInput";
 import dragVerify from "@/components/dragVerify";
 export default {
@@ -123,8 +140,8 @@ export default {
       sent: false,
       emailOrPhoneValue: "",
       passwordValue: "",
+      confirmPasswordError: "",
       codeValue: "",
-      rememberMeValue: false,
       emailOrPhoneError: "",
       codeError: "",
       passwordError: "",
@@ -133,7 +150,8 @@ export default {
       resendCount: 60,
       renderInterval: null,
       registeredEmailOrPhone: [],
-      showVerification: false
+      processing: false,
+      smsPassword: ""
     };
   },
   computed: {
@@ -147,30 +165,55 @@ export default {
       else return `${this.$t("SEND_CODE")}`;
     },
     computedCodeBtnDisabled() {
-      const { sent, emailOrPhoneValue, emailOrPhoneError } = this;
-      let disabled = sent || !emailOrPhoneValue || emailOrPhoneError;
+      const { sent, processing, emailOrPhoneValue, emailOrPhoneError } = this;
+      let disabled =
+        sent || processing || !emailOrPhoneValue || emailOrPhoneError;
       return disabled ? true : false;
     },
     computedBtnDisabled() {
       const {
-        sent,
         emailOrPhoneError,
         codeError,
         emailOrPhoneValue,
-        codeValue
+        codeValue,
+        passwordValue,
+        passwordError
       } = this;
       let disabled =
-        sent ||
         !emailOrPhoneValue ||
         emailOrPhoneError ||
         !codeValue ||
-        codeError;
+        codeError ||
+        !passwordValue ||
+        passwordError;
       return disabled ? true : false;
     },
     computedRegisterBtnClass() {
       return `btn ${
         this.status === "done" ? "btn-success" : "btn-primary"
       } register-btn btn-center`;
+    },
+    computedRegisterBtnDisabled() {
+      const {
+        emailOrPhoneValue,
+        emailOrPhoneError,
+        codeValue,
+        codeError,
+        passwordValue,
+        passwordError,
+        confirmPasswordValue,
+        confirmPasswordError,
+        status
+      } = this;
+      let allTouched =
+        emailOrPhoneValue && codeValue && passwordValue && confirmPasswordValue;
+      let withoutError =
+        !emailOrPhoneError &&
+        !codeError &&
+        !passwordError &&
+        !confirmPasswordError;
+      if (allTouched && withoutError && status === "todo") return false;
+      return true;
     },
     computedAlreadyRegisterdError() {
       const { registeredEmailOrPhone, emailOrPhoneValue } = this;
@@ -184,20 +227,67 @@ export default {
     changeLoginMode() {
       this.registerByPassword = !this.registerByPassword;
     },
-    verify() {
-      this.showVerification = true;
+    async getSMSPassword() {
+      let id = this.emailOrPhoneValue;
+      let host = process.env.PASSPORT_HOST;
+      let url = host + `/user/sms/password?id=${id}`;
+      this.processing = true;
+      try {
+        const res = await this.$http.get(url);
+        if (res.status === 200) {
+          this.smsPassword = res.data.data;
+        } else if (res.status === 202) {
+          // user already registered
+          // 406 request not acceptable
+          let exId = res.data.data;
+          const { registeredEmailOrPhone } = this;
+          if (registeredEmailOrPhone.indexOf(exId) === -1) {
+            this.registeredEmailOrPhone = [...registeredEmailOrPhone, exId];
+          }
+        } else {
+          this.showSMSError();
+        }
+        this.processing = false;
+      } catch (err) {
+        console.log(err);
+        this.showSMSError();
+        this.processing = false;
+      }
     },
-    sendCode() {
-      this.sent = true;
-      this.resendTimer = setTimeout(() => {
-        this.sent = false;
-        this.resendCount = 60;
-        clearTimeout(this.resendTimer);
-        clearInterval(this.renderInterval);
-      }, 10000);
-      this.renderInterval = setInterval(() => {
-        if (this.resendCount > 0) this.resendCount--;
-      }, 1000);
+    async sendCode() {
+      const { smsPassword, emailOrPhoneError, emailOrPhoneValue } = this;
+      if (!smsPassword || emailOrPhoneError) return this.showSMSError();
+      let token = encrypt(emailOrPhoneValue, smsPassword);
+      let host = process.env.PASSPORT_HOST;
+      let url =
+        host + `/user/sms/${isPhone(emailOrPhoneValue) ? "phone" : "email"}`;
+      this.processing = true;
+      try {
+        const res = await this.$http.post(
+          url,
+          { account: emailOrPhoneValue, token },
+          { emulateJSON: true }
+        );
+        if (res.status === 200) {
+          this.sent = true;
+          this.resendCount = 60;
+          this.renderInterval = setInterval(() => {
+            if (this.resendCount > 0) return this.resendCount--;
+            this.resendCount = 60;
+            this.sent = false;
+            clearInterval(this.renderInterval);
+          }, 1000);
+        } else {
+          this.showSMSError();
+        }
+        this.processing = false;
+        this.smsPassword = "";
+      } catch (err) {
+        console.log(err);
+        this.showSMSError();
+        this.processing = false;
+        this.smsPassword = "";
+      }
     },
     checkEmailOrPhoneValue(val) {
       this.emailOrPhoneValue = val;
@@ -218,26 +308,68 @@ export default {
       );
     },
     checkConfirmPasswordError(val) {
+      this.confirmPasswordValue = val;
       if (val && val !== this.passwordValue) {
         this.confirmPasswordError = this.$t("CONFIRM_PASSWORD_ERROR");
       } else {
         this.confirmPasswordError = "";
       }
     },
-    register() {
+    async register() {
+      const { emailOrPhoneValue, codeValue, passwordValue } = this;
       this.status = "doing";
-      this.registerTimer = setTimeout(() => {
+      let host = process.env.PASSPORT_HOST;
+      let url = host + "/user/register";
+      let encryptPassword = encrypt(passwordValue, codeValue);
+      try {
+        const res = await this.$http.post(
+          url,
+          {
+            account: emailOrPhoneValue,
+            code: codeValue,
+            password: encryptPassword
+          },
+          {
+            emulateJSON: true
+          }
+        );
+        if (res.status === 200) {
+          // register successfully
+          let token = res.data.data;
+          this.showRegisterError(this.$t("REGISTER_SUCCESS"), "success");
+          this.status = "done";
+        } else if (res.status === 202) {
+          // code error
+          this.showSMSError(this.$t("SMS_NOT_MATCH"), "danger");
+          this.status = "todo";
+        } else {
+          this.showRegisterError();
+          this.status = "todo";
+        }
+      } catch (err) {
+        this.showRegisterError();
         this.status = "todo";
-        this.registeredEmailOrPhone.push("844973523@qq.com");
-        clearTimeout(this.registerTimer);
-      }, 3000);
+      }
     },
     verifySuccess() {
-      console.log("verification successful");
       return this.sendCode();
     },
     verifyFailure() {
       console.log("failed");
+    },
+    showSMSError(message, type) {
+      return this.$alert.show({
+        type: type ? type : "warning",
+        message: message ? message : this.$t("SMS_ERROR"),
+        interval: 5000
+      });
+    },
+    showRegisterError(message, type) {
+      return this.$alert.show({
+        type: type ? type : "warning",
+        message: message ? message : this.$t("REGISTER_ERROR"),
+        interval: 5000
+      });
     }
   }
 };
@@ -298,6 +430,7 @@ export default {
   flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 .code-btn:active {
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);

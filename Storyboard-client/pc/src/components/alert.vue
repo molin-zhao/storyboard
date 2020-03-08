@@ -61,7 +61,7 @@ export default {
 @import "../common/theme/container.css";
 div.alert {
   position: absolute;
-  top: 5px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10050 !important;

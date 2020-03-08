@@ -1,8 +1,8 @@
 <template>
   <div class="wrapper">
-      <storyboardHeader :mobile="mobile"></storyboardHeader>
-      <storyboardContent></storyboardContent>
-      <storyboardFooter></storyboardFooter>
+    <storyboardHeader :mobile="mobile"></storyboardHeader>
+    <storyboardContent></storyboardContent>
+    <storyboardFooter></storyboardFooter>
   </div>
 </template>
 
@@ -17,13 +17,13 @@ export default {
     storyboardContent
   },
   computed: {
-    mobile(){
-      return this.$route.params.mobile
+    mobile() {
+      return this.$route.params.mobile;
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import '../common/theme/container.css';
+@import "../common/theme/container.css";
 </style>

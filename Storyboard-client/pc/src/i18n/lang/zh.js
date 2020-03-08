@@ -72,7 +72,7 @@ export default {
   PROGRESS_UNDERGOING: "已开始{progress}",
   PROGRESS_DUE: "结束于{progress}后",
   PROGRESS_DEFER: "已逾期{progress}",
-  PROGRESS_DONE: "完成 √",
+  PROGRESS_DONE: "完成 ✔",
   CANCEL: " 取消",
   CONFIRM: "确认",
   EMAIL_PHONE: "邮箱或电话号",
@@ -96,5 +96,16 @@ export default {
   // actions
   ADD_DESCRIPTION: "添加描述...",
   ADD_TASK: "添加任务...",
-  CREATE_PROJECT: "创建新项目"
+  CREATE_PROJECT: "创建新项目",
+
+  // errors
+  SMS_ERROR: "暂时无法获得验证码信息",
+  SMS_NOT_MATCH: "验证码信息有误，请重新发送",
+  PASSWORD_NOT_MATCH: "用户名或密码不正确，请重试",
+  REGISTER_ERROR: "很抱歉，注册用户出现错误，未注册成功",
+  LOGIN_ERROR: "很抱歉，登录出现错误，请稍后重试",
+
+  // success
+  REGISTER_SUCCESS: "注册成功 ✔",
+  LOGIN_SUCCESS: "登录成功 ✔"
 };

@@ -71,7 +71,7 @@ export default {
   PROGRESS_UNDERGOING: "In progress {progress}",
   PROGRESS_DUE: "Due in {progress}",
   PROGRESS_DEFER: "Defered {progress}",
-  PROGRESS_DONE: "Done √",
+  PROGRESS_DONE: "Done ✔",
   CANCEL: "Cancel",
   CONFIRM: "Confirm",
   EMAIL_PHONE: "Email or phone number",
@@ -83,18 +83,30 @@ export default {
   SEND_CODE: "Send code",
   LOGIN_PASSWORD: "Login by password",
   LOGIN_SMS: "Login by sms code",
-  LOGIN_UNMATCHED_ERROR: "Email or phone number does not match the password",
+  LOGIN_UNMATCHED_ERROR: "Email or phone number does not match the password.",
   LOGIN_NOW: "Login now",
-  EMAIL_PHONE_ERROR: "Email or phone number is invalid",
+  EMAIL_PHONE_ERROR: "Email or phone number is invalid.",
   CODE_ERROR: "Code format is invalid",
   PASSWORD_ERROR:
     "Password should contain both alphanumberic characters and symbols, length 8 - 16.",
-  CONFIRM_PASSWORD_ERROR: "Entered passwords are inconsistent",
+  CONFIRM_PASSWORD_ERROR: "Entered passwords are inconsistent.",
   SLIDE_TO_RIGHT: "Slide to the right side",
   VERIFY_SUCCESS: "Verification successful",
 
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",
-  CREATE_PROJECT: "Create new project"
+  CREATE_PROJECT: "Create new project",
+
+  // errors
+  SMS_ERROR: "Cannot temporarily get the SMS code.",
+  SMS_NOT_MATCH: "SMS code not match, please resend a code.",
+  PASSWORD_NOT_MATCH:
+    "Incorrect account information or password, please try again",
+  REGISTER_ERROR: "Sorry, there is an error while registering user.",
+  LOGIN_ERROR: "Sorry, there is an error while login",
+
+  // success
+  REGISTER_SUCCESS: "Registered successfully ✔",
+  LOGIN_SUCCESS: "Login successfully ✔"
 };

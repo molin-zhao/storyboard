@@ -26,6 +26,7 @@
               class="form-control"
               :style="computedInputStyle(passwordError)"
               @on-change="checkPasswordError"
+              :init-value="computedInitPasswordValue"
             />
           </div>
           <div v-else class="form-row-div">
@@ -35,14 +36,24 @@
               :style="`${codeError ? 'border-color:lightcoral' : null}`"
               @on-change="checkCodeError"
             />
-            <input
-              :disabled="computedBtnDisabled"
-              type="button"
-              :value="computedBtnText"
-              @click.stop="sendCode"
+            <a
+              @click.stop="getSMSPassword"
               class="input-group-append input-group-text code-btn"
-              :style="`color: ${computedBtnDisabled ? 'grey' : 'black'}`"
-            />
+              :style="
+                `
+                 pointer-events: ${computedCodeBtnDisabled ? 'none' : 'auto'};
+                 color: ${computedCodeBtnDisabled ? 'grey' : 'black'};
+                `
+              "
+            >
+              <span
+                v-if="processing"
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              <span v-else>{{ computedBtnText }}</span>
+            </a>
           </div>
         </div>
         <span v-if="loginByPassword" class="form-text text-danger error-text">{{
@@ -51,6 +62,14 @@
         <span v-else class="form-text text-danger error-text">{{
           codeError
         }}</span>
+      </div>
+      <div v-if="smsPassword" class="form-group form-left-centered">
+        <drag-verify
+          :on-success="verifySuccess"
+          :on-failure="verifyFailure"
+          :start-text="$t('SLIDE_TO_RIGHT')"
+          :success-text="$t('VERIFY_SUCCESS')"
+        />
       </div>
       <div class="form-group form-check form-space-between">
         <div class="form-group">
@@ -79,10 +98,10 @@
     </form>
     <div style="width: 26%; margin-top: 30px;">
       <button
-        :disabled="status === 'todo' ? false : true"
+        :disabled="computedLoginBtnDisabled"
         type="submit"
         :class="computedLoginBtnClass"
-        @click="login"
+        @click.stop="login"
       >
         <span
           v-show="status === 'doing'"
@@ -98,8 +117,16 @@
 </template>
 
 <script>
-import { isEmailOrPhone, isCode, isPassword } from "@/common/utils/form";
+import {
+  isEmailOrPhone,
+  isCode,
+  isPassword,
+  encrypt,
+  decrypt
+} from "@/common/utils/form";
+import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
 import ajaxInput from "@/components/ajaxInput";
+import { mapActions } from "vuex";
 export default {
   components: {
     ajaxInput
@@ -118,8 +145,15 @@ export default {
       passwordError: "",
       resendTimer: null,
       resendCount: 60,
-      renderInterval: null
+      renderInterval: null,
+      smsPassword: "",
+      processing: false
     };
+  },
+  mounted() {
+    this.emailOrPhoneValue = this.computedInitEmailOrPhoneValue;
+    this.passwordValue = this.computedInitPasswordValue;
+    this.rememberMeValue = this.computedInitRemembermeValue;
   },
   computed: {
     computedInputStyle() {
@@ -153,27 +187,113 @@ export default {
         this.status === "done" ? "btn-success" : "btn-primary"
       } login-btn btn-center`;
     },
+    computedLoginBtnDisabled() {
+      const {
+        emailOrPhoneValue,
+        emailOrPhoneError,
+        codeValue,
+        codeError,
+        passwordValue,
+        passwordError,
+        status
+      } = this;
+      let allTouched = emailOrPhoneValue && (passwordValue || codeValue);
+      let withoutError = !emailOrPhoneError && !codeError && !passwordError;
+      if (allTouched && withoutError && status === "todo") return false;
+      return true;
+    },
     computedInitEmailOrPhoneValue() {
       if (this.$route.params.emailOrPhone)
         return this.$route.params.emailOrPhone;
-      return "";
+      return localStorage.getItem("account");
+    },
+    computedInitPasswordValue() {
+      if (this.$route.params.emailOrPhone) return "";
+      let encryptedPass = localStorage.getItem("password");
+      let account = localStorage.getItem("account");
+      if (!encryptedPass || !account) return "";
+      return decrypt(encryptedPass, account.substr(0, LOCAL_SECRET_LEN));
+    },
+    computedInitRemembermeValue() {
+      if (this.$route.params.emailOrPhone) return false;
+      let rememberme = localStorage.getItem("rememberme");
+      return rememberme;
+    },
+    computedCodeBtnDisabled() {
+      const { sent, processing, emailOrPhoneValue, emailOrPhoneError } = this;
+      let disabled =
+        sent || processing || !emailOrPhoneValue || emailOrPhoneError;
+      return disabled ? true : false;
     }
   },
   methods: {
+    ...mapActions({
+      save_credential: "user/save_credential"
+    }),
     changeLoginMode() {
       this.loginByPassword = !this.loginByPassword;
     },
-    sendCode() {
-      this.sent = true;
-      this.resendTimer = setTimeout(() => {
-        this.sent = false;
-        this.resendCount = 60;
-        clearTimeout(this.resendTimer);
-        clearInterval(this.renderInterval);
-      }, 10000);
-      this.renderInterval = setInterval(() => {
-        if (this.resendCount > 0) this.resendCount--;
-      }, 1000);
+    async getSMSPassword() {
+      try {
+        let id = this.emailOrPhoneValue;
+        let host = process.env.PASSPORT_HOST;
+        let url = host + `/user/sms/password?id=${id}`;
+        this.processing = true;
+        const res = await this.$http.get(url);
+        if (res.status === 200) {
+          this.smsPassword = res.data.data;
+        } else if (res.status === 202) {
+          // user already registered
+          // 406 request not acceptable
+          let exId = res.data.data;
+          const { registeredEmailOrPhone } = this;
+          if (registeredEmailOrPhone.indexOf(exId) === -1) {
+            this.registeredEmailOrPhone = [...registeredEmailOrPhone, exId];
+          }
+        } else {
+          this.showSMSError();
+        }
+        this.processing = false;
+      } catch (err) {
+        console.log(err);
+        this.showSMSError();
+        this.processing = false;
+      }
+    },
+    async sendCode() {
+      try {
+        const { smsPassword, emailOrPhoneError, emailOrPhoneValue } = this;
+        if (!smsPassword || emailOrPhoneError) return this.showSMSError();
+        let token = encrypt(emailOrPhoneValue, smsPassword);
+        let host = process.env.PASSPORT_HOST;
+        let url =
+          host + `/user/sms/${isPhone(emailOrPhoneValue) ? "phone" : "email"}`;
+        this.processing = true;
+        const res = await this.$http.post(
+          url,
+          { account: emailOrPhoneValue, token },
+          { emulateJSON: true }
+        );
+        if (res.status === 200) {
+          this.sent = true;
+          this.resendCount = 60;
+          this.renderInterval = setInterval(() => {
+            if (this.resendCount > 0) return this.resendCount--;
+            this.resendCount = 60;
+            this.sent = false;
+            clearInterval(this.renderInterval);
+          }, 1000);
+        } else {
+          this.showSMSError();
+        }
+        this.processing = false;
+        this.smsPassword = "";
+      } catch (err) {
+        console.log(err);
+        this.showSMSError();
+        this.processing = false;
+        this.smsPassword = "";
+      }
     },
     checkEmailOrPhoneValue(val) {
       this.emailOrPhoneValue = val;
@@ -193,12 +313,86 @@ export default {
         this.$t("PASSWORD_ERROR")
       );
     },
-    login() {
-      this.status = "doing";
-      this.loginTimer = setTimeout(() => {
-        this.status = "done";
-        clearTimeout(this.loginTimer);
-      }, 3000);
+    async login() {
+      try {
+        const {
+          emailOrPhoneValue,
+          codeValue,
+          passwordValue,
+          loginByPassword
+        } = this;
+        this.status = "doing";
+        let host = process.env.PASSPORT_HOST;
+        let url = host + `/user/login/${loginByPassword ? "password" : "sms"}`;
+        let body = loginByPassword
+          ? {
+              account: emailOrPhoneValue,
+              password: encrypt(
+                passwordValue,
+                emailOrPhoneValue.substr(0, LOCAL_SECRET_LEN)
+              )
+            }
+          : { account: emailOrPhoneValue, code: codeValue };
+        const res = await this.$http.post(url, body, {
+          emulateJSON: true
+        });
+        if (res.status === 200) {
+          // login successfully
+          let credential = res.data.data;
+          this.showLoginError(this.$t("LOGIN_SUCCESS"), "success");
+          this.status = "done";
+          this.save_credential(credential);
+          if (this.rememberMeValue) {
+            localStorage.setItem("rememberme", this.rememberMeValue);
+            localStorage.setItem("account", emailOrPhoneValue);
+            if (emailOrPhoneValue)
+              localStorage.setItem(
+                "password",
+                encrypt(
+                  passwordValue,
+                  emailOrPhoneValue.substr(0, LOCAL_SECRET_LEN)
+                )
+              );
+          }
+          setTimeout(() => {
+            this.$router.replace("/storyboard");
+          }, 1000);
+        } else if (res.status === 202) {
+          // code error
+          if (loginByPassword) {
+            this.showLoginError(this.$t("PASSWORD_NOT_MATCH"), "danger");
+          } else {
+            this.showSMSError(this.$t("SMS_NOT_MATCH"), "danger");
+          }
+          this.status = "todo";
+        } else {
+          this.showLoginError();
+          this.status = "todo";
+        }
+      } catch (err) {
+        this.showLoginError();
+        this.status = "todo";
+      }
+    },
+    verifySuccess() {
+      return this.sendCode();
+    },
+    verifyFailure() {
+      console.log("failed");
+    },
+    showSMSError(message, type) {
+      return this.$alert.show({
+        type: type ? type : "warning",
+        message: message ? message : this.$t("SMS_ERROR"),
+        interval: 5000
+      });
+    },
+    showLoginError(message, type) {
+      return this.$alert.show({
+        type: type ? type : "warning",
+        message: message ? message : this.$t("LOGIN_ERROR"),
+        interval: 5000
+      });
     }
   }
 };
