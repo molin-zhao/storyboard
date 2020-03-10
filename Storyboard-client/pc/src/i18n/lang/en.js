@@ -7,6 +7,7 @@ export default {
   REGISTERED: "Registered",
   ALREADY_REGISTERED: "Email or phone number exists",
   ADD: "Add",
+  REMOVE: "Remove",
   PRIORITY: "Priority",
   HIGH: "High",
   MEDIUM: "Medium",
@@ -71,7 +72,7 @@ export default {
   PROGRESS_UNDERGOING: "In progress {progress}",
   PROGRESS_DUE: "Due in {progress}",
   PROGRESS_DEFER: "Defered {progress}",
-  PROGRESS_DONE: "Done ✔",
+  PROGRESS_DONE: "Done ✓",
   CANCEL: "Cancel",
   CONFIRM: "Confirm",
   EMAIL_PHONE: "Email or phone number",
@@ -93,6 +94,24 @@ export default {
   SLIDE_TO_RIGHT: "Slide to the right side",
   VERIFY_SUCCESS: "Verification successful",
 
+  MAIN_WELCOME: "Welcome to ",
+  MAIN_FEATURE_INTRO: "Here you can: ",
+  MAIN_CREATE_PROJECT: "create a project",
+  MAIN_CREATE_GROUP: "create or join a group",
+  MAIN_EDIT_INFO: "update you personal information",
+  MAIN_EDIT_SETTING: "change system settings",
+
+  PROJECT_NAME: "Project name:",
+  PROJECT_DESCRIPTION: "Project description:",
+  PROJECT_MEMBERS: "Project members:",
+  SEARCH_ADD: "Search a user",
+  TEAM_ADD: "Add from a team",
+  NO_TEAM_FOUND: "No available team found",
+  NO_USER_FOUND: "No user found",
+  REQUIRED_FIELD: "This field is required",
+  REQUIRED: "(Required)",
+  OPTIONAL: "(Optional)",
+
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",
@@ -105,8 +124,15 @@ export default {
     "Incorrect account information or password, please try again",
   REGISTER_ERROR: "Sorry, there is an error while registering user.",
   LOGIN_ERROR: "Sorry, there is an error while login",
+  SESSION_EXPIRED_ERROR: "Session expired, please login.",
+  SERVER_ERROR: "Server occured error, please try again later.",
+  NETWORK_ERROR: "Network error, please check your network connection.",
+  NETWORK_ERROR_TITLE: "Network Error",
+  NETWORK_ERROR_DESC:
+    "Request error, unable to get the response from the server ",
+  NETWORK_ERROR_RETRY: "Click to refresh",
 
   // success
-  REGISTER_SUCCESS: "Registered successfully ✔",
-  LOGIN_SUCCESS: "Login successfully ✔"
+  REGISTER_SUCCESS: "Registered successfully ✓",
+  LOGIN_SUCCESS: "Login successfully ✓"
 };

@@ -44,7 +44,20 @@
         <phase :project-id="index" />
       </div>
     </div>
-    <div v-else class="mainboard"></div>
+    <div v-else class="mainboard">
+      <div class="mainboard-title">
+        <h1>{{ $t("MAIN_WELCOME") }} Storyboard</h1>
+      </div>
+      <div class="seperator"></div>
+      <div class="mainboard-info" style="height: 100px">
+        <h3>{{ $t("MAIN_FEATURE_INTRO") }}</h3>
+      </div>
+      <div class="mainboard-left">
+        <a class="link text-primary">{{ $t("MAIN_CREATE_PROJECT") }}</a>
+        <a class="link text-primary">{{ $t("MAIN_CREATE_GROUP") }}</a>
+        <a class="link text-primary">{{ $t("MAIN_EDIT_INFO") }}</a>
+      </div>
+    </div>
 
     <!-- sidebar -->
     <sidebar
@@ -101,7 +114,7 @@ export default {
     }
   },
   computed: {
-    ...mapState("user", ["projects"]),
+    ...mapState("project", ["projects"]),
     hasProject() {
       return this.projects[this.index] ? true : false;
     }
@@ -186,6 +199,13 @@ export default {
   justify-content: flex-start;
   align-items: center;
 }
+.mainboard-left {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
 .online-user {
   margin-right: 2vw;
   width: 6vw;
@@ -205,5 +225,17 @@ export default {
     align-items: center;
     border-left: lightgrey solid 1px;
   }
+}
+.seperator {
+  width: 100%;
+  height: 1px;
+  border-radius: 0.5px;
+  background-color: lightgray;
+}
+
+.link {
+  cursor: pointer;
+  margin-left: 30px;
+  margin-bottom: 5px;
 }
 </style>

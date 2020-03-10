@@ -69,7 +69,9 @@
               border-radius: 5px; 
               padding: 5px; 
               text-align: left; 
-              background-color: gainsboro;"
+              background-color: gainsboro;
+              cursor: pointer
+              "
               data-toggle="modal"
               data-target="#modal-create-project"
             >
@@ -82,9 +84,30 @@
       </div>
 
       <!-- storyboard -->
-      <div class="storyboard">
+      <div v-if="errorCode === -1" class="storyboard">
         <mainboard :index="projectSelectedIndex" />
         <router-view></router-view>
+      </div>
+      <div v-else class="storyboard">
+        <div class="storyboard-empty">
+          <h1>{{ $t("NETWORK_ERROR_TITLE") }}</h1>
+          <h3>{{ $t("NETWORK_ERROR_DESC") }}</h3>
+          <div>
+            <span
+              v-if="reloading"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <a
+              v-else
+              class="text-primary display-only"
+              style="cursor: pointer"
+              @click.stop="reload"
+              >{{ $t("NETWORK_ERROR_RETRY") }}</a
+            >
+          </div>
+        </div>
       </div>
     </div>
 
@@ -107,26 +130,29 @@
             >
           </div>
           <div class="modal-body">
-            <p>body</p>
+            <create-project-form ref="create-project-form" />
           </div>
           <div class="modal-footer">
             <button
-              v-if="projectCreating"
-              class="btn btn-sm btn-primary create-btn"
-              disabled
+              :disabled="computedCreateBtnDisabled"
+              type="submit"
+              :class="
+                `btn btn-sm btn-${
+                  projectCreateStatus === 'done' ? 'success' : 'primary'
+                } create-btn`
+              "
+              @click="createNewProject"
             >
               <span
+                v-if="projectCreateStatus === 'doing'"
                 class="spinner-border spinner-border-sm"
                 role="status"
                 aria-hidden="true"
               ></span>
-            </button>
-            <button
-              v-else
-              @click="createNewProject"
-              class="btn btn-sm btn-primary create-btn"
-            >
-              {{ $t("CREATE") }}
+              <span v-else-if="projectCreateStatus === 'todo'">{{
+                $t("CREATE")
+              }}</span>
+              <span v-else>{{ $t("DONE") }}</span>
             </button>
           </div>
         </div>
@@ -141,9 +167,10 @@ import imageBtn from "@/components/imageBtn";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import mainboard from "@/components/mainboard";
+import createProjectForm from "@/components/form/createProject";
 import { eventBus } from "@/common/utils/eventBus";
 import { bell } from "@/common/theme/icon";
-import { mapState, mapActions } from "vuex";
+import { mapState, mapMutations } from "vuex";
 import { mouseover, mouseleave } from "@/common/utils/mouse";
 export default {
   components: {
@@ -151,19 +178,23 @@ export default {
     imageBtn,
     popover,
     mainboard,
-    tooltip
+    tooltip,
+    createProjectForm
   },
   data() {
     return {
-      storyboardLoading: true,
-      projectCreating: false,
-      projectCreated: false,
+      storyboardLoading: false,
+      reloading: false,
+      projectCreateStatus: "todo",
       projectSelectedIndex: 0,
-      bell
+      bell,
+      errorCode: -1
     };
   },
   computed: {
-    ...mapState("user", ["projects"]),
+    ...mapState("user", ["id", "token"]),
+    ...mapState("project", ["projects"]),
+    ...mapState("team", ["teams"]),
     projectLabel() {
       return function(index) {
         if (index === this.projectSelectedIndex) {
@@ -171,38 +202,86 @@ export default {
         }
         return "list-group-item list-group-item-action";
       };
+    },
+    computedCreateBtnDisabled() {
+      const { projectCreateStatus } = this;
+      if (projectCreateStatus === "todo") return false;
+      return true;
     }
   },
-  mounted() {
-    this.fetch_projects().then(() => {
+  async mounted() {
+    try {
+      this.storyboardLoading = true;
+      const info = await this.fetchInfo();
+      this.add_projects(info.projects);
+      this.add_teams(info.teams);
+      this.add_userinfo(info.user);
+    } catch (err) {
+      this.errorCode = err.status;
+    } finally {
       this.storyboardLoading = false;
-    });
+    }
   },
   methods: {
-    ...mapActions({
-      fetch_projects: "user/fetch_projects"
+    ...mapMutations({
+      add_projects: "project/add_projects",
+      add_teams: "team/add_teams",
+      add_userinfo: "user/add_userinfo"
     }),
     mouseover,
     mouseleave,
     projectLabelClick(index) {
       this.projectSelectedIndex = index;
     },
-    createNewProject() {
-      this.projectCreated = false;
-      this.projectCreating = true;
-      setTimeout(() => {
-        this.projectCreating = false;
-        this.projectCreated = true;
-        this.$alert.show({
-          type: "warning",
-          message:
-            "Holy guacamole!You should check in on some of those fields below.",
-          interval: 5000
-        });
-      }, 3000);
+    async createNewProject() {
+      try {
+        let createProjectFormEle = this.$refs["create-project-form"];
+        if (!createProjectFormEle) return;
+        let valid = createProjectFormEle.formCheck();
+        if (!valid) return;
+        let formData = createProjectFormEle.formData();
+        let host = process.env.API_HOST;
+        let url = host + "/project/create";
+        const createRes = await this.$http.post(
+          url,
+          {
+            ...formData
+          },
+          { emulateJSON: true }
+        );
+        this.add_projects(createRes.data.data);
+        this.projectCreateStatus = "done";
+      } catch (err) {
+        this.projectCreateStatus = "todo";
+      }
     },
     resetVisibleComponents() {
       return eventBus.$emit("reset-visible-component");
+    },
+    fetchInfo() {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let host = process.env.API_HOST;
+          let url = host + `/user/storyboard?id=${this.id}`;
+          const info = await this.$http.get(url);
+          return resolve(info.data.data);
+        } catch (err) {
+          return reject(err);
+        }
+      });
+    },
+    async reload() {
+      try {
+        this.reloading = true;
+        const info = await this.fetchInfo();
+        this.add_projects(info.projects);
+        this.add_teams(info.teams);
+        this.add_userinfo(info.user);
+      } catch (err) {
+        this.errorCode = err.status;
+      } finally {
+        this.reloading = false;
+      }
     }
   }
 };
@@ -287,6 +366,21 @@ export default {
     height: 100%;
     width: 75%;
     background-color: white;
+  }
+  .storyboard-empty {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    div {
+      display: flex;
+      height: 40px;
+      width: 120px;
+      justify-content: center;
+      align-items: center;
+    }
   }
 }
 .project-wrapper {

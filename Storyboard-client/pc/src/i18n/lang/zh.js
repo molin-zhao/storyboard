@@ -7,6 +7,7 @@ export default {
   REGISTERED: "注册成功",
   ALREADY_REGISTERED: "邮箱或者电话号已存在",
   ADD: "添加",
+  REMOVE: "移除",
   PRIORITY: "优先级",
   HIGH: "高",
   MEDIUM: "中",
@@ -72,7 +73,7 @@ export default {
   PROGRESS_UNDERGOING: "已开始{progress}",
   PROGRESS_DUE: "结束于{progress}后",
   PROGRESS_DEFER: "已逾期{progress}",
-  PROGRESS_DONE: "完成 ✔",
+  PROGRESS_DONE: "完成 ✓",
   CANCEL: " 取消",
   CONFIRM: "确认",
   EMAIL_PHONE: "邮箱或电话号",
@@ -93,6 +94,24 @@ export default {
   SLIDE_TO_RIGHT: "拖动滑块到最右边",
   VERIFY_SUCCESS: "验证成功",
 
+  MAIN_WELCOME: "欢迎来到 ",
+  MAIN_FEATURE_INTRO: "在这里你可以: ",
+  MAIN_CREATE_PROJECT: "创建一个项目",
+  MAIN_CREATE_GROUP: "创建或加入组",
+  MAIN_EDIT_INFO: "更改个人信息",
+  MAIN_EDIT_SETTING: "更改系统偏好设置",
+
+  PROJECT_NAME: "项目名称：",
+  PROJECT_DESCRIPTION: "项目描述：",
+  PROJECT_MEMBERS: "项目成员：",
+  SEARCH_ADD: "搜索添加",
+  TEAM_ADD: "从工作组添加",
+  NO_TEAM_FOUND: "暂时没有可用工作组",
+  NO_USER_FOUND: "没有找到相应用户",
+  REQUIRED_FIELD: "此字段是必填项",
+  REQUIRED: "（必填）",
+  OPTIONAL: "（选填）",
+
   // actions
   ADD_DESCRIPTION: "添加描述...",
   ADD_TASK: "添加任务...",
@@ -104,8 +123,14 @@ export default {
   PASSWORD_NOT_MATCH: "用户名或密码不正确，请重试",
   REGISTER_ERROR: "很抱歉，注册用户出现错误，未注册成功",
   LOGIN_ERROR: "很抱歉，登录出现错误，请稍后重试",
+  SESSION_EXPIRED_ERROR: "登录验证过期，请重新登录",
+  SERVER_ERROR: "服务器出现错误，暂时无法处理响应请求，请稍后重试",
+  NETWORK_ERROR: "网络错误，请检查您的网络状态",
+  NETWORK_ERROR_TITLE: "网络错误",
+  NETWORK_ERROR_DESC: "网络请求错误，无法加载当前页面",
+  NETWORK_ERROR_RETRY: "点击重试",
 
   // success
-  REGISTER_SUCCESS: "注册成功 ✔",
-  LOGIN_SUCCESS: "登录成功 ✔"
+  REGISTER_SUCCESS: "注册成功 ✓",
+  LOGIN_SUCCESS: "登录成功 ✓"
 };

@@ -1,5 +1,5 @@
 <template>
-  <div class="login-wrapper">
+  <div class="wrapper">
     <form style="width: 26%">
       <div class="form-group form-left-centered">
         <label for="exampleInputEmail1">{{ $t("EMAIL_PHONE") }}</label>
@@ -400,35 +400,12 @@ export default {
 
 <style lang="scss" scoped>
 @import "../common/theme/container.css";
-.login-wrapper {
+.wrapper {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-}
-.form-left-centered {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.form-space-between {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-.form-row-div {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
   align-items: center;
 }
 .login-btn {

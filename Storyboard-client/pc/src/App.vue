@@ -11,33 +11,21 @@ import { decrypt } from "@/common/utils/form";
 import axios from "axios";
 export default {
   name: "Storyboard-App",
-  async mounted() {
-    try {
-      // check if the client requested from a mobile device
-      let isMobile = navigator.userAgent.match(
-        /(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i
-      );
-      let currentNavStackIsMobile =
-        this.$route.path.split("/").pop() === "mobile" ? true : false;
-      if (isMobile && !currentNavStackIsMobile)
-        return this.$router.replace("/mobile");
-      let id = localStorage.getItem("id");
-      let encrypt_token = localStorage.getItem("token");
-      if (!id || !encrypt_token) return;
-      let secret = id.substr(0, LOCAL_SECRET_LEN);
-      let token = decrypt(encrypt_token, secret);
-      let host = process.env.PASSPORT_HOST;
-      let url = host + `/user/token/verification?id=${id}&&token=${token}`;
-      const verfResp = await this.$http.get(url);
-      // either token valid or renewed
-      if (verfResp.status === 200)
-        return this.save_credential(verfResp.body.data);
-    } catch (err) {
-      if (err.status === 403) {
-        // token is expired, delete user id and token
-        return this.delete_credential();
-      }
-    }
+  mounted() {
+    // check if the client requested from a mobile device
+    let isMobile = navigator.userAgent.match(
+      /(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i
+    );
+    let currentNavStackIsMobile =
+      this.$route.path.split("/").pop() === "mobile" ? true : false;
+    if (isMobile && !currentNavStackIsMobile)
+      return this.$router.replace("/mobile");
+    let id = localStorage.getItem("id");
+    let encrypt_token = localStorage.getItem("token");
+    if (!id || !encrypt_token) return;
+    let secret = id.substr(0, LOCAL_SECRET_LEN);
+    let token = decrypt(encrypt_token, secret);
+    this.save_credential({ id, token });
   },
   methods: {
     ...mapActions({
