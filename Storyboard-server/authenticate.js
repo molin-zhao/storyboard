@@ -1,8 +1,6 @@
 const jwt = require("jsonwebtoken");
-const agent = require("superagent");
 const { JSONWEBTOKEN } = require("./config/encrypt.config");
-const { REDIS_GET } = require("./config/proxy.config");
-const { REDIS_KEY, AUTH } = require("./config/redis-cluster.config");
+const redisOps = require("./redisOps");
 const { ERROR } = require("./response");
 
 const getToken = cred => {
@@ -12,27 +10,37 @@ const getToken = cred => {
 };
 
 const verifyAuthorization = (req, res, next) => {
-  let token = req.query.token || req.body.token || req.headers.authorization;
+  let token = req.headers.authorization || req.query.token || req.body.token;
   if (!token) throw new Error(ERROR.UNAUTHORIZED);
   return jwt.verify(token, JSONWEBTOKEN.SECRETKEY, async (err, decoded) => {
-    if (err) throw new Error(err);
+    if (err) throw new Error(ERROR.UNAUTHORIZED);
     try {
       let userId = decoded._id;
-      const resToken = (resPwd = await agent
-        .post(REDIS_GET)
-        .set("accept", "json")
-        .send({
-          auth: AUTH,
-          key: `${userId}:${REDIS_KEY.JWT_TOKEN}`
-        }));
-      if (resToken.status !== 200) throw new Error(ERROR.SERVER_ERROR);
-      if (token !== resToken.body.data) throw new Error(ERROR.UNAUTHORIZED);
+      const userRedisToken = await redisOps.getJwtToken(userId);
+      if (userRedisToken.status !== 200)
+        throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
+      if (userRedisToken.body.data !== token)
+        throw new Error(ERROR.UNAUTHORIZED);
+      let exp = decoded.exp;
+      let now = Math.round(Date.now() / 1000);
+      let willExp = exp - now;
+      if (willExp >= 0 && willExp <= JSONWEBTOKEN.RENEW_BEFORE) {
+        let newToken = getToken({ _id: userId });
+        const renewResp = await redisOps.setJwtToken(id, newToken);
+        console.log(renewResp.body);
+      }
       req.user = decoded;
       return next();
     } catch (err) {
-      res.status(500).json({
-        message: ERROR.SERVER_ERROR
-      });
+      if (err === ERROR.UNAUTHORIZED) {
+        return res.status(403).json({
+          message: err
+        });
+      } else {
+        return res.status(500).json({
+          message: ERROR.SERVER_ERROR
+        });
+      }
     }
   });
 };

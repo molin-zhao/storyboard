@@ -7,6 +7,7 @@ const { REDIS_KEY, AUTH } = require("../config/redis-cluster.config");
 const { REDIS_SET } = require("../config/proxy.config");
 const { getToken } = require("../authenticate");
 const { ERROR } = require("../response");
+const { objectId } = require("../utils");
 
 const UserSchema = new Schema(
   {
@@ -115,6 +116,23 @@ UserSchema.statics.findAccount = function(account) {
   let criteria =
     account.indexOf("@") === -1 ? { phone: account } : { email: account };
   return this.findOne(criteria);
+};
+
+UserSchema.statics.fetchUserInfo = function(userId) {
+  let id = objectId(userId);
+  return this.aggregate([
+    {
+      $match: { _id: id }
+    },
+    {
+      $project: {
+        avatar: 1,
+        phone: 1,
+        email: 1,
+        gender: 1
+      }
+    }
+  ]);
 };
 
 module.exports = mongoose.model("User", UserSchema);

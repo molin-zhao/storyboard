@@ -26,7 +26,7 @@ const TaskSchema = new Schema({
     enum: ["working", "planned", "stuck", "done", "defer"],
     default: "planned"
   },
-  member: {
+  members: {
     type: [
       {
         type: Schema.Types.ObjectId,

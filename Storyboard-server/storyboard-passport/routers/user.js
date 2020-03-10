@@ -8,8 +8,7 @@ const {
   REGISTER_SUBJECT,
   REGISTER_TEMPLATE
 } = require("../../config/code.config");
-const { CRYPTO, JSONWEBTOKEN } = require("../../config/encrypt.config");
-const { EXCHANGE } = require("../../config/rabbitmq-cluster.config");
+const { CRYPTO } = require("../../config/encrypt.config");
 const {
   sendSMS,
   sendEmail,
@@ -19,48 +18,9 @@ const {
   isPassword,
   isPhone
 } = require("../../utils");
-const { decodeToken, getToken } = require("../../authenticate");
 const redisOps = require("../../redisOps");
 const { ERROR, SUCCESS } = require("../../response");
 const User = require("../../models/User");
-
-/**
- * token verify
- */
-router.get("/token/verification", async (req, res) => {
-  try {
-    let id = req.query.id;
-    let token = req.query.token;
-    if (!id || !token) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
-    const redisTokenResponse = await redisOps.getJwtToken(id);
-    if (redisTokenResponse.status !== 200)
-      throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-    if (redisTokenResponse.body.data !== token)
-      throw new Error(ERROR.UNAUTHORIZED);
-    const decoded = await decodeToken(token);
-    let exp = decoded.exp;
-    let now = Math.round(Date.now() / 1000);
-    let willExp = exp - now;
-    if (willExp >= 0 && willExp <= JSONWEBTOKEN.RENEW_BEFORE) {
-      let newToken = getToken({ _id: id });
-      const renewResp = await redisOps.setJwtToken(id, newToken);
-      console.log(renewResp);
-    }
-    return res.status(200).json({
-      message: SUCCESS.OK
-    });
-  } catch (err) {
-    // cannot verify
-    if (err.type === ERROR.UNAUTHORIZED) {
-      return res.status(403).json({
-        message: err.message
-      });
-    }
-    return res.status(500).json({
-      message: err.message ? err.message : err
-    });
-  }
-});
 
 /**
  * register a new user using local strategy

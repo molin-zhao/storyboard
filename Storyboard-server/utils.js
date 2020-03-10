@@ -4,6 +4,8 @@ const smtpTransport = require("nodemailer-smtp-transport");
 const FastDFSClient = require("fdfs");
 const geoip = require("geoip-lite");
 const cryptoJS = require("crypto-js");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 const { TRACKERS, TIMEOUT, EXT, CHARSET } = require("./config/dfs.config");
 const { APP_ID, APP_KEY, APP_SIGN } = require("./config/sms.config");
 const { HOST, PORT, AUTH, FROM } = require("./config/mail.config");
@@ -156,6 +158,11 @@ const isEmail = value => {
   return false;
 };
 
+const objectId = val => {
+  if (val.constructor === Array) return val.map(item => ObjectId(item));
+  return ObjectId(val);
+};
+
 module.exports = {
   normalizePort,
   sendSMS,
@@ -171,5 +178,6 @@ module.exports = {
   isEmailOrPhone,
   isPassword,
   isPhone,
-  isEmail
+  isEmail,
+  objectId
 };
