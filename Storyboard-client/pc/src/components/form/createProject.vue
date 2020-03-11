@@ -122,7 +122,7 @@
           @click.stop="removeUser(item)"
           data-toggle="tooltip"
           data-placement="right"
-          :title="item.username"
+          :title="computedTooltipTitle(item)"
         >
           <avatar
             style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover"
@@ -143,6 +143,7 @@ import avatar from "@/components/avatar";
 import vueScroll from "vuescroll";
 import { mapState } from "vuex";
 import { parser } from "@/common/utils/array";
+import { sliceFromLeft } from "@/common/utils/string";
 export default {
   components: {
     searchInput,
@@ -212,6 +213,12 @@ export default {
     computedProjectMembers() {
       const { projectMembers } = this;
       return parser(projectMembers, "_id");
+    },
+    computedTooltipTitle() {
+      return function(item) {
+        // max length 10
+        return sliceFromLeft(item.username, 10);
+      };
     }
   },
   methods: {

@@ -43,6 +43,8 @@ export default {
 
 <style>
 @import "./assets/font/font.css";
+@import "./common/theme/container.css";
+@import "./common/theme/color.css";
 html,
 body {
   margin: 0;

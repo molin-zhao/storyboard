@@ -111,6 +111,15 @@ export default {
   REQUIRED_FIELD: "此字段是必填项",
   REQUIRED: "（必填）",
   OPTIONAL: "（选填）",
+  USERNAME: "用户名",
+  AVATAR: "头像",
+  GENDER: "性别",
+
+  MALE: "男",
+  FEMALE: "女",
+  USERNAME_NOT_EMPTY: "用户名称不能为空",
+  SKIP: "跳过",
+  FINISHED: "完成",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",

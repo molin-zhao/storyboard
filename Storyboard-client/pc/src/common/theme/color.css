@@ -1,3 +1,13 @@
+:root {
+  --main-color-primary: #090723;
+  --main-color-blue: #0275d8;
+  --main-color-success: #5cb85c;
+  --main-color-info: #5bc0de;
+  --main-color-warning: #f0ad4e;
+  --main-color-danger: #d9534f;
+  --main-color-white: #f7f7f7;
+}
+
 .color-primary {
   background-color: #090723;
 }

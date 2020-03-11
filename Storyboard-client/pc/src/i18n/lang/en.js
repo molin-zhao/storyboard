@@ -112,6 +112,15 @@ export default {
   REQUIRED: "(Required)",
   OPTIONAL: "(Optional)",
 
+  USERNAME: "Username",
+  AVATAR: "Avatar",
+  GENDER: "Gender",
+  MALE: "Male",
+  FEMALE: "Female",
+  USERNAME_NOT_EMPTY: "Username cannot be empty",
+  SKIP: "Skip",
+  FINISHED: "Finished",
+
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",

@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <form style="width: 26%">
+    <form style="width: 30%">
       <div class="form-group form-left-centered">
         <label for="exampleInputEmail1">{{ $t("EMAIL_PHONE") }}</label>
         <div class="form-row" style="width: 100%; margin: 0; padding: 0">

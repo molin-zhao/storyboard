@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <form style="width: 26%">
+    <form style="width: 30%">
       <div class="form-group form-left-centered">
         <label for="exampleInputEmail1">{{ $t("EMAIL_PHONE") }}</label>
         <div class="form-row" style="width: 100%; margin: 0; padding: 0">
@@ -399,7 +399,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../common/theme/container.css";
 .wrapper {
   width: 100%;
   height: 100%;
@@ -441,11 +440,5 @@ export default {
 }
 .code-btn:focus {
   outline: none;
-}
-.error-text {
-  font-size: 14px;
-  line-height: 14px;
-  min-height: 28px;
-  max-width: 100%;
 }
 </style>
