@@ -29,7 +29,22 @@ const SUCCESS = {
   ACCEPTED: "server accepted the request."
 };
 
+const handleError = (res, err, code = 500) => {
+  return res.status(code).json({
+    message: err.message ? err.message : err
+  });
+};
+
+const handleSuccess = (res, data, code = 200) => {
+  return res.status(code).json({
+    message: SUCCESS.OK,
+    data
+  });
+};
+
 module.exports = {
   ERROR,
-  SUCCESS
+  SUCCESS,
+  handleError,
+  handleSuccess
 };

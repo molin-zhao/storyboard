@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { ERROR, SUCCESS } = require("../../response");
+const {
+  ERROR,
+  SUCCESS,
+  handleError,
+  handleSuccess
+} = require("../../response");
 const { verifyAuthorization } = require("../../authenticate");
 const Project = require("../../models/Project");
 const Team = require("../../models/Team");
@@ -69,6 +74,15 @@ router.get("/storyboard", verifyAuthorization, async (req, res) => {
     return res.status(500).json({
       message: err.message ? err.message : err
     });
+  }
+});
+
+router.post("/profile/update", verifyAuthorization, async (req, res) => {
+  try {
+    let updateUserId = req.body.user;
+    let;
+  } catch (err) {
+    return handleError(res, err);
   }
 });
 
