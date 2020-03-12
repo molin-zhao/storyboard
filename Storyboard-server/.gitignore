@@ -2,3 +2,4 @@
 *test/
 **/*.config.js
 config/
+**/upload/
