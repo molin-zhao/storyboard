@@ -1,4 +1,4 @@
-const { PM2_NODES } = require("../config");
+const { REDIS_PROXY } = require("../config/pm2.config");
 module.exports = {
   apps: [
     {
@@ -21,7 +21,7 @@ module.exports = {
   deploy: {
     production: {
       user: "ubuntu",
-      host: PM2_NODES.REDIS_PROXY,
+      host: REDIS_PROXY,
       ref: "origin/master",
       repo: "https://github.com/RayMoore/storyboard.git",
       path: "/home/ubuntu/app/storyboard",
