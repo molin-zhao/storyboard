@@ -5,7 +5,7 @@ const state = {
   token: null,
   socket: null,
   avatar: "",
-  gender: "",
+  gender: "m",
   email: "",
   phone: ""
 };
@@ -39,6 +39,12 @@ const mutations = {
     state.gender = payload.gender;
     state.email = payload.email;
     state.phone = payload.phone;
+  },
+  remove_userinfo(state) {
+    state.avatar = "";
+    state.gender = "m";
+    state.email = "";
+    state.phone = "";
   }
 };
 

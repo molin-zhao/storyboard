@@ -1,5 +1,5 @@
 <template>
-  <div v-show="visible" id="confirm" class="confirm-wrapper" @click="hideModal">
+  <div v-show="visible" class="confirm-wrapper" @click="hideModal">
     <div
       @click.stop="clickModal"
       class="modal-dialog modal-dialog-centered"
@@ -11,12 +11,11 @@
             {{ title }}
           </h5>
           <a
-            style="font-size: 20px"
+            style="font-size: 20px; cursor: pointer"
             class="display-only"
             aria-hidden="true"
             aria-label="Close"
-            data-target="#confirm"
-            data-dismiss="modal"
+            @click="close"
             >&times;</a
           >
         </div>
@@ -94,10 +93,12 @@ export default {
       if (this.visible) this.visible = false;
     },
     confirm() {
-      if (this.onConfirm) return this.onConfirm();
+      if (this.success) this.success();
+      this.close();
     },
     cancel() {
-      if (this.onCancel) return this.onCancel();
+      if (this.fail) this.fail();
+      this.close();
     },
     hideModal() {
       if (this.visible) this.visible = false;

@@ -56,7 +56,7 @@
           class="avatar"
         >
           <avatar
-            style="width: 100%;height: 100%; borderRadius: 50%"
+            style="width: 100%;height: 100%; borderRadius: 50%; cursor: pointer"
             :src="computedAvatar"
           />
           <popover ref="avatar" style="left: 75px; bottom: -45px">
@@ -78,18 +78,30 @@
                   :key="item"
                   class="avatar-wrapper"
                 >
-                  <img
+                  <avatar
                     :src="item"
                     :style="computedLocalAvatarBorder(item)"
-                    @click="selectLocalAvatar(item)"
+                    @click.native="selectLocalAvatar(item)"
                   />
+                  <div class="img-cover" />
                 </div>
                 <div class="avatar-wrapper">
-                  <a style="position: absolute">
+                  <div
+                    v-if="uploadedAvatar"
+                    style="uploaded-avatar"
+                    @click="removeUploadedAvatar"
+                  >
+                    <avatar :src="uploadedAvatar" />
+                    <icon
+                      name="close"
+                      style="position: absolute; top:2px; right: 2px"
+                    />
+                  </div>
+                  <a v-else style="position: absolute">
                     <icon name="add" style="width: 30px; height: 30px" />
                     <input
                       id="fileChooser"
-                      style="position: absolute; width: 100%; height: 100%; z-index:1; opacity: 0"
+                      class="hidden-input"
                       type="file"
                       @change="chooseImage"
                       ref="fileChooser"
@@ -117,6 +129,8 @@ import popover from "@/components/popover";
 import avatar from "@/components/avatar";
 import { mouseover, mouseleave } from "@/common/utils/mouse";
 import { generateRandomNumber } from "@/common/utils/number";
+import { getRandomAvatar, compressImage } from "@/common/utils/form";
+import { IMG_SRC } from "@/common/config/static";
 import { mapState } from "vuex";
 export default {
   components: {
@@ -127,21 +141,10 @@ export default {
   },
   data() {
     return {
-      imgSrc: {
-        m: [
-          "/static/image/m1.png",
-          "/static/image/m2.png",
-          "/static/image/m3.png"
-        ],
-        f: [
-          "/static/image/f1.png",
-          "/static/image/f2.png",
-          "/static/image/f3.png"
-        ]
-      },
+      imgSrc: IMG_SRC,
       selectedGender: "m",
       localAvatar: "",
-      uploadedAvatar: "",
+      uploadedAvatar: "group2/M00/00/00/rBEAC15qGkSAE60kAAAsnWuH4N0092.png",
       selectedUsername: "",
       usernameError: "",
       uploading: false,
@@ -189,33 +192,45 @@ export default {
   methods: {
     mouseover,
     mouseleave,
-    async chooseImage(e) {
-      try {
-        let fileDOM = this.$refs["fileChooser"];
-        fileDOM.value = null;
-        let file = fileDOM.files[0];
-        let formData = new FormData();
-        formData.append("file", file);
-        let host = process.env.DFS_HOST;
-        let url = host + "/dfs/upload";
-        this.uploading = true;
-        const uploadRes = await this.$http.post(url, formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
-        console.log(uploadRes);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        this.uploading = false;
-      }
+    chooseImage(e) {
+      let fileDOM = this.$refs["fileChooser"];
+      // fileDOM.value = null;
+      let file = fileDOM.files[0];
+      let reader = new FileReader();
+      this.uploading = true;
+      reader.readAsDataURL(file);
+      reader.onload = async event => {
+        try {
+          const src = event.target.result;
+          const compressedFile = await compressImage(src, {
+            width: 100,
+            quality: 0.8,
+            type: "file",
+            name: "avatar"
+          });
+          let formData = new FormData();
+          formData.append("file", compressedFile);
+          let host = process.env.DFS_HOST;
+          let url = host + "/dfs/upload";
+          const uploadRes = await this.$http.post(url, formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+          });
+          this.uploadedAvatar = uploadRes.data.data;
+          console.log(uploadRes.data.data);
+          fileDOM.value = null;
+        } catch (err) {
+          console.log(err);
+        } finally {
+          this.uploading = false;
+        }
+      };
     },
     selectGender(val) {
       this.selectedGender = val;
     },
     genRandomAvatar() {
       const { selectedGender, imgSrc } = this;
-      let rand = generateRandomNumber(0, imgSrc["m"].length - 1);
-      return imgSrc[selectedGender][rand];
+      return getRandomAvatar(selectedGender, imgSrc);
     },
     selectLocalAvatar(item) {
       const { computedAvatar } = this;
@@ -254,6 +269,28 @@ export default {
       } catch (err) {
         console.log(err);
       }
+    },
+    removeUploadedAvatar() {
+      this.$confirm.show({
+        title: this.$t("REMOVE_AVATAR_TITLE"),
+        message: this.$t("REMOVE_AVATAR_MESSAGE"),
+        success: async () => {
+          try {
+            const { uploadedAvatar } = this;
+            if (!uploadedAvatar) return;
+            let host = process.env.DFS_HOST;
+            let url = host + `/dfs/delete?id=${uploadedAvatar}`;
+            this.uploading = true;
+            const rmvRes = await this.$http.delete(url);
+          } catch (err) {
+            console.log(err);
+          } finally {
+            this.uploading = false;
+          }
+        },
+        confirmLabel: this.$t("CONFIRM"),
+        cancelLabel: this.$t("CANCEL")
+      });
     }
   }
 };
@@ -278,7 +315,6 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
   position: relative;
   .avatar-source {
     display: flex;
@@ -294,10 +330,28 @@ export default {
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
       img {
         width: 60px;
         height: 60px;
         border-radius: 30px;
+        cursor: pointer;
+      }
+      .img-cover {
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        opacity: 0.5;
+        position: absolute;
+      }
+      .uploaded-avatar {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
       }
       a {
         width: 60px;
@@ -340,5 +394,13 @@ export default {
   a {
     cursor: pointer;
   }
+}
+.hidden-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0;
+  cursor: pointer;
 }
 </style>

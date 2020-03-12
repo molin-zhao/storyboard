@@ -1,10 +1,14 @@
 <template>
   <div class="wrapper">
-    <form style="width: 30%">
+    <transition name="profile">
+      <set-profile v-if="finishedRegister" />
+    </transition>
+    <form v-show="!finishedRegister" style="width: 30%">
       <div class="form-group form-left-centered">
         <label for="exampleInputEmail1">{{ $t("EMAIL_PHONE") }}</label>
         <div class="form-row" style="width: 100%; margin: 0; padding: 0">
           <ajax-input
+            :disabled="sent || status === 'done'"
             type="email"
             class="form-control"
             :style="
@@ -36,6 +40,7 @@
         <div class="form-row" style="width: 100%; margin: 0; padding: 0">
           <div class="form-row-div">
             <ajax-input
+              :disabled="status === 'done'"
               type="text"
               class="form-control code-input"
               :style="`${codeError ? 'border-color:lightcoral' : null}`"
@@ -75,6 +80,7 @@
         <label>{{ $t("PASSWORD") }}</label>
         <div class="form-row-div">
           <ajax-input
+            :disabled="status === 'done'"
             type="password"
             class="form-control"
             :style="computedInputStyle(passwordError)"
@@ -87,6 +93,7 @@
         <label>{{ $t("CONFIRM_PASSWORD") }}</label>
         <div class="form-row-div">
           <ajax-input
+            :disabled="status === 'done'"
             type="password"
             class="form-control"
             :style="computedInputStyle(confirmPasswordError)"
@@ -129,10 +136,15 @@ import {
 } from "@/common/utils/form";
 import ajaxInput from "@/components/ajaxInput";
 import dragVerify from "@/components/dragVerify";
+import setProfile from "@/components/setProfile";
+import { getRandomAvatar } from "@/common/utils/form";
+import { IMG_SRC } from "@/common/config/static";
+import { mapMutations, mapActions, mapState } from "vuex";
 export default {
   components: {
     ajaxInput,
-    dragVerify
+    dragVerify,
+    setProfile
   },
   data() {
     return {
@@ -151,6 +163,7 @@ export default {
       renderInterval: null,
       registeredEmailOrPhone: [],
       processing: false,
+      finishedRegister: false,
       smsPassword: ""
     };
   },
@@ -224,6 +237,12 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      add_userinfo: "user/add_userinfo"
+    }),
+    ...mapActions({
+      save_credential: "user/save_credential"
+    }),
     changeLoginMode() {
       this.registerByPassword = !this.registerByPassword;
     },
@@ -321,13 +340,15 @@ export default {
       let host = process.env.PASSPORT_HOST;
       let url = host + "/user/register";
       let encryptPassword = encrypt(passwordValue, codeValue);
+      let avatar = getRandomAvatar("m", IMG_SRC);
       try {
         const res = await this.$http.post(
           url,
           {
             account: emailOrPhoneValue,
             code: codeValue,
-            password: encryptPassword
+            password: encryptPassword,
+            avatar
           },
           {
             emulateJSON: true
@@ -335,9 +356,14 @@ export default {
         );
         if (res.status === 200) {
           // register successfully
-          let token = res.data.data;
+          let data = res.data.data;
+          this.save_credential(data);
+          this.add_userinfo(data.user);
           this.showRegisterError(this.$t("REGISTER_SUCCESS"), "success");
           this.status = "done";
+          setTimeout(() => {
+            this.finishedRegister = true;
+          }, 1000);
         } else if (res.status === 202) {
           // code error
           this.showSMSError(this.$t("SMS_NOT_MATCH"), "danger");
@@ -415,5 +441,23 @@ export default {
 }
 .code-btn:focus {
   outline: none;
+}
+
+// before enter and after leave
+.profile-enter,
+.profile-leave-to {
+  opacity: 0;
+  transform: translateX(100px);
+}
+
+// after enter and before leave
+.profile-leave,
+.profile-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+.profile-enter-active,
+.profile-leave-active {
+  transition: all 0.35s;
 }
 </style>

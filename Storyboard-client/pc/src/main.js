@@ -26,32 +26,35 @@ Vue.use(Confirm);
 Vue.use(VueResource);
 
 Vue.http.interceptors.push(function(req, next) {
-  req.headers.set("Authorization", this.token);
+  if (this && this.token) req.headers.set("Authorization", this.token);
   next(res => {
     if (res.status === 403) {
-      this.$alert.show({
-        type: "warning",
-        message: this.$t("SESSION_EXPIRED_ERROR"),
-        interval: 5000
-      });
-      this.$router.push({ name: "login", params: { mode: "token_expired" } });
-      return res;
+      if (this && this.$alert) {
+        this.$alert.show({
+          type: "warning",
+          message: this.$t("SESSION_EXPIRED_ERROR"),
+          interval: 5000
+        });
+      }
+      // this.$router.push({ name: "login", params: { mode: "token_expired" } });
     }
     if (res.status === 500) {
-      this.$alert.show({
-        type: "warning",
-        message: this.$t("SERVER_ERROR"),
-        interval: 5000
-      });
-      return res;
+      if (this && this.$alert) {
+        this.$alert.show({
+          type: "warning",
+          message: this.$t("SERVER_ERROR"),
+          interval: 5000
+        });
+      }
     }
     if (res.status === 0) {
-      this.$alert.show({
-        type: "warning",
-        message: this.$t("NETWORK_ERROR"),
-        interval: 5000
-      });
-      return res;
+      if (this && this.$alert) {
+        this.$alert.show({
+          type: "warning",
+          message: this.$t("NETWORK_ERROR"),
+          interval: 5000
+        });
+      }
     }
     return res;
   });

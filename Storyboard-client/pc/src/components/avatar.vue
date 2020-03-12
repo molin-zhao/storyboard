@@ -1,13 +1,24 @@
 <template>
-  <img @error="defaultImage()" />
+  <img @error="defaultImage()" :src="computedImageSource" />
 </template>
 
 <script>
+import { DFS_DOMAIN } from "@/common/config/static";
 export default {
   props: {
     defaultImg: {
       type: String,
       default: "/static/image/user_empty.png"
+    },
+    src: {
+      type: String
+    }
+  },
+  computed: {
+    computedImageSource() {
+      const { src } = this;
+      if (src.startsWith("/static")) return src;
+      return `${DFS_DOMAIN}/${src}`;
     }
   },
   methods: {

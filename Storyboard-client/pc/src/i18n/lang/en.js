@@ -120,6 +120,8 @@ export default {
   USERNAME_NOT_EMPTY: "Username cannot be empty",
   SKIP: "Skip",
   FINISHED: "Finished",
+  REMOVE_AVATAR_TITLE: "Remove avatar",
+  REMOVE_AVATAR_MESSAGE: "Do you want to remove your avatar?",
 
   // actions
   ADD_DESCRIPTION: "Add a description...",

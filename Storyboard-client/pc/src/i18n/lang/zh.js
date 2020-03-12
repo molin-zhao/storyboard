@@ -120,6 +120,8 @@ export default {
   USERNAME_NOT_EMPTY: "用户名称不能为空",
   SKIP: "跳过",
   FINISHED: "完成",
+  REMOVE_AVATAR_TITLE: "删除头像",
+  REMOVE_AVATAR_MESSAGE: "确认删除已上传的头像吗?",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",

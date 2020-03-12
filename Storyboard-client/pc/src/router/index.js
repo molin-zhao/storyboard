@@ -59,24 +59,49 @@ const router = new vueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(r => r.name === "login" || r.name === "register")) {
-    if (isLogin()) return next({ path: "/storyboard" });
+    if (
+      from.matched.some(
+        r =>
+          r.name === "storyboard" || r.name === "register" || r.name === "login"
+      )
+    )
+      return next();
+    if (isLogin()) {
+      return next({ path: "/storyboard" });
+    } else {
+      return next();
+    }
   }
   if (to.matched.some(r => r.name === "storyboard")) {
-    if (!isLogin()) return next({ path: "/" });
+    if (from.matched.some(r => r.name === "storyboard")) return next();
+    if (!isLogin()) return next({ name: "login" });
+    let host = process.env.PASSPORT_HOST;
+    let url = host + `user/token/verify?token=${store.state.user.token}`;
+    return Vue.http
+      .get(url)
+      .then(res => {
+        console.log(res);
+        if (res.status === 202) {
+          // token valid but renewed, update local and vuex store
+          store.dispatch("user/save_credential", res.body.data);
+        }
+        return next();
+      })
+      .catch(err => {
+        if (err.status === 403) {
+          store.dispatch("user/delete_credential");
+          return next({ name: "login" });
+        } else {
+          return next({ path: "/" });
+        }
+      });
   }
   return next();
 });
 
 const isLogin = () => {
-  let lsId = localStorage.getItem("id");
-  let lsToken = decrypt(
-    localStorage.getItem("token"),
-    lsId.substr(0, LOCAL_SECRET_LEN)
-  );
-  let sId = store.state.user.id;
-  let sToken = store.state.user.token;
-  let id = sId || lsId;
-  let token = lsToken || sToken;
+  let id = store.state.user.id;
+  let token = store.state.user.token;
   if (id && token) return true;
   return false;
 };

@@ -1,12 +1,11 @@
 <template>
-  <input :type="type" v-model="inputValue" />
+  <input :type="type" @input="onInput($event)" :disabled="disabled" />
 </template>
 
 <script>
 export default {
   data() {
     return {
-      inputValue: this.initValue,
       timer: null
     };
   },
@@ -21,16 +20,27 @@ export default {
     },
     interval: {
       type: Number,
-      default: 200
+      default: 1000
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
-  watch: {
-    inputValue(newVal, oldVal) {
+  methods: {
+    onInput(e) {
       clearTimeout(this.timer);
-      this.timer = setTimeout(() => {
-        clearTimeout(this.timer);
-        return this.$emit("on-change", newVal);
-      }, this.interval);
+      let value = e.target.value;
+      if (value.length > 0) {
+        this.timer = setTimeout(() => {
+          clearTimeout(this.timer);
+          this.$emit("on-change", value);
+          this.timer = null;
+        }, this.interval);
+      } else {
+        this.$emit("on-change", "");
+        this.timer = null;
+      }
     }
   }
 };
