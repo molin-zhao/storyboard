@@ -42,7 +42,15 @@
       </div>
       <div class="form-group form-left-centered">
         <label>{{ $t("AVATAR") }}</label>
+        <div class="avatar" v-if="uploading">
+          <span
+            class="spinner-border spinner-border-md text-info"
+            role="status"
+            aria-hidden="true"
+          ></span>
+        </div>
         <div
+          v-else
           @mouseover="mouseover('avatar')"
           @mouseleave="mouseleave('avatar')"
           class="avatar"
@@ -215,7 +223,38 @@ export default {
       this.localAvatar = item;
     },
     skip() {},
-    finish() {}
+    async finish() {
+      try {
+        const {
+          computedAvatar,
+          avatar,
+          selectedGender,
+          gender,
+          username,
+          selectedUsername
+        } = this;
+        if (selectedUsername === "")
+          return (this.usernameError = this.$t("USERNAME_NOT_EMPTY"));
+        let avatarChanged = computedAvatar !== avatar;
+        let usernameChanged = selectedUsername !== username;
+        let genderChanged = selectedGender !== gender;
+        if (!avatarChanged && !usernameChanged && !genderChanged)
+          return this.skip();
+        let host = process.env.API_HOST;
+        let url = host + "/user/profile";
+        const updateProfileRes = await this.$http.post(
+          url,
+          {
+            username: selectedUsername,
+            gender: selectedGender,
+            avatar: computedAvatar
+          },
+          { emulateJSON: true }
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }
   }
 };
 </script>
@@ -235,6 +274,10 @@ export default {
 .avatar {
   width: 60px;
   height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   position: relative;
   .avatar-source {
