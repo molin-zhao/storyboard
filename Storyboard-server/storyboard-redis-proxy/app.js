@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 
 const { normalizePort } = require("../utils");
 const { ERROR } = require("../response");
-const { SERVER_REDIS_PROXY_PORT } = require("../config");
+const { SERVER_REDIS_PROXY_PORT } = require("../config/server.config");
 
 const indexRouter = require("./routers/index");
 const proxyRouter = require("./routers/proxy");

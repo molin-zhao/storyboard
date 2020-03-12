@@ -1,7 +1,7 @@
 const express = require("express");
 const cluster = require("../redis-cluster");
 const { ERROR, SUCCESS } = require("../../response");
-const { REDIS_CLUSTER } = require("../../config");
+const { AUTH } = require("../../config/redis-cluster.config");
 const router = express.Router();
 
 router.post("/set", async (req, res) => {
@@ -9,7 +9,7 @@ router.post("/set", async (req, res) => {
   let key = req.body.key;
   let value = req.body.value;
   let ex = req.body.expire;
-  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+  if (AUTH && auth !== AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
@@ -32,7 +32,7 @@ router.post("/set", async (req, res) => {
 router.post("/get", (req, res) => {
   let auth = req.body.auth;
   let key = req.body.key;
-  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+  if (AUTH && auth !== AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
@@ -56,7 +56,7 @@ router.get("/set", async (req, res) => {
   let key = req.query.key;
   let value = req.query.value;
   let ex = req.query.expire;
-  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+  if (AUTH && auth !== AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
@@ -79,7 +79,7 @@ router.get("/set", async (req, res) => {
 router.get("/get", (req, res) => {
   let auth = req.query.auth;
   let key = req.query.key;
-  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+  if (AUTH && auth !== AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
@@ -101,7 +101,7 @@ router.get("/get", (req, res) => {
 router.get("/del", async (req, res) => {
   let auth = req.query.auth;
   let key = req.query.key;
-  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+  if (AUTH && auth !== AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
@@ -123,7 +123,7 @@ router.get("/del", async (req, res) => {
 router.post("/del", async (req, res) => {
   let auth = req.body.auth;
   let key = req.body.key;
-  if (REDIS_CLUSTER.AUTH && auth !== REDIS_CLUSTER.AUTH) {
+  if (AUTH && auth !== AUTH) {
     return res.status(401).json({
       message: ERROR.UNAUTHORIZED
     });
