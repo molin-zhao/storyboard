@@ -1,5 +1,4 @@
 const { REDIS_DEL, REDIS_SET, REDIS_GET } = require("./config/proxy.config");
-const { JSONWEBTOKEN } = require("./config/encrypt.config");
 const { REDIS_KEY, AUTH, REDIS_EX } = require("./config/redis-cluster.config");
 const agent = require("superagent");
 

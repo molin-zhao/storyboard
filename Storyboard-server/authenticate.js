@@ -9,53 +9,39 @@ const getToken = cred => {
   });
 };
 
-const verifyAuthorization = (req, res, next) => {
-  let token = req.headers.authorization || req.query.token || req.body.token;
-  if (!token) throw new Error(ERROR.UNAUTHORIZED);
-  return jwt.verify(token, JSONWEBTOKEN.SECRETKEY, async (err, decoded) => {
-    if (err) throw new Error(ERROR.UNAUTHORIZED);
-    try {
-      let userId = decoded._id;
-      const userRedisToken = await redisOps.getJwtToken(userId);
-      if (userRedisToken.status !== 200)
-        throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-      if (userRedisToken.body.data !== token)
-        throw new Error(ERROR.UNAUTHORIZED);
-      let exp = decoded.exp;
-      let now = Math.round(Date.now() / 1000);
-      let willExp = exp - now;
-      if (willExp >= 0 && willExp <= JSONWEBTOKEN.RENEW_BEFORE) {
-        let newToken = getToken({ _id: userId });
-        const renewResp = await redisOps.setJwtToken(id, newToken);
-        console.log(renewResp.body);
-      }
-      req.user = decoded;
-      return next();
-    } catch (err) {
-      if (err === ERROR.UNAUTHORIZED) {
-        return res.status(403).json({
-          message: err
-        });
-      } else {
-        return res.status(500).json({
-          message: ERROR.SERVER_ERROR
-        });
-      }
-    }
-  });
-};
-
 const decodeToken = token => {
   return new Promise((resolve, reject) => {
     return jwt.verify(token, JSONWEBTOKEN.SECRETKEY, (err, decoded) => {
-      if (err)
-        return reject({
-          type: ERROR.UNAUTHORIZED,
-          messsage: err.message ? err.message : err
-        });
+      if (err) return reject(ERROR.UNAUTHORIZED);
       return resolve(decoded);
     });
   });
+};
+
+const verifyAuthorization = async (req, res, next) => {
+  try {
+    let token = req.headers.authorization || req.query.token || req.body.token;
+    if (!token) throw new Error(ERROR.UNAUTHORIZED);
+    const decoded = await decodeToken(token);
+    let tokenUser = decoded._id;
+    const tokenLookup = await redisOps.getJwtToken(tokenUser);
+    if (tokenLookup.status !== 200)
+      throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
+    if (tokenLookup.body.data !== token) throw new Error(ERROR.UNAUTHORIZED);
+    // verified, token is valid
+    req.user = decoded;
+    return next();
+  } catch (err) {
+    if (err.message === ERROR.UNAUTHORIZED) {
+      return res.status(403).json({
+        message: err.message
+      });
+    } else {
+      return res.status(500).json({
+        message: err.message ? err.message : ERROR.SERVER_ERROR
+      });
+    }
+  }
 };
 
 module.exports = {

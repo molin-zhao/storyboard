@@ -1,5 +1,6 @@
 const qcloudSMS = require("qcloudsms_js");
 const nodemailer = require("nodemailer");
+const fs = require("fs");
 const smtpTransport = require("nodemailer-smtp-transport");
 const FastDFSClient = require("fdfs");
 const geoip = require("geoip-lite");
@@ -163,6 +164,13 @@ const objectId = val => {
   return ObjectId(val);
 };
 
+const fdel = path => {
+  if (fs.existsSync(path) && fs.statSync(path).isFile()) {
+    return fs.unlinkSync(path);
+  }
+  return;
+};
+
 module.exports = {
   normalizePort,
   sendSMS,
@@ -179,5 +187,6 @@ module.exports = {
   isPassword,
   isPhone,
   isEmail,
-  objectId
+  objectId,
+  fdel
 };

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { TEMPLATE } = require("../../config/sms.config");
+const { JSONWEBTOKEN } = require("../../config/encrypt.config");
 const {
   REGISTER_EXPIRE,
   REGISTER_HTML,
@@ -20,8 +21,32 @@ const {
 } = require("../../utils");
 const redisOps = require("../../redisOps");
 const { ERROR, SUCCESS } = require("../../response");
+const { verifyAuthorization, getToken } = require("../../authenticate");
 const User = require("../../models/User");
 
+/**
+ * verify and renew token
+ */
+router.get("/token/verify", verifyAuthorization, async (req, res) => {
+  let userId = req.user._id;
+  let exp = req.user.exp;
+  let now = Math.round(Date.now() / 1000);
+  let willExp = exp - now;
+  if (willExp >= 0 && willExp <= JSONWEBTOKEN.RENEW_BEFORE) {
+    let newToken = getToken({ _id: userId });
+    const renewResp = await redisOps.setJwtToken(userId, newToken);
+    if (renewResp.status === 200) {
+      // successfully renewed token
+      return res.status(202).json({
+        message: SUCCESS.OK,
+        data: { id: userId, token: newToken }
+      });
+    }
+  }
+  return res.status(200).json({
+    message: SUCCESS.OK
+  });
+});
 /**
  * register a new user using local strategy
  */
@@ -157,12 +182,14 @@ router.post("/register", async (req, res) => {
     if (isPhone(account)) {
       newUser = new User({
         strategy: "local",
+        username: account,
         phone: account,
         password
       });
     } else {
       newUser = new User({
         strategy: "local",
+        username: account.substr(0, account.indexOf("@")),
         email: account,
         password
       });
@@ -171,7 +198,7 @@ router.post("/register", async (req, res) => {
     const token = await User.getUserToken(user);
     return res.status(200).json({
       message: SUCCESS.OK,
-      data: { id: user._id, token }
+      data: { id: user._id, token, user }
     });
   } catch (err) {
     return res.status(500).json({
@@ -238,10 +265,13 @@ router.post("/login/sms", async (req, res) => {
   }
 });
 
-router.get("/logout", async (req, res) => {
+router.get("/logout", verifyAuthorization, async (req, res) => {
   try {
     let user = req.query.id;
+    let tokenUser = req.user._id;
     if (!user) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    if (user !== tokenUser)
+      throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
     const removeTokenRes = await redisOps.delJwtToken(user);
     if (removeTokenRes.status !== 200)
       throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
@@ -251,7 +281,7 @@ router.get("/logout", async (req, res) => {
   } catch (err) {
     return res.json(500).json({
       message: ERROR.SERVICE_ERROR.SERVICE_NOT_ACCEPTABLE,
-      data: err
+      data: err.message
     });
   }
 });

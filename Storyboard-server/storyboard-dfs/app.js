@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const { normalizePort, getMongoUrl } = require("../utils");
 const { ERROR } = require("../response");
@@ -18,6 +19,7 @@ app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(cors());
 
 // 1. setup routers
 app.use("/", indexRouter);

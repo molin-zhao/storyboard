@@ -6,6 +6,7 @@ const { BCRYPT } = require("../config/encrypt.config");
 const { REDIS_KEY, AUTH } = require("../config/redis-cluster.config");
 const { REDIS_SET } = require("../config/proxy.config");
 const { getToken } = require("../authenticate");
+const redisOps = require("../redisOps");
 const { ERROR } = require("../response");
 const { objectId } = require("../utils");
 
@@ -14,6 +15,7 @@ const UserSchema = new Schema(
     strategy: {
       type: String,
       enum: ["local", "oauth"],
+      select: false,
       required: true
     },
     username: {
@@ -36,8 +38,8 @@ const UserSchema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["M", "F"],
-      default: "M"
+      enum: ["m", "f"],
+      default: "m"
     }
   },
   { timestamps: true }
@@ -73,14 +75,7 @@ UserSchema.statics.loginUser = function(account, password) {
           try {
             let userCreds = { _id: user._id };
             let token = getToken(userCreds);
-            const tokenRes = await agent
-              .post(REDIS_SET)
-              .set("accept", "json")
-              .send({
-                auth: AUTH,
-                key: `${user._id}:${REDIS_KEY.JWT_TOKEN}`,
-                value: token
-              });
+            const tokenRes = await redisOps.setJwtToken(user._id, token);
             if (tokenRes.status !== 200) return reject(ERROR.SERVER_ERROR);
             return resolve({ id: user._id, token });
           } catch (err) {
