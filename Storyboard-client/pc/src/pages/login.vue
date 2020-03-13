@@ -5,11 +5,11 @@
         <label for="exampleInputEmail1">{{ $t("EMAIL_PHONE") }}</label>
         <div class="form-row" style="width: 100%; margin: 0; padding: 0">
           <ajax-input
-            type="email"
             class="form-control"
             :style="computedInputStyle(emailOrPhoneError)"
-            :init-value="computedInitEmailOrPhoneValue"
+            v-model="emailOrPhoneValue"
             @on-change="checkEmailOrPhoneValue"
+            @on-typing="resetAccountError"
           />
         </div>
         <span class="form-text text-danger error-text">{{
@@ -25,8 +25,9 @@
               type="password"
               class="form-control"
               :style="computedInputStyle(passwordError)"
+              v-model="passwordValue"
               @on-change="checkPasswordError"
-              :init-value="computedInitPasswordValue"
+              @on-typing="resetPasswordError"
             />
           </div>
           <div v-else class="form-row-div">
@@ -35,6 +36,7 @@
               class="form-control code-input"
               :style="`${codeError ? 'border-color:lightcoral' : null}`"
               @on-change="checkCodeError"
+              @on-typing="resetCodeError"
             />
             <a
               @click.stop="getSMSPassword"
@@ -95,24 +97,24 @@
           }}</span>
         </div>
       </div>
+      <div style="width: 100%; margin-top: 30px;">
+        <button
+          :disabled="computedLoginBtnDisabled"
+          type="submit"
+          :class="computedLoginBtnClass"
+          @click.stop="login"
+        >
+          <span
+            v-show="status === 'doing'"
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          <span v-show="status === 'todo'">{{ $t("LOGIN") }}</span>
+          <span v-show="status === 'done'">{{ `√${$t("LOGGEDIN")}` }}</span>
+        </button>
+      </div>
     </form>
-    <div style="width: 26%; margin-top: 30px;">
-      <button
-        :disabled="computedLoginBtnDisabled"
-        type="submit"
-        :class="computedLoginBtnClass"
-        @click.stop="login"
-      >
-        <span
-          v-show="status === 'doing'"
-          class="spinner-border spinner-border-sm"
-          role="status"
-          aria-hidden="true"
-        ></span>
-        <span v-show="status === 'todo'">{{ $t("LOGIN") }}</span>
-        <span v-show="status === 'done'">{{ `√${$t("LOGGEDIN")}` }}</span>
-      </button>
-    </div>
   </div>
 </template>
 
@@ -126,7 +128,8 @@ import {
 } from "@/common/utils/form";
 import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
 import ajaxInput from "@/components/ajaxInput";
-import { mapActions } from "vuex";
+import * as URL from "@/common/utils/url";
+import { mapActions, mapMutations } from "vuex";
 export default {
   components: {
     ajaxInput
@@ -227,8 +230,12 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      add_userinfo: "user/add_userinfo"
+    }),
     ...mapActions({
-      save_credential: "user/save_credential"
+      save_credential: "user/save_credential",
+      save_userinfo: "user/save_userinfo"
     }),
     changeLoginMode() {
       this.loginByPassword = !this.loginByPassword;
@@ -236,8 +243,7 @@ export default {
     async getSMSPassword() {
       try {
         let id = this.emailOrPhoneValue;
-        let host = process.env.PASSPORT_HOST;
-        let url = host + `/user/sms/password?id=${id}`;
+        let url = URL.GET_SMS_PASSWORD(id);
         this.processing = true;
         const res = await this.$http.get(url);
         if (res.status === 200) {
@@ -265,9 +271,7 @@ export default {
         const { smsPassword, emailOrPhoneError, emailOrPhoneValue } = this;
         if (!smsPassword || emailOrPhoneError) return this.showSMSError();
         let token = encrypt(emailOrPhoneValue, smsPassword);
-        let host = process.env.PASSPORT_HOST;
-        let url =
-          host + `/user/sms/${isPhone(emailOrPhoneValue) ? "phone" : "email"}`;
+        let url = URL.POST_SMS_SEND_CODE(isPhone(emailOrPhoneValue));
         this.processing = true;
         const res = await this.$http.post(
           url,
@@ -322,38 +326,36 @@ export default {
           loginByPassword
         } = this;
         this.status = "doing";
-        let host = process.env.PASSPORT_HOST;
-        let url = host + `/user/login/${loginByPassword ? "password" : "sms"}`;
+        let url = URL.POST_USER_LOGIN(loginByPassword);
+        let account = emailOrPhoneValue.trim();
+        let secret = account.substr(0, LOCAL_SECRET_LEN);
+        let code = codeValue.trim();
+        let password = passwordValue.trim();
         let body = loginByPassword
           ? {
-              account: emailOrPhoneValue,
-              password: encrypt(
-                passwordValue,
-                emailOrPhoneValue.substr(0, LOCAL_SECRET_LEN)
-              )
+              account,
+              password: encrypt(password, secret)
             }
-          : { account: emailOrPhoneValue, code: codeValue };
+          : { account, code };
         const res = await this.$http.post(url, body, {
           emulateJSON: true
         });
         if (res.status === 200) {
           // login successfully
-          let credential = res.data.data;
           this.showLoginError(this.$t("LOGIN_SUCCESS"), "success");
-          this.status = "done";
-          this.save_credential(credential);
+          let data = res.data.data;
+          this.save_credential(data);
+          this.add_userinfo(data);
+          this.save_userinfo(data);
           if (this.rememberMeValue) {
             localStorage.setItem("rememberme", this.rememberMeValue);
-            localStorage.setItem("account", emailOrPhoneValue);
-            if (emailOrPhoneValue)
-              localStorage.setItem(
-                "password",
-                encrypt(
-                  passwordValue,
-                  emailOrPhoneValue.substr(0, LOCAL_SECRET_LEN)
-                )
-              );
+            localStorage.setItem("account", account);
+            if (account) {
+              let encryptedPass = encrypt(password, secret);
+              localStorage.setItem("password", encryptedPass);
+            }
           }
+          this.status = "done";
           setTimeout(() => {
             this.$router.replace("/storyboard");
           }, 1000);
@@ -393,6 +395,15 @@ export default {
         message: message ? message : this.$t("LOGIN_ERROR"),
         interval: 5000
       });
+    },
+    resetAccountError() {
+      if (this.emailOrPhoneError) this.emailOrPhoneError = "";
+    },
+    resetPasswordError() {
+      if (this.passwordError) this.passwordError = "";
+    },
+    resetCodeError() {
+      if (this.codeError) this.codeError = "";
     }
   }
 };

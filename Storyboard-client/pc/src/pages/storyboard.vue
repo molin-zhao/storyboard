@@ -31,13 +31,42 @@
             </popover>
           </badge-icon>
           <image-btn
-            src="/static/image/user_m_3.png"
+            :src="avatar"
+            default-img="/static/image/user_empty.png"
             wrapper-style="width: 100%; height: 4.5vw"
             img-style="width: 4vw; height: 4vw; border-radius: 2vw"
             @mouseover.native="mouseover('avatar')"
             @mouseleave.native="mouseleave('avatar')"
           >
-            <popover ref="avatar" style="left: 5vw; bottom: 0"> </popover>
+            <popover ref="avatar" style="left: 6vw; bottom: 0">
+              <tooltip
+                content-style="
+                width: 300px;
+                height: 400px;
+                border-radius: 10px;
+                box-shadow: -5px 2px 5px lightgrey; 
+                -webkit-box-shadow: -5px 2px 5px lightgrey;
+                border: 1px solid whitesmoke;
+                "
+                arrow-placement="left"
+                arrow-position="bottom: 1.5vw"
+                background-color="white"
+                border-color="whitesmoke"
+              >
+                <div class="personal-setting">
+                  <a @click="logout">
+                    <icon
+                      class="setting-icon"
+                      name="exit"
+                      style="color: var(--main-color-danger)"
+                    />
+                    <span style="color: var(--main-color-danger)">{{
+                      $t("LOGOUT")
+                    }}</span>
+                  </a>
+                </div>
+              </tooltip>
+            </popover>
           </image-btn>
         </div>
       </div>
@@ -168,9 +197,10 @@ import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import mainboard from "@/components/mainboard";
 import createProjectForm from "@/components/form/createProject";
+import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
 import { bell } from "@/common/theme/icon";
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave } from "@/common/utils/mouse";
 export default {
   components: {
@@ -192,7 +222,15 @@ export default {
     };
   },
   computed: {
-    ...mapState("user", ["id", "token"]),
+    ...mapState("user", [
+      "id",
+      "token",
+      "avatar",
+      "username",
+      "gender",
+      "phone",
+      "email"
+    ]),
     ...mapState("project", ["projects"]),
     ...mapState("team", ["teams"]),
     projectLabel() {
@@ -216,6 +254,7 @@ export default {
       this.add_projects(info.projects);
       this.add_teams(info.teams);
       this.add_userinfo(info.user);
+      this.save_userinfo(info.user);
     } catch (err) {
       this.errorCode = err.status;
     } finally {
@@ -223,6 +262,11 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      save_userinfo: "user/save_userinfo",
+      remove_credential: "/user/remove_credential",
+      remove_userinfo: "user/remove_userinfo"
+    }),
     ...mapMutations({
       add_projects: "project/add_projects",
       add_teams: "team/add_teams",
@@ -240,8 +284,7 @@ export default {
         let valid = createProjectFormEle.formCheck();
         if (!valid) return;
         let formData = createProjectFormEle.formData();
-        let host = process.env.API_HOST;
-        let url = host + "/project/create";
+        let url = URL.POST_CREATE_PROJECT();
         const createRes = await this.$http.post(
           url,
           {
@@ -261,8 +304,7 @@ export default {
     fetchInfo() {
       return new Promise(async (resolve, reject) => {
         try {
-          let host = process.env.API_HOST;
-          let url = host + `/user/storyboard?id=${this.id}`;
+          let url = URL.GET_USER_STORYBOARD(this.id);
           const info = await this.$http.get(url);
           return resolve(info.data.data);
         } catch (err) {
@@ -277,11 +319,34 @@ export default {
         this.add_projects(info.projects);
         this.add_teams(info.teams);
         this.add_userinfo(info.user);
+        this.save_userinfo(info.user);
       } catch (err) {
         this.errorCode = err.status;
       } finally {
         this.reloading = false;
       }
+    },
+    logout() {
+      this.$confirm.show({
+        title: this.$t("LOGOUT_TITLE"),
+        message: this.$t("LOGOUT_MESSAGE"),
+        success: async () => {
+          try {
+            let url = URL.GET_LOGOUT(this.id);
+            this.storyboardLoading = true;
+            const logout = await this.$http.get(url);
+            this.remove_credential();
+            this.remove_userinfo();
+            this.storyboardLoading = false;
+            this.$router.replace("/");
+          } catch (err) {
+            console.log(err);
+            this.storyboardLoading = false;
+          }
+        },
+        confirmLabel: this.$t("CONFIRM"),
+        cancelLabel: this.$t("CANCEL")
+      });
     }
   }
 };
@@ -423,5 +488,40 @@ export default {
 .list-group-item:active {
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+.personal-setting {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  a {
+    width: 100%;
+    height: 60px;
+    cursor: pointer;
+    border-top: 1px lightgrey solid;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    .setting-icon {
+      width: 25px;
+      height: 25px;
+      margin-left: 15px;
+    }
+    span {
+      font-size: 18px;
+      right: 15px;
+      position: absolute;
+    }
+  }
+  a:active {
+    -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  }
 }
 </style>

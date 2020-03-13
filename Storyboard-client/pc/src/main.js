@@ -15,9 +15,9 @@ import Alert from "@/plugins/alert";
 import Toast from "@/plugins/toast";
 import Confirm from "@/plugins/confirm";
 
-import store from "./store";
-import router from "./router";
-import i18n from "./i18n";
+import store from "@/store";
+import router from "@/router";
+import i18n from "@/i18n";
 
 Vue.config.productionTip = false;
 Vue.use(Alert);
@@ -28,7 +28,18 @@ Vue.use(VueResource);
 Vue.http.interceptors.push(function(req, next) {
   if (this && this.token) req.headers.set("Authorization", this.token);
   next(res => {
-    if (res.status === 403) {
+    /**
+     * 401 unauthroized -> header token invalid
+     * 403 forbidden
+     * 406 not acceptable
+     * 400 bad request -> params not provided or params error
+     * 200 ok
+     * 205 reset content
+     * 500 internal server error
+     * 0 network error
+     */
+
+    if (res.status === 401) {
       if (this && this.$alert) {
         this.$alert.show({
           type: "warning",

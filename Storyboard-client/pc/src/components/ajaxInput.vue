@@ -14,13 +14,9 @@ export default {
       type: String,
       default: "text"
     },
-    initValue: {
-      type: String,
-      default: ""
-    },
     interval: {
       type: Number,
-      default: 1000
+      default: 500
     },
     disabled: {
       type: Boolean,
@@ -30,6 +26,7 @@ export default {
   methods: {
     onInput(e) {
       clearTimeout(this.timer);
+      this.$emit("on-typing");
       let value = e.target.value;
       if (value.length > 0) {
         this.timer = setTimeout(() => {

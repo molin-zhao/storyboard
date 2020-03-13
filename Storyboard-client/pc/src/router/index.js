@@ -1,6 +1,9 @@
 import Vue from "vue";
 import vueRouter from "vue-router";
-import store from "@/store/index";
+import store from "@/store";
+import * as URL from "@/common/utils/url";
+import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
+import { decrypt } from "@/common/utils/form";
 
 Vue.use(vueRouter);
 
@@ -11,8 +14,6 @@ const error = () => import("@/router-views/error");
 const mobile = () => import("@/router-views/mobile");
 const login = () => import("@/pages/login");
 const register = () => import("@/pages/register");
-import { decrypt } from "@/common/utils/form";
-import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
 
 const router = new vueRouter({
   mode: "history",
@@ -57,7 +58,7 @@ const router = new vueRouter({
   ]
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.matched.some(r => r.name === "login" || r.name === "register")) {
     if (
       from.matched.some(
@@ -75,35 +76,49 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some(r => r.name === "storyboard")) {
     if (from.matched.some(r => r.name === "storyboard")) return next();
     if (!isLogin()) return next({ name: "login" });
-    let host = process.env.PASSPORT_HOST;
-    let url = host + `user/token/verify?token=${store.state.user.token}`;
-    return Vue.http
-      .get(url)
-      .then(res => {
-        console.log(res);
-        if (res.status === 202) {
-          // token valid but renewed, update local and vuex store
-          store.dispatch("user/save_credential", res.body.data);
-        }
-        return next();
-      })
-      .catch(err => {
-        if (err.status === 403) {
-          store.dispatch("user/delete_credential");
-          return next({ name: "login" });
-        } else {
-          return next({ path: "/" });
-        }
-      });
+    try {
+      let url = URL.GET_VERIFY_TOKEN(store.state.user.token);
+      const res = await Vue.http.get(url);
+      if (res.status === 205) {
+        // token valid but renewed, update local and vuex store
+        store.dispatch("user/save_credential", res.body.data);
+      }
+      return next();
+    } catch (err) {
+      if (err.status === 401) {
+        store.dispatch("user/delete_credential");
+        return next({ name: "login" });
+      } else {
+        return next({ path: "/" });
+      }
+    }
   }
   return next();
 });
 
 const isLogin = () => {
-  let id = store.state.user.id;
-  let token = store.state.user.token;
-  if (id && token) return true;
-  return false;
+  let storeId = store.state.user.id;
+  let storeToken = store.state.user.token;
+  let storeAvatar = store.state.user.avatar;
+  let storeUsername = store.state.user.username;
+  let storeGender = store.state.user.gender;
+  if (storeId && storeToken) return true;
+  let localId = localStorage.getItem("id");
+  let localEncryptedToken = localStorage.getItem("token");
+  if (!localId || !localEncryptedToken) return false;
+  let secret = localId.substr(0, LOCAL_SECRET_LEN);
+  let localToken = decrypt(localEncryptedToken, secret);
+  store.commit("user/add_credential", { id: localId, token: localToken });
+  if (storeAvatar && storeUsername && storeGender) return true;
+  let localAvatar = localStorage.getItem("avatar");
+  let localUsername = localStorage.getItem("username");
+  let localGender = localStorage.getItem("gender");
+  store.commit("user/add_userinfo", {
+    avatar: localAvatar,
+    username: localUsername,
+    gender: localGender
+  });
+  return true;
 };
 
 export default router;

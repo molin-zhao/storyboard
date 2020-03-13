@@ -5,6 +5,7 @@ const state = {
   token: null,
   socket: null,
   avatar: "",
+  username: "",
   gender: "m",
   email: "",
   phone: ""
@@ -23,6 +24,18 @@ const actions = {
     localStorage.removeItem("id");
     localStorage.removeItem("token");
     commit("remove_credential");
+  },
+  save_userinfo: ({ commit }, data) => {
+    localStorage.setItem("username", data.username);
+    localStorage.setItem("avatar", data.avatar);
+    localStorage.setItem("gender", data.gender);
+    commit("add_userinfo", data);
+  },
+  remove_userinfo: ({ commit }) => {
+    localStorage.removeItem("username");
+    localStorage.removeItem("avatar");
+    localStorage.removeItem("gender");
+    commit("remove_userinfo");
   }
 };
 const mutations = {
@@ -35,12 +48,14 @@ const mutations = {
     state.token = null;
   },
   add_userinfo(state, payload) {
+    state.username = payload.username;
     state.avatar = payload.avatar;
     state.gender = payload.gender;
     state.email = payload.email;
     state.phone = payload.phone;
   },
   remove_userinfo(state) {
+    state.username = "";
     state.avatar = "";
     state.gender = "m";
     state.email = "";

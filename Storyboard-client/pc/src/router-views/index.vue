@@ -1,8 +1,6 @@
 <template>
   <div class="wrapper">
-    <transition name="show">
-      <set-profile v-if="true" />
-    </transition>
+    <h1>Welcome</h1>
   </div>
 </template>
 

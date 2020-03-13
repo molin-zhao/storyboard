@@ -1,5 +1,5 @@
 <template>
-  <img @error="defaultImage()" :src="computedImageSource" />
+  <img class="wrapper" @error="defaultImage()" :src="computedImageSource" />
 </template>
 
 <script>
@@ -17,6 +17,7 @@ export default {
   computed: {
     computedImageSource() {
       const { src } = this;
+      if (!src) return "";
       if (src.startsWith("/static")) return src;
       return `${DFS_DOMAIN}/${src}`;
     }
@@ -31,4 +32,8 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.wrapper {
+  object-fit: cover;
+}
+</style>

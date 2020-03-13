@@ -5,10 +5,6 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
-import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
-import { decrypt } from "@/common/utils/form";
-import axios from "axios";
 export default {
   name: "Storyboard-App",
   mounted() {
@@ -20,23 +16,6 @@ export default {
       this.$route.path.split("/").pop() === "mobile" ? true : false;
     if (isMobile && !currentNavStackIsMobile)
       return this.$router.replace("/mobile");
-    let id = localStorage.getItem("id");
-    let encrypt_token = localStorage.getItem("token");
-    if (!id || !encrypt_token) return;
-    let secret = id.substr(0, LOCAL_SECRET_LEN);
-    let token = decrypt(encrypt_token, secret);
-    this.save_credential({ id, token });
-  },
-  methods: {
-    ...mapActions({
-      save_credential: "user/save_credential",
-      delete_credential: "user/delete_credential"
-    })
-  },
-  data() {
-    return {
-      loading: false
-    };
   }
 };
 </script>

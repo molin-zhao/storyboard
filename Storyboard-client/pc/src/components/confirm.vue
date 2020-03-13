@@ -2,8 +2,7 @@
   <div v-show="visible" class="confirm-wrapper" @click="hideModal">
     <div
       @click.stop="clickModal"
-      class="modal-dialog modal-dialog-centered"
-      role="document"
+      class="modal-dialog modal-dialog-centered my-modal"
     >
       <div class="modal-content">
         <div class="modal-header">
@@ -124,5 +123,9 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+.my-modal {
+  min-width: 500px;
+  min-height: 300px;
 }
 </style>

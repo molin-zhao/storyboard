@@ -3,6 +3,7 @@ export default {
   LANGUAGE: "Language",
   LOGIN: "Login",
   LOGGEDIN: "Logged in",
+  LOGOUT: "Logout",
   REGISTER: "Register",
   REGISTERED: "Registered",
   ALREADY_REGISTERED: "Email or phone number exists",
@@ -122,7 +123,10 @@ export default {
   FINISHED: "Finished",
   REMOVE_AVATAR_TITLE: "Remove avatar",
   REMOVE_AVATAR_MESSAGE: "Do you want to remove your avatar?",
+  LOGOUT_TITLE: "Logout",
+  LOGOUT_MESSAGE: "Are you sure you would like to logout?",
 
+  WELCOME: "Welcome",
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",

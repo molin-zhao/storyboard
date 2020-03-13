@@ -2,6 +2,7 @@ export default {
   // labels
   LANGUAGE: "语言",
   LOGIN: "登录",
+  LOGOUT: "登出",
   LOGGEDIN: "登录成功",
   REGISTER: "注册",
   REGISTERED: "注册成功",
@@ -122,6 +123,9 @@ export default {
   FINISHED: "完成",
   REMOVE_AVATAR_TITLE: "删除头像",
   REMOVE_AVATAR_MESSAGE: "确认删除已上传的头像吗?",
+  LOGOUT_TITLE: "登出",
+  LOGOUT_MESSAGE: "确认登出吗?",
+  WELCOME: "您好",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",

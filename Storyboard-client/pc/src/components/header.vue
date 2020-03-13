@@ -10,7 +10,7 @@
         />
         Storyboard
       </a>
-      <div class="ml-auto">
+      <div v-if="!id" class="ml-auto">
         <ul class="navbar-nav header-items">
           <li class="nav-item dropdown header-item">
             <a
@@ -61,18 +61,32 @@
           </li>
         </ul>
       </div>
+      <div v-else class="avatar-wrapper ml-auto">
+        <span class="avatar-label">{{ $t("WELCOME") }}</span>
+        <span class="avatar-label">{{ username }}</span>
+        <avatar
+          :src="avatar"
+          style="object-fit: cover; width: 50px; height: 50px; border-radius: 25px; background-color: whitesmoke"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { mapState } from "vuex";
+import avatar from "@/components/avatar";
 export default {
+  components: {
+    avatar
+  },
   data() {
     return {
       activeItem: this.$route.path.split("/").pop()
     };
   },
   computed: {
+    ...mapState("user", ["id", "token", "avatar", "username"]),
     isMobile() {
       let pathLastValue = this.$route.path.split("/").pop();
       return pathLastValue === "mobile" ? true : false;
@@ -142,5 +156,18 @@ export default {
 }
 a {
   cursor: pointer;
+}
+.avatar-wrapper {
+  width: 200px;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 10px;
+  .avatar-label {
+    color: whitesmoke;
+    margin-right: 5px;
+  }
 }
 </style>

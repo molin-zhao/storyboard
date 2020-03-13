@@ -104,24 +104,24 @@
           confirmPasswordError
         }}</span>
       </div>
+      <div style="width: 100%; margin-top: 30px;">
+        <button
+          :disabled="computedRegisterBtnDisabled"
+          type="submit"
+          :class="computedRegisterBtnClass"
+          @click.stop="registerLocal"
+        >
+          <span
+            v-show="status === 'doing'"
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          <span v-show="status === 'todo'">{{ $t("REGISTER") }}</span>
+          <span v-show="status === 'done'">{{ `√${$t("REGISTERED")}` }}</span>
+        </button>
+      </div>
     </form>
-    <div style="width: 26%; margin-top: 30px;">
-      <button
-        :disabled="computedRegisterBtnDisabled"
-        type="submit"
-        :class="computedRegisterBtnClass"
-        @click.stop="register"
-      >
-        <span
-          v-show="status === 'doing'"
-          class="spinner-border spinner-border-sm"
-          role="status"
-          aria-hidden="true"
-        ></span>
-        <span v-show="status === 'todo'">{{ $t("REGISTER") }}</span>
-        <span v-show="status === 'done'">{{ `√${$t("REGISTERED")}` }}</span>
-      </button>
-    </div>
   </div>
 </template>
 
@@ -132,13 +132,16 @@ import {
   isPhone,
   isCode,
   isPassword,
-  encrypt
+  encrypt,
+  decrypt
 } from "@/common/utils/form";
 import ajaxInput from "@/components/ajaxInput";
 import dragVerify from "@/components/dragVerify";
 import setProfile from "@/components/setProfile";
 import { getRandomAvatar } from "@/common/utils/form";
+import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
 import { IMG_SRC } from "@/common/config/static";
+import * as URL from "@/common/utils/url";
 import { mapMutations, mapActions, mapState } from "vuex";
 export default {
   components: {
@@ -241,47 +244,39 @@ export default {
       add_userinfo: "user/add_userinfo"
     }),
     ...mapActions({
-      save_credential: "user/save_credential"
+      save_credential: "user/save_credential",
+      save_userinfo: "user/save_userinfo"
     }),
     changeLoginMode() {
       this.registerByPassword = !this.registerByPassword;
     },
     async getSMSPassword() {
-      let id = this.emailOrPhoneValue;
-      let host = process.env.PASSPORT_HOST;
-      let url = host + `/user/sms/password?id=${id}`;
-      this.processing = true;
       try {
+        let id = this.emailOrPhoneValue;
+        let url = URL.GET_SMS_PASSWORD(id);
+        this.processing = true;
         const res = await this.$http.get(url);
-        if (res.status === 200) {
-          this.smsPassword = res.data.data;
-        } else if (res.status === 202) {
-          // user already registered
-          // 406 request not acceptable
-          let exId = res.data.data;
+        this.smsPassword = res.data.data;
+        this.processing = false;
+      } catch (err) {
+        if (err.status === 406) {
+          let exId = err.data.data;
           const { registeredEmailOrPhone } = this;
           if (registeredEmailOrPhone.indexOf(exId) === -1) {
             this.registeredEmailOrPhone = [...registeredEmailOrPhone, exId];
           }
-        } else {
-          this.showSMSError();
         }
-        this.processing = false;
-      } catch (err) {
-        console.log(err);
         this.showSMSError();
         this.processing = false;
       }
     },
     async sendCode() {
-      const { smsPassword, emailOrPhoneError, emailOrPhoneValue } = this;
-      if (!smsPassword || emailOrPhoneError) return this.showSMSError();
-      let token = encrypt(emailOrPhoneValue, smsPassword);
-      let host = process.env.PASSPORT_HOST;
-      let url =
-        host + `/user/sms/${isPhone(emailOrPhoneValue) ? "phone" : "email"}`;
-      this.processing = true;
       try {
+        const { smsPassword, emailOrPhoneError, emailOrPhoneValue } = this;
+        if (!smsPassword || emailOrPhoneError) return this.showSMSError();
+        let token = encrypt(emailOrPhoneValue, smsPassword);
+        let url = URL.POST_SMS_SEND_CODE(isPhone(emailOrPhoneValue));
+        this.processing = true;
         const res = await this.$http.post(
           url,
           { account: emailOrPhoneValue, token },
@@ -334,46 +329,49 @@ export default {
         this.confirmPasswordError = "";
       }
     },
-    async register() {
-      const { emailOrPhoneValue, codeValue, passwordValue } = this;
-      this.status = "doing";
-      let host = process.env.PASSPORT_HOST;
-      let url = host + "/user/register";
-      let encryptPassword = encrypt(passwordValue, codeValue);
-      let avatar = getRandomAvatar("m", IMG_SRC);
+    async registerLocal() {
       try {
+        const { emailOrPhoneValue, codeValue, passwordValue } = this;
+        this.status = "doing";
+        let url = URL.POST_REGISTER_LOCAL();
+        let account = emailOrPhoneValue.trim();
+        let password = passwordValue.trim();
+        let code = codeValue.trim();
+        let encryptPassword = encrypt(
+          password,
+          account.substr(0, LOCAL_SECRET_LEN)
+        );
+        let defaultGender = "m";
+        let avatar = getRandomAvatar(defaultGender, IMG_SRC);
         const res = await this.$http.post(
           url,
           {
-            account: emailOrPhoneValue,
-            code: codeValue,
+            account,
+            code,
             password: encryptPassword,
-            avatar
+            avatar,
+            gender: defaultGender
           },
           {
             emulateJSON: true
           }
         );
-        if (res.status === 200) {
-          // register successfully
-          let data = res.data.data;
-          this.save_credential(data);
-          this.add_userinfo(data.user);
-          this.showRegisterError(this.$t("REGISTER_SUCCESS"), "success");
-          this.status = "done";
-          setTimeout(() => {
-            this.finishedRegister = true;
-          }, 1000);
-        } else if (res.status === 202) {
-          // code error
+        // register successfully
+        let data = res.data.data;
+        this.save_credential(data);
+        this.add_userinfo(data);
+        this.save_userinfo(data);
+        this.showRegisterError(this.$t("REGISTER_SUCCESS"), "success");
+        this.status = "done";
+        setTimeout(() => {
+          this.finishedRegister = true;
+        }, 1000);
+      } catch (err) {
+        if (err.status === 406) {
           this.showSMSError(this.$t("SMS_NOT_MATCH"), "danger");
-          this.status = "todo";
         } else {
           this.showRegisterError();
-          this.status = "todo";
         }
-      } catch (err) {
-        this.showRegisterError();
         this.status = "todo";
       }
     },

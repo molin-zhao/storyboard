@@ -2,6 +2,7 @@
   <div class="wrapper display-only" :style="wrapperStyle">
     <img
       :src="src"
+      @error="defaultImage()"
       :class="imgBorder"
       :style="imgStyle"
       @mouseover="onMouseover()"
@@ -38,6 +39,10 @@ export default {
     },
     imgStyle: {
       type: String
+    },
+    defaultImg: {
+      type: String,
+      default: "/static/image/user_empty.png"
     }
   },
   methods: {
@@ -46,6 +51,11 @@ export default {
     },
     onMouseleave() {
       this.mouseover = false;
+    },
+    defaultImage() {
+      let img = event.srcElement;
+      img.src = this.defaultImg;
+      img.onerror = null;
     }
   }
 };
