@@ -57,6 +57,7 @@ mongoose
   })
   .then(() => console.log("connected to mongodb"))
   .catch(err => console.log(`connect to mongodb error: ${err}`));
+mongoose.set("useFindAndModify", false);
 
 // 4. setup rabbitmq connection
 let rabbitHost = getRabbitmqUrl(

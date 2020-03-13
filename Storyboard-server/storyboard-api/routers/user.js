@@ -71,16 +71,39 @@ router.get("/storyboard", verifyAuthorization, async (req, res) => {
       }
     });
   } catch (err) {
-    return res.status(500).json({
-      message: err.message ? err.message : err
-    });
+    return handleError(res, err);
   }
 });
 
 router.post("/profile/update", verifyAuthorization, async (req, res) => {
   try {
-    let updateUserId = req.body.user;
-    let;
+    let tokenUser = req.user._id;
+    let reqUser = req.body.user;
+    if (tokenUser !== reqUser) throw new Error(ERROR.FORBIDDEN);
+    let username = req.body.username;
+    let gender = req.body.gender;
+    let avatar = req.body.avatar;
+    const user = await User.findByIdAndUpdate(reqUser, {
+      $set: { username, gender, avatar }
+    });
+    handleSuccess(res, user);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.post("/profile", verifyAuthorization, async (req, res) => {
+  try {
+    let tokenUser = req.user._id;
+    let reqUser = req.body.user;
+    if (tokenUser !== reqUser) throw new Error(ERROR.FORBIDDEN);
+    let username = req.body.username;
+    let gender = req.body.gender;
+    let avatar = req.body.avatar;
+    const user = await User.findByIdAndUpdate(reqUser, {
+      $set: { username, gender, avatar }
+    });
+    handleSuccess(res, user);
   } catch (err) {
     return handleError(res, err);
   }

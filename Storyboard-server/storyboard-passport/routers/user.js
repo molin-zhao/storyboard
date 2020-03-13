@@ -20,44 +20,44 @@ const {
   isPhone
 } = require("../../utils");
 const redisOps = require("../../redisOps");
-const { ERROR, SUCCESS } = require("../../response");
-const { verifyAuthorization, getToken } = require("../../authenticate");
+const {
+  ERROR,
+  SUCCESS,
+  handleError,
+  handleSuccess
+} = require("../../response");
+const {
+  verifyAuthorization,
+  getToken,
+  decodeToken
+} = require("../../authenticate");
 const User = require("../../models/User");
 
 /**
  * verify and renew token
  */
-router.get("/token/verify", verifyAuthorization, async (req, res) => {
-  let userId = req.user._id;
-  let exp = req.user.exp;
-  let now = Math.round(Date.now() / 1000);
-  let willExp = exp - now;
-  if (willExp >= 0 && willExp <= JSONWEBTOKEN.RENEW_BEFORE) {
-    let newToken = getToken({ _id: userId });
-    const renewResp = await redisOps.setJwtToken(userId, newToken);
-    if (renewResp.status === 200) {
-      // successfully renewed token
-      return res.status(202).json({
-        message: SUCCESS.OK,
-        data: { id: userId, token: newToken }
-      });
+router.get("/token/verify", async (req, res) => {
+  try {
+    let token = req.query.token;
+    const decoded = await decodeToken(token);
+    let userId = decoded._id;
+    let exp = decoded.exp;
+    let now = Math.round(Date.now() / 1000);
+    let willExp = exp - now;
+    if (willExp >= 0 && willExp <= JSONWEBTOKEN.RENEW_BEFORE) {
+      let newToken = getToken({ _id: userId });
+      const renewResp = await redisOps.setJwtToken(userId, newToken);
+      if (renewResp.status === 200) {
+        // successfully renewed token
+        let newCred = { id: userId, token: newToken };
+        return handleSuccess(res, newCred, 205);
+      }
     }
+    return handleSuccess(res);
+  } catch (err) {
+    return handleError(res, err);
   }
-  return res.status(200).json({
-    message: SUCCESS.OK
-  });
 });
-/**
- * register a new user using local strategy
- */
-router.post("/register/local", (req, res) => {
-  throw new Error(ERROR.SERVER_ERROR);
-});
-
-/**
- * register a new user using oauth strategy
- */
-router.post("/register/oauth", (req, res) => {});
 
 /**
  * get sms crypto password
@@ -71,28 +71,27 @@ router.get("/sms/password", async (req, res) => {
     // check if the id is already registered
     const user = await User.findAccount(id);
     if (user)
-      return res.status(202).json({
-        message: ERROR.SERVICE_ERROR.SERVICE_NOT_ACCEPTABLE,
-        data: id
-      });
+      return handleError(
+        res,
+        new Error(ERROR.EMAIL_ADDRESS_OR_USERNAME_EXISTS),
+        id
+      );
     let pass = generateCode(CRYPTO.LENGTH);
     const codeRes = await redisOps.setSmsPassword(id, pass);
     if (codeRes.status !== 200)
       throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: pass
-    });
+    return handleSuccess(res, pass);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR,
-      data: err.message
-    });
+    return handleError(res, err);
   }
 });
 
 /**
  * get sms code for phone
+ *   1. token is encrypted by sms password and account
+ *   2. decrypt the token with sms password, should get the account value
+ *   3. these steps guaranteed the user get the latest sms password
+ *      and passed the human verification in order to get the sms code
  */
 router.post("/sms/phone", async (req, res) => {
   try {
@@ -106,25 +105,21 @@ router.post("/sms/phone", async (req, res) => {
       throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
     let templateId = TEMPLATE.REGISTER;
     let code = generateCode(REGISTER_LENGTH);
+    console.log(code);
     let expire = REGISTER_EXPIRE / 60;
     let params = [code, expire];
     const resCode = await redisOps.setSmsCode(account, code);
     if (resCode.status !== 200) throw new Error(ERROR.SERVER_ERROR);
     let resSend = await sendSMS(account, templateId, params);
-    return res.status(200).json({
-      message: "success",
-      data: resSend.body.tel
-    });
+    return handleSuccess(res, resSend.body.tel);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR,
-      data: err.message
-    });
+    return handleError(res, err);
   }
 });
 
 /**
  * get sms code for email
+ *   1. same encrypt and decrypt process above
  */
 router.post("/sms/email", async (req, res) => {
   try {
@@ -149,34 +144,29 @@ router.post("/sms/email", async (req, res) => {
     const resCode = await redisOps.setSmsCode(account, code);
     if (resCode.status !== 200) throw new Error(ERROR.SERVER_ERROR);
     let resSend = await sendEmail(account, subject, html, lang);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: resSend.response
-    });
+    return handleSuccess(res, resSend.response);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR,
-      data: err.message
-    });
+    return handleError(res, err);
   }
 });
 
-router.post("/register", async (req, res) => {
+/**
+ * register a new user using local strategy
+ */
+router.post("/register/local", async (req, res) => {
   try {
     let account = req.body.account;
     let code = req.body.code;
     let encryptPassword = req.body.password;
-    let password = decrypt(encryptPassword, code);
+    let password = decrypt(encryptPassword, account.substr(0, CRYPTO.LENGTH));
+    let avatar = req.body.avatar;
+    let gender = req.body.gender;
     if (!isEmailOrPhone(account) || !isPassword(password))
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const codeRes = await redisOps.getSmsCode(account);
     if (codeRes.status !== 200)
       throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-    if (code !== codeRes.body.data) {
-      return res.status(202).json({
-        message: ERROR.SERVICE_ERROR.ARGUMENTS_INVALID
-      });
-    }
+    if (code !== codeRes.body.data) throw new Error(ERROR.INFO_NOT_MATCHED);
     // register user
     let newUser;
     if (isPhone(account)) {
@@ -184,30 +174,49 @@ router.post("/register", async (req, res) => {
         strategy: "local",
         username: account,
         phone: account,
-        password
+        password,
+        avatar,
+        gender
       });
     } else {
       newUser = new User({
         strategy: "local",
         username: account.substr(0, account.indexOf("@")),
         email: account,
-        password
+        password,
+        avatar,
+        gender
       });
     }
-    const user = await newUser.save();
+    const user = await newUser.save(); // user contains all fields
     const token = await User.getUserToken(user);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: { id: user._id, token, user }
-    });
+    let resData = {
+      token,
+      id: user._id,
+      avatar: user.avatar,
+      username: user.username,
+      gender: user.gender,
+      phone: user.phone,
+      email: user.email
+    };
+    return handleSuccess(res, resData);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR,
-      data: err.message
-    });
+    return handleError(res, err);
   }
 });
 
+/**
+ * register a new user using oauth strategy
+ */
+router.post("/register/oauth", (req, res) => {
+  // TODO
+});
+
+/**
+ * login by user password
+ *   1. password should be encrypted on client side
+ *   2. decrypt on sever side using the same crypt strategy
+ */
 router.post("/login/password", async (req, res) => {
   try {
     let account = req.body.account;
@@ -217,23 +226,16 @@ router.post("/login/password", async (req, res) => {
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     if (!isPassword(password))
       throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
-    const loginResponse = await User.loginUser(account, password);
-    if (loginResponse.error)
-      return res.status(202).json({
-        message: loginResponse.error
-      });
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: loginResponse
-    });
+    const user = await User.loginUser(account, password);
+    return handleSuccess(res, user);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE,
-      data: err
-    });
+    return handleError(res, err);
   }
 });
 
+/**
+ * login by sms code
+ */
 router.post("/login/sms", async (req, res) => {
   try {
     let account = req.body.account;
@@ -244,24 +246,23 @@ router.post("/login/sms", async (req, res) => {
     if (codeRes.status !== 200)
       throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
     let redisCode = codeRes.body.data;
-    if (code !== redisCode) {
-      return res.status(202).json({
-        message: ERROR.SERVICE_ERROR.ARGUMENTS_INVALID
-      });
-    }
-    // register user
+    if (code !== redisCode) throw new Error(ERROR.USER_AUTHENTICATION_FAILED);
     const user = await User.findAccount(account);
     if (!user) throw new Error(ERROR.USER_NAME_NOT_FOUND);
     const token = await User.getUserToken(user);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: { id: user._id, token }
-    });
+    const { avatar, username, email, phone, gender } = user;
+    let resData = {
+      id: user._id,
+      token,
+      avatar,
+      username,
+      email,
+      phone,
+      gender
+    };
+    return handleSuccess(res, resData);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR,
-      data: err.message
-    });
+    return handleError(res, err);
   }
 });
 
@@ -275,14 +276,9 @@ router.get("/logout", verifyAuthorization, async (req, res) => {
     const removeTokenRes = await redisOps.delJwtToken(user);
     if (removeTokenRes.status !== 200)
       throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-    return res.status(200).json({
-      message: SUCCESS.OK
-    });
+    return handleSuccess(res);
   } catch (err) {
-    return res.json(500).json({
-      message: ERROR.SERVICE_ERROR.SERVICE_NOT_ACCEPTABLE,
-      data: err.message
-    });
+    return handleError(res, err);
   }
 });
 

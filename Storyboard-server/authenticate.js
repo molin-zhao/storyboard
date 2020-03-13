@@ -33,7 +33,7 @@ const verifyAuthorization = async (req, res, next) => {
     return next();
   } catch (err) {
     if (err.message === ERROR.UNAUTHORIZED) {
-      return res.status(403).json({
+      return res.status(401).json({
         message: err.message
       });
     } else {
