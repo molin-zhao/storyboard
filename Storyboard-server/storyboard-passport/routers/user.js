@@ -20,14 +20,10 @@ const {
   isPhone
 } = require("../../utils");
 const redisOps = require("../../redisOps");
-const {
-  ERROR,
-  SUCCESS,
-  handleError,
-  handleSuccess
-} = require("../../response");
+const { ERROR, handleError, handleSuccess } = require("../../response");
 const {
   verifyAuthorization,
+  verifyUser,
   getToken,
   decodeToken
 } = require("../../authenticate");
@@ -266,13 +262,9 @@ router.post("/login/sms", async (req, res) => {
   }
 });
 
-router.get("/logout", verifyAuthorization, async (req, res) => {
+router.get("/logout", verifyAuthorization, verifyUser, async (req, res) => {
   try {
-    let user = req.query.id;
-    let tokenUser = req.user._id;
-    if (!user) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
-    if (user !== tokenUser)
-      throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
+    let user = req.query.user;
     const removeTokenRes = await redisOps.delJwtToken(user);
     if (removeTokenRes.status !== 200)
       throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);

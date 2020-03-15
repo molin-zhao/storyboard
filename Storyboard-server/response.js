@@ -49,6 +49,7 @@ const handleError = (res, err, data = null) => {
       code = 406; // Not acceptable
       break;
     case ERROR.USER_UNSPECIFIED:
+    case ERROR.FORBIDDEN:
       code = 403; // Forbidden
       break;
     case ERROR.SERVER_ERROR:

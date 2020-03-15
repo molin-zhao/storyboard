@@ -116,4 +116,30 @@ UserSchema.statics.fetchUserInfo = function(userId) {
   return this.findOne({ _id: userId });
 };
 
+UserSchema.statics.searchUser = function(value, limit, exclude) {
+  return this.aggregate([
+    {
+      $match: {
+        username: { $regex: ".*" + value + ".*" },
+        _id: { $nin: objectId(exclude) }
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        avatar: 1,
+        username: 1
+      }
+    },
+    {
+      $limit: limit
+    },
+    {
+      $sort: {
+        username: 1
+      }
+    }
+  ]);
+};
+
 module.exports = mongoose.model("User", UserSchema);

@@ -1,29 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const { verifyAuthorization } = require("../../authenticate");
-const {
-  ERROR,
-  SUCCESS,
-  handleError,
-  handleSuccess
-} = require("../../response");
+const { ERROR, handleError, handleSuccess } = require("../../response");
 const Project = require("../../models/Project");
 
+/**
+ * get user projects
+ */
 router.get("/", verifyAuthorization, async (req, res) => {
   try {
     let reqId = req.query.id;
     let tokenId = req.user._id;
     if (reqId !== tokenId) throw new Error(ERROR.USER_UNSPECIFIED);
-    const userProjs = await Project.containUser(reqId);
-    return res.status(200).json({
-      messagse: SUCCESS.OK,
-      data: userProjs
-    });
+    const userProjs = await Project.fetchUserProjects(reqId);
+    return handleSuccess(res, userProjs);
   } catch (err) {
     return handleError(res, err);
   }
 });
 
+/**
+ * create a project
+ */
 router.post("/create", verifyAuthorization, async (req, res) => {
   try {
     let reqUserId = req.body.user;

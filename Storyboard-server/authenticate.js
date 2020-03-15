@@ -20,7 +20,7 @@ const decodeToken = token => {
 
 const verifyAuthorization = async (req, res, next) => {
   try {
-    let token = req.headers.authorization || req.query.token || req.body.token;
+    let token = req.headers.authorization;
     if (!token) throw new Error(ERROR.UNAUTHORIZED);
     const decoded = await decodeToken(token);
     let tokenUser = decoded._id;
@@ -44,8 +44,19 @@ const verifyAuthorization = async (req, res, next) => {
   }
 };
 
+const verifyUser = (req, res, next) => {
+  let tokenUser = req.user._id;
+  let requestUser = req.query.user || req.body.user;
+  if (tokenUser !== requestUser)
+    return res.status(403).json({
+      message: ERROR.FORBIDDEN
+    });
+  return next();
+};
+
 module.exports = {
   getToken,
   decodeToken,
-  verifyAuthorization
+  verifyAuthorization,
+  verifyUser
 };
