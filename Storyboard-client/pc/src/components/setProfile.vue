@@ -41,7 +41,7 @@
       <label>{{ $t("AVATAR") }}</label>
       <div class="avatar" v-if="uploading">
         <span
-          class="spinner-border spinner-border-md text-info"
+          class="spinner-border spinner-border-sm text-info"
           role="status"
           aria-hidden="true"
         ></span>

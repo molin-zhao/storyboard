@@ -39,7 +39,7 @@ export const POST_CREATE_PROJECT = () => {
 };
 
 export const GET_USER_STORYBOARD = id => {
-  return API_HOST + `/user/storyboard?id=${id}`;
+  return API_HOST + `/user/storyboard?user=${id}`;
 };
 
 export const GET_VERIFY_TOKEN = token => {
@@ -47,5 +47,5 @@ export const GET_VERIFY_TOKEN = token => {
 };
 
 export const GET_LOGOUT = id => {
-  return PASSPORT_HOST + `/user/logout?id=${id}`;
+  return PASSPORT_HOST + `/user/logout?user=${id}`;
 };
