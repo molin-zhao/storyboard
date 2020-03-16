@@ -3,17 +3,18 @@ const Schema = mongoose.Schema;
 
 const PhaseSchema = new Schema(
   {
-    name: {
-      type: String,
+    project_id: {
+      type: Schema.Types.ObjectId,
+      ref: "Project",
       required: true
     },
-    group: {
-      type: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: "Group"
-        }
-      ]
+    name: {
+      type: String,
+      default: ""
+    },
+    description: {
+      type: String,
+      default: ""
     }
   },
   {

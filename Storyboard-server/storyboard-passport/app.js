@@ -68,20 +68,20 @@ rabbitmqConn.on("connect", () => {
   console.log("rabbitmq cluster connected");
 });
 rabbitmqConn.on("disconnect", err => {
-  console.log(`rabbitmq cluster disconnected with err: ${err}`);
+  console.log(`rabbitmq cluster disconnected with err: ${err.message}`);
 });
-const channelWrapper = rabbitmqConn.createChannel({
+const broadcastChannel = rabbitmqConn.createChannel({
   json: true,
   setup: channel =>
     Promise.all([
       channel.assertExchange(
-        RABBITMQ_CLUSTER.EXCHANGE.RPC.NAME,
-        RABBITMQ_CLUSTER.EXCHANGE.RPC.TYPE,
+        RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.NAME,
+        RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.TYPE,
         { durable: true }
       )
     ])
 });
-app.locals.rabbitmq = channelWrapper;
+app.locals.broadcastChannel = broadcastChannel;
 
 // 5. start server
 let port = normalizePort(process.env.PORT || SERVER_PASSPORT_PORT);

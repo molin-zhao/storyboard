@@ -16,22 +16,24 @@ const UserSchema = new Schema(
       required: true
     },
     username: {
-      type: String
+      type: String,
+      required: true
     },
     password: {
       type: String,
       select: false
     },
     avatar: {
-      type: String
+      type: String,
+      default: "/static/image/m1.png"
     },
     email: {
       type: String,
-      unique: true
+      default: ""
     },
     phone: {
       type: String,
-      unique: true
+      default: ""
     },
     gender: {
       type: String,

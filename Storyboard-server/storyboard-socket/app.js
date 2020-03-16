@@ -72,25 +72,51 @@ rabbitmqConn.on("connect", () => {
 rabbitmqConn.on("disconnect", err => {
   console.log(`rabbitmq cluster disconnected with err: ${err}`);
 });
-const channelWrapper = rabbitmqConn.createChannel({
+const broadcastChannel = rabbitmqConn.createChannel({
   json: true,
   setup: channel =>
     Promise.all([
       channel.assertExchange(
-        RABBITMQ_CLUSTER.EXCHANGE.RPC.NAME,
-        RABBITMQ_CLUSTER.EXCHANGE.RPC.TYPE,
+        RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.NAME,
+        RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.TYPE,
         { durable: true }
       ),
       channel.assertQueue("", { exclusive: true }),
-      channel.bindQueue("", RABBITMQ_CLUSTER.EXCHANGE.RPC.NAME, ""),
+      channel.bindQueue("", RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.NAME, ""),
       channel.consume("", data => {
         let message = JSON.parse(data.content.toString());
         console.log(message);
-        channelWrapper.ack(data);
+        broadcastChannel.ack(data);
       })
     ])
 });
-app.locals.rabbitmq = channelWrapper;
+
+const unicastChannel = rabbitmqConn.createChannel({
+  json: true,
+  setup: channel =>
+    Promise.all([
+      channel.assertExchange(
+        RABBITMQ_CLUSTER.EXCHANGE.UNICAST.NAME,
+        RABBITMQ_CLUSTER.EXCHANGE.UNICAST.TYPE,
+        {
+          durable: true
+        }
+      ),
+      channel.assertQueue(`${process.env.PORT}`, { exclusive: true }),
+      channel.bindQueue(
+        `${process.env.PORT}`,
+        RABBITMQ_CLUSTER.EXCHANGE.UNICAST.NAME,
+        `${process.env.PORT}`
+      ),
+      channel.consume(`${process.env.PORT}`, data => {
+        let message = JSON.parse(data.content.toString());
+        console.log(message);
+        unicastChannel.ack(data);
+      })
+    ])
+});
+app.locals.broadcast = broadcastChannel;
+app.locals.unicast = unicastChannel;
 
 // 5. setup server
 let port = normalizePort(process.env.PORT || SERVER_SOCKER_PORT);
@@ -101,77 +127,90 @@ const server = http.createServer(app);
 app.locals.user_socket = {};
 const io = socketIo(server);
 io.on("connection", socket => {
-  socket.on("establish-connection", async client => {
-    // must provide real credentials
-    let token = client.token;
-    let user = client.id;
-    if (!token || !user) return socket.disconnect();
-    try {
-      const tokenCheck = await agent
-        .post(REDIS_GET)
-        .set("accept", "json")
-        .send({
-          auth: REDIS_CLUSTER.AUTH,
-          key: `${id}:${REDIS_CLUSTER.REDIS_KEY.LOGIN_TOKEN}`
-        });
-      if (tokenCheck.status !== 200 || tokenCheck.body.data !== token)
-        throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-      // token matched, store user socket in locals.user_socket
-      socket.user = user;
-      app.locals.user_socket[user] = socket;
-      return socket.emit("connection-success");
-    } catch (err) {
-      socket.emit(
-        "connection-failed",
-        ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE
-      );
-      return socket.disconnect();
-    }
-  });
-  socket.on("disconnect", () => {
-    let user = socket.user;
-    if (app.locals.user_socket[user]) {
-      app.locals.user_socket[user].disconnect();
-      app.locals.user_socket[user] = undefined;
-      delete app.locals.user_socket[user];
-    }
-  });
-  socket.on("confirm-login", async client => {
-    let user = client.id;
-    let access_token = client.access_token; // access_token
-    let detail = client.detail;
-    if (!user || !access_token || !detail) return socket.disconnect();
-    try {
-      const accessTokenCheck = await agent
-        .post(REDIS_GET)
-        .set("accept", "json")
-        .send({
-          auth: REDIS_CLUSTER.AUTH,
-          key: `${user}:${REDIS_CLUSTER.REDIS_KEY.LOGIN_ACCESS_TOKEN}`
-        });
-      if (
-        accessTokenCheck.status !== 200 ||
-        accessTokenCheck.body.data !== access_token
-      )
-        throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-      // access_token verified, try to notify user confirm login
-      if (app.locals.user_socket[user])
-        return app.locals.user_socket[user].emit("on-confirm-login", detail);
-      const confirmLoginPub = await channelWrapper.publish(
-        EXCHANGE.RPC.NAME,
-        "",
-        { type: "confirm-login", data: detail },
-        { contentType: "application/json", persistent: true }
-      );
-      if (!confirmLoginPub.data)
-        throw new ERROR(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-      return socket.emit("wait-for-response");
-    } catch (err) {
-      socket.emit("connection-failed", err);
-      return socket.disconnect();
-    }
+  console.log(`${socket.id} connected`);
+  socket.on("message", data => {
+    let destPort = data.port;
+    let destMessage = data.data;
+    console.log(data);
+    unicastChannel.publish(
+      RABBITMQ_CLUSTER.EXCHANGE.UNICAST.NAME,
+      `${destPort}`,
+      destMessage
+    );
   });
 });
+// io.on("connection", socket => {
+//   socket.on("establish-connection", async client => {
+//     // must provide real credentials
+//     let token = client.token;
+//     let user = client.id;
+//     if (!token || !user) return socket.disconnect();
+//     try {
+//       const tokenCheck = await agent
+//         .post(REDIS_GET)
+//         .set("accept", "json")
+//         .send({
+//           auth: REDIS_CLUSTER.AUTH,
+//           key: `${id}:${REDIS_CLUSTER.REDIS_KEY.LOGIN_TOKEN}`
+//         });
+//       if (tokenCheck.status !== 200 || tokenCheck.body.data !== token)
+//         throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
+//       // token matched, store user socket in locals.user_socket
+//       socket.user = user;
+//       app.locals.user_socket[user] = socket;
+//       return socket.emit("connection-success");
+//     } catch (err) {
+//       socket.emit(
+//         "connection-failed",
+//         ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE
+//       );
+//       return socket.disconnect();
+//     }
+//   });
+//   socket.on("disconnect", () => {
+//     let user = socket.user;
+//     if (app.locals.user_socket[user]) {
+//       app.locals.user_socket[user].disconnect();
+//       app.locals.user_socket[user] = undefined;
+//       delete app.locals.user_socket[user];
+//     }
+//   });
+//   socket.on("confirm-login", async client => {
+//     let user = client.id;
+//     let access_token = client.access_token; // access_token
+//     let detail = client.detail;
+//     if (!user || !access_token || !detail) return socket.disconnect();
+//     try {
+//       const accessTokenCheck = await agent
+//         .post(REDIS_GET)
+//         .set("accept", "json")
+//         .send({
+//           auth: REDIS_CLUSTER.AUTH,
+//           key: `${user}:${REDIS_CLUSTER.REDIS_KEY.LOGIN_ACCESS_TOKEN}`
+//         });
+//       if (
+//         accessTokenCheck.status !== 200 ||
+//         accessTokenCheck.body.data !== access_token
+//       )
+//         throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
+//       // access_token verified, try to notify user confirm login
+//       if (app.locals.user_socket[user])
+//         return app.locals.user_socket[user].emit("on-confirm-login", detail);
+//       const confirmLoginPub = await channelWrapper.publish(
+//         EXCHANGE.RPC.NAME,
+//         "",
+//         { type: "confirm-login", data: detail },
+//         { contentType: "application/json", persistent: true }
+//       );
+//       if (!confirmLoginPub.data)
+//         throw new ERROR(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
+//       return socket.emit("wait-for-response");
+//     } catch (err) {
+//       socket.emit("connection-failed", err);
+//       return socket.disconnect();
+//     }
+//   });
+// });
 
 // 7. start server
 server.listen(port, "0.0.0.0", () => {

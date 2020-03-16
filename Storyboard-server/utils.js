@@ -93,6 +93,13 @@ const generateCode = (length = 6) => {
   return code;
 };
 
+const generateRandomColor = arr => {
+  if (arr.constructor !== Array)
+    throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
+  let randomIndex = generateRandomNumber(0, arr.length - 1);
+  return arr[randomIndex];
+};
+
 const getClientIP = req => {
   let ip =
     req.headers["x-forwarded-for"] ||
@@ -109,8 +116,6 @@ const getClientPos = ip => {
 };
 
 const getDFSConnection = () => {
-  let trackers = TRACKERS;
-  trackers.sort(() => Math.random() - 0.5);
   return new FastDFSClient({
     trackers: TRACKERS,
     timeout: TIMEOUT,
@@ -178,6 +183,7 @@ module.exports = {
   getMongoUrl,
   getRabbitmqUrl,
   generateRandomNumber,
+  generateRandomColor,
   getClientIP,
   getClientPos,
   generateCode,

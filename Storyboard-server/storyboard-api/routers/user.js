@@ -26,22 +26,25 @@ router.post("/search", async (req, res) => {
  * get user projects, teams and personal info entering the storyboard
  * returns data of projects array, teams array and user object
  */
-router.get("/storyboard", verifyAuthorization, verifyUser, async (req, res) => {
-  try {
-    let reqId = req.query.user;
-    const userProjs = await Project.fetchUserProjects(reqId);
-    const userTeams = await Team.fetchUserTeams(reqId);
-    const userInfo = await User.fetchUserInfo(reqId);
-    let data = {
-      projects: userProjs,
-      teams: userTeams,
-      user: userInfo
-    };
-    return handleSuccess(res, data);
-  } catch (err) {
-    return handleError(res, err);
+router.get(
+  "/storyboard",
+  /**  verifyAuthorization, verifyUser, */ async (req, res) => {
+    try {
+      let reqId = req.query.user;
+      const userProjs = await Project.fetchUserProjects(reqId);
+      const userTeams = await Team.fetchUserTeams(reqId);
+      const userInfo = await User.fetchUserInfo(reqId);
+      let data = {
+        projects: userProjs,
+        teams: userTeams,
+        user: userInfo
+      };
+      return handleSuccess(res, data);
+    } catch (err) {
+      return handleError(res, err);
+    }
   }
-});
+);
 
 /**
  * edit or update profile
