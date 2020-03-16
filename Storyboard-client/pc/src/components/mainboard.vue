@@ -34,7 +34,7 @@
         <editable-text
           style="width: 30%; height: 100%; padding: 1px"
           default-value="ADD_DESCRIPTION"
-          :value="description"
+          :value="projects[index].description"
           font-style="font-family: kai; font-size: 2vh;"
           :row="3"
           @change="descriptionChange"
@@ -93,7 +93,6 @@ export default {
       group,
       more,
       // self data
-      description: "",
       onlineUsers: 1
     };
   },

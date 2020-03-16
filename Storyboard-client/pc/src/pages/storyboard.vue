@@ -142,50 +142,7 @@
 
     <!-- modals -->
     <div id="modal-create-project" class="modal fade" role="dialog">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title display-only">
-              {{ $t("CREATE_PROJECT") }}
-            </h5>
-            <a
-              style="font-size: 20px"
-              class="display-only"
-              aria-hidden="true"
-              aria-label="Close"
-              data-target="#modal-create-project"
-              data-dismiss="modal"
-              >&times;</a
-            >
-          </div>
-          <div class="modal-body">
-            <create-project-form ref="create-project-form" />
-          </div>
-          <div class="modal-footer">
-            <button
-              :disabled="computedCreateBtnDisabled"
-              type="submit"
-              :class="
-                `btn btn-sm btn-${
-                  projectCreateStatus === 'done' ? 'success' : 'primary'
-                } create-btn`
-              "
-              @click="createNewProject"
-            >
-              <span
-                v-if="projectCreateStatus === 'doing'"
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              <span v-else-if="projectCreateStatus === 'todo'">{{
-                $t("CREATE")
-              }}</span>
-              <span v-else>{{ $t("DONE") }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <createProjectForm ref="create-project-form" />
     </div>
   </div>
 </template>
@@ -215,7 +172,6 @@ export default {
     return {
       storyboardLoading: false,
       reloading: false,
-      projectCreateStatus: "todo",
       projectSelectedIndex: 0,
       bell,
       errorCode: -1
@@ -240,11 +196,6 @@ export default {
         }
         return "list-group-item list-group-item-action";
       };
-    },
-    computedCreateBtnDisabled() {
-      const { projectCreateStatus } = this;
-      if (projectCreateStatus === "todo") return false;
-      return true;
     }
   },
   async mounted() {
@@ -255,6 +206,10 @@ export default {
       this.add_teams(info.teams);
       this.add_userinfo(info.user);
       this.save_userinfo(info.user);
+      $("#modal-create-project").on("hidden.bs.modal", () => {
+        let form = this.$refs["create-project-form"];
+        if (form) form.resetForm();
+      });
     } catch (err) {
       this.errorCode = err.status;
     } finally {
@@ -276,27 +231,6 @@ export default {
     mouseleave,
     projectLabelClick(index) {
       this.projectSelectedIndex = index;
-    },
-    async createNewProject() {
-      try {
-        let createProjectFormEle = this.$refs["create-project-form"];
-        if (!createProjectFormEle) return;
-        let valid = createProjectFormEle.formCheck();
-        if (!valid) return;
-        let formData = createProjectFormEle.formData();
-        let url = URL.POST_CREATE_PROJECT();
-        const createRes = await this.$http.post(
-          url,
-          {
-            ...formData
-          },
-          { emulateJSON: true }
-        );
-        this.add_projects(createRes.data.data);
-        this.projectCreateStatus = "done";
-      } catch (err) {
-        this.projectCreateStatus = "todo";
-      }
     },
     resetVisibleComponents() {
       return eventBus.$emit("reset-visible-component");

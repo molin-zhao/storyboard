@@ -3,8 +3,8 @@
     <div class="phase-nav">
       <div
         class="nav-link display-only"
-        v-for="(item, index) in projects[projectId].phase"
-        :key="item.id"
+        v-for="(item, index) in projects[projectId].phases"
+        :key="item._id"
         :style="navActiveStyle(index)"
         @click="selectPhase(index)"
       >
@@ -16,11 +16,11 @@
     </div>
     <div class="phase-body">
       <task-group
-        v-for="item in projects[projectId].phase[selectedPhase].task_group"
-        :key="item.id"
+        v-for="item in projects[projectId].phases[selectedPhase].tasks"
+        :key="item._id"
         :project-id="projectId"
         :phase-id="selectedPhase"
-        :task-group-id="item.id"
+        :task-group-id="item._id"
         :item="item"
       ></task-group>
     </div>
@@ -51,7 +51,7 @@ export default {
     }
   },
   computed: {
-    ...mapState("user", ["projects"]),
+    ...mapState("project", ["projects"]),
     navActiveStyle() {
       return function(index) {
         return index === this.selectedPhase
