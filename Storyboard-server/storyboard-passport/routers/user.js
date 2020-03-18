@@ -41,15 +41,21 @@ router.get("/token/verify", async (req, res) => {
     let now = Math.round(Date.now() / 1000);
     let willExp = exp - now;
     if (willExp >= 0 && willExp <= JSONWEBTOKEN.RENEW_BEFORE) {
-      let newToken = getToken({ _id: userId });
-      const renewResp = await redisOps.setJwtToken(userId, newToken);
-      if (renewResp.status === 200) {
-        // successfully renewed token
-        let newCred = { id: userId, token: newToken };
-        return handleSuccess(res, newCred, 205);
+      try {
+        let newToken = getToken({ _id: userId });
+        const renewResp = await redisOps.setJwtToken(userId, newToken);
+        if (renewResp.status === 200) {
+          // successfully renewed token
+          let newCred = { id: userId, token: newToken };
+          return handleSuccess(res, newCred, 205);
+        }
+      } catch (err) {
+        // cannot renew token but current token is valid
+        return handleSuccess(res);
       }
+    } else {
+      return handleSuccess(res);
     }
-    return handleSuccess(res);
   } catch (err) {
     return handleError(res, err);
   }
@@ -215,6 +221,8 @@ router.post("/register/oauth", (req, res) => {
  */
 router.post("/login/password", async (req, res) => {
   try {
+    let ip = getClientIP(req);
+    let geo = getClientPos(ip);
     let account = req.body.account;
     let encryptPassword = req.body.password;
     let password = decrypt(encryptPassword, account.substr(0, CRYPTO.LENGTH));
@@ -234,6 +242,8 @@ router.post("/login/password", async (req, res) => {
  */
 router.post("/login/sms", async (req, res) => {
   try {
+    let ip = getClientIP(req);
+    let geo = getClientPos(ip);
     let account = req.body.account;
     let code = req.body.code;
     if (!isEmailOrPhone(account))

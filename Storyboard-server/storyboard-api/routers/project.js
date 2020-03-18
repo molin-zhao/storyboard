@@ -1,22 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const { verifyAuthorization, verifyUser } = require("../../authenticate");
-const { ERROR, handleError, handleSuccess } = require("../../response");
+const { handleError, handleSuccess } = require("../../response");
 const { COLORS } = require("../../config/project.config");
 const { generateRandomColor } = require("../../utils");
 const Project = require("../../models/Project");
-const Phase = require("../../models/Phase");
-const Group = require("../../models/Group");
-const Task = require("../../models/Task");
 
 /**
  * get user projects
  */
-router.get("/", verifyAuthorization, async (req, res) => {
+router.get("/", verifyAuthorization, verifyUser, async (req, res) => {
   try {
-    let reqId = req.query.id;
-    let tokenId = req.user._id;
-    if (reqId !== tokenId) throw new Error(ERROR.USER_UNSPECIFIED);
     const userProjs = await Project.fetchUserProjects(reqId);
     return handleSuccess(res, userProjs);
   } catch (err) {
@@ -28,58 +22,111 @@ router.get("/", verifyAuthorization, async (req, res) => {
  * create a project
  */
 router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
-  let reqUserId = req.body.user;
-  let members = req.body.members;
-  let name = req.body.name;
-  let description = req.body.description;
-  let color = generateRandomColor(COLORS);
-  let mongoose = req.app.locals.mongoose;
-  const session = await mongoose.startSession();
   try {
-    await session.startTransaction();
+    let reqUserId = req.body.user;
+    let members = req.body.members;
+    let name = req.body.name;
+    let description = req.body.description;
+    let color = generateRandomColor(COLORS);
     let newProject = new Project({
       creator: reqUserId,
       name,
       description,
-      members
+      members,
+      phases: [
+        {
+          name: "",
+          description: "",
+          groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }]
+        }
+      ]
     });
     let project = await newProject.save();
-    let newPhase = new Phase({
-      project_id: project._id,
-      name: "",
-      description: ""
-    });
-    let phase = await newPhase.save();
-    let newGroup = new Group({
-      phase_id: phase._id,
-      name: "",
-      color
-    });
-    let group = await newGroup.save();
-    let newTask = new Task({
-      group_id: group._id
-    });
-    let task = newTask.save();
-    let data = Project.assembleProject(project, phase, group, task);
-    await session.commitTransaction();
-    return handleSuccess(res, data);
+    return handleSuccess(res, project);
   } catch (err) {
-    await session.abortTransaction();
     return handleError(res, err);
-  } finally {
-    session.endSession();
   }
 });
 
+router.delete("/delete", verifyAuthorization, verifyUser, async (req, res) => {
+  try {
+    let projectId = req.query.id;
+    const deleteProjectRes = await Project.deleteOne({ _id: projectId });
+    return handleSuccess(res, deleteProjectRes);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
 /**
  * create a phase
  */
-router.post("/phase/create", verifyAuthorization, async (req, res) => {});
+router.post(
+  "/phase/create",
+  verifyAuthorization,
+  verifyUser,
+  async (req, res) => {
+    try {
+      let name = req.body.name;
+      let description = req.body.description;
+      let projectId = req.body.projectId;
+      let color = generateRandomColor(COLORS);
+      let newPhase = {
+        name,
+        description,
+        groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }]
+      };
+      const createRes = await Project.createPhase(projectId, newPhase);
+      return handleSuccess(res, createRes);
+    } catch (err) {
+      return handleError(res, err);
+    }
+  }
+);
+
+/**
+ * create a group
+ */
+
+router.post(
+  "/group/create",
+  verifyAuthorization,
+  verifyUser,
+  async (req, res) => {
+    try {
+      let name = req.body.name;
+      let phaseId = req.body.phaseId;
+      let color = generateRandomColor(COLORS);
+      let newGroup = {
+        name,
+        color,
+        tasks: [{ name: "", members: [] }]
+      };
+      const createRes = await Project.createTask(phaseId, newGroup);
+      return handleSuccess(res, createRes);
+    } catch (err) {
+      return handleError(res, err);
+    }
+  }
+);
 
 /**
  * create a task
  */
-
-router.post("/task/create", verifyAuthorization, async (req, res) => {});
+router.post(
+  "/task/create",
+  verifyAuthorization,
+  verifyUser,
+  async (req, res) => {
+    try {
+      let name = req.body.name;
+      let groupId = req.body.groupId;
+      let newTask = { name };
+      const createRes = await Project.createTask(groupId, newTask);
+      return handleSuccess(res, createRes);
+    } catch (err) {
+      return handleError(res, err);
+    }
+  }
+);
 
 module.exports = router;
