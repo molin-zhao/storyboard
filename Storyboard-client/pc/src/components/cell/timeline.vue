@@ -30,8 +30,8 @@
         <div class="datepicker-header"></div>
         <div class="datepicker-body">
           <datepicker
-            :start="timeline.start_date"
-            :end="timeline.due_date"
+            :start="startDate"
+            :end="dueDate"
             :select-period="true"
             @select-date="selectDate"
             @select-timeline="selectTimeline(arguments)"
@@ -84,13 +84,13 @@ export default {
       type: [Number, String],
       default: 0
     },
-    timeline: {
-      type: Object,
-      required: true,
-      default: () => ({
-        start_date: NOW_ISO,
-        due_date: NOW_ISO
-      })
+    startDate: {
+      type: String,
+      default: NOW_ISO
+    },
+    dueDate: {
+      type: String,
+      default: NOW_ISO
     }
   },
   mounted() {
@@ -126,15 +126,15 @@ export default {
       return false;
     },
     computedTitle() {
-      const { start_date, due_date } = this.timeline;
+      const { startDate, dueDate } = this;
       const { month_name } = this;
-      let start = parseISODate(start_date);
+      let start = parseISODate(startDate);
       let startMonthIndex = start.getMonth();
-      let startDate = start.getDate();
-      let end = parseISODate(due_date);
+      let beginDate = start.getDate();
+      let end = parseISODate(dueDate);
       let endMonthIndex = end.getMonth();
       let endDate = end.getDate();
-      let startTimeStr = `${this.$t(month_name[startMonthIndex])} ${startDate}`;
+      let startTimeStr = `${this.$t(month_name[startMonthIndex])} ${beginDate}`;
       let endTimeStr = `${this.$t(month_name[endMonthIndex])} ${endDate}`;
       return `${startTimeStr} - ${endTimeStr}`;
     }

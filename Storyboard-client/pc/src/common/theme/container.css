@@ -14,6 +14,15 @@
   user-select: none;
 }
 
+.create-btn {
+  height: 30px;
+  width: 70px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .group-color {
   height: 100%;
   width: 4px;

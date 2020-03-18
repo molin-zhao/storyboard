@@ -3,12 +3,12 @@
     <div class="phase-nav">
       <div
         class="nav-link display-only"
-        v-for="(item, index) in projects[projectId].phases"
+        v-for="(item, index) in projects[projectIndex].phases"
         :key="item._id"
         :style="navActiveStyle(index)"
         @click="selectPhase(index)"
       >
-        <span>{{ item.name }}</span>
+        <span>{{ computedPhaseName(item.name) }}</span>
       </div>
       <div class="nav-link" style="padding: 0">
         <icon name="add" style="width: 25px; height: 25px; color: grey" />
@@ -16,13 +16,18 @@
     </div>
     <div class="phase-body">
       <task-group
-        v-for="item in projects[projectId].phases[selectedPhase].tasks"
+        v-for="item in projects[projectIndex].phases[selectedPhase].groups"
         :key="item._id"
-        :project-id="projectId"
-        :phase-id="selectedPhase"
+        :project-index="projectIndex"
+        :phase-index="selectedPhase"
         :task-group-id="item._id"
         :item="item"
       ></task-group>
+    </div>
+
+    <!-- create phase modal -->
+    <div id="modal-create-phase" class="modal fade" role="dialog">
+      <create-phase-form :project-id="projectId" ref="create-phase-form" />
     </div>
   </div>
 </template>
@@ -30,13 +35,13 @@
 <script>
 import waveBtn from "@/components/waveBtn";
 import taskGroup from "@/components/taskGroup";
-import test from "@/components/test";
+import createPhaseForm from "@/components/form/createPhase";
 import { mapState, mapActions } from "vuex";
 export default {
   components: {
     waveBtn,
     taskGroup,
-    test
+    createPhaseForm
   },
   data() {
     return {
@@ -44,11 +49,21 @@ export default {
     };
   },
   props: {
-    projectId: {
+    projectIndex: {
       type: Number,
       required: true,
       default: 0
+    },
+    projectId: {
+      type: String,
+      required: true
     }
+  },
+  mounted() {
+    $("#modal-create-phase").on("hidden.bs.modal", () => {
+      let form = this.$refs["create-phase-form"];
+      if (form) form.resetForm();
+    });
   },
   computed: {
     ...mapState("project", ["projects"]),
@@ -57,6 +72,12 @@ export default {
         return index === this.selectedPhase
           ? "background-color: gainsboro"
           : "background-color: white";
+      };
+    },
+    computedPhaseName() {
+      return function(name) {
+        if (name) return name;
+        return this.$t("UNTITLE_PHASE");
       };
     }
   },

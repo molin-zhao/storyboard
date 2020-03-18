@@ -89,7 +89,7 @@ router.beforeEach(async (to, from, next) => {
         store.dispatch("user/delete_credential");
         return next({ name: "login" });
       } else {
-        return next({ path: "/" });
+        return next();
       }
     }
   }

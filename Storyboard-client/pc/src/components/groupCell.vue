@@ -13,18 +13,23 @@
       <status :status="task.status" :editable="true" :index="task.id" />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_MEMBER')">
-      <member :member="task.member" />
+      <member :member="task.members" />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_PRIORITY')">
       <priority :priority="task.priority" :editable="true" />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_TIMELINE')">
-      <timeline :timeline="task.timeline" :editable="true" />
+      <timeline
+        :start-date="task.start_date"
+        :due-date="task.due_date"
+        :editable="true"
+      />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_PROGRESS')">
       <task-progress
         :task-status="task.status"
-        :timeline="task.timeline"
+        :start-date="task.start_date"
+        :due-date="task.due_date"
         :editable="true"
       />
     </div>

@@ -23,6 +23,10 @@ export default {
   EN_US: "English-US",
   ZH_CN: "Chinese-China(Mainland)",
   PROJECTS: "My project(s):",
+
+  UNTITLE_PHASE: "Untitled phase",
+  UNTITLE_GROUP: "Untitled group",
+
   NEW_PROJECT: "New project",
   CREATE: "Create",
   DONE: "Done!",
@@ -103,7 +107,10 @@ export default {
   MAIN_EDIT_SETTING: "change system settings",
 
   PROJECT_NAME: "Project name:",
+  PHASE_NAME: "Phase name:",
+  PHASE_DESCRIPTION: "Phase description:",
   PROJECT_DESCRIPTION: "Project description:",
+  PHASE_DESCRIPTION: "Phase description",
   PROJECT_MEMBERS: "Project members:",
   SEARCH_ADD: "Search a user",
   TEAM_ADD: "Add from a team",
@@ -131,6 +138,7 @@ export default {
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",
   CREATE_PROJECT: "Create new project",
+  CREATE_PHASE: "Create new phase",
 
   // errors
   SMS_ERROR: "Cannot temporarily get the SMS code.",

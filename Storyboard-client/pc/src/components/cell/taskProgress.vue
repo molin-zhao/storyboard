@@ -20,13 +20,13 @@ export default {
     };
   },
   props: {
-    timeline: {
-      type: Object,
-      required: true,
-      default: () => ({
-        start_date: NOW_ISO,
-        due_date: NOW_ISO
-      })
+    startDate: {
+      type: String,
+      default: NOW_ISO
+    },
+    dueDate: {
+      type: String,
+      default: NOW_ISO
     },
     taskStatus: {
       type: String,
@@ -35,11 +35,11 @@ export default {
   },
   computed: {
     computedProgress() {
-      const { start_date, due_date } = this.timeline;
+      const { startDate, dueDate } = this;
       const { taskStatus } = this;
       if (taskStatus === "done") return this.$t("PROGRESS_DONE");
-      let startTimestamp = getTimestampFromISODate(start_date);
-      let dueTimestamp = getTimestampFromISODate(due_date);
+      let startTimestamp = getTimestampFromISODate(startDate);
+      let dueTimestamp = getTimestampFromISODate(dueDate);
       let nowTimestamp = getTimestampFromDate(new Date());
 
       /**

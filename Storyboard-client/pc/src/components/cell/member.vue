@@ -13,9 +13,9 @@
 <script>
 export default {
   props: {
-    member: {
+    members: {
       type: Array,
-      default: []
+      default: () => []
     },
     displayNumber: {
       type: Number,
@@ -24,15 +24,14 @@ export default {
   },
   computed: {
     computedMember() {
-      if (this.member.length > this.displayNumber) {
-        return this.member.slice(0, this.displayNumber);
-      } else {
-        return this.member;
-      }
+      const { members, displayNumber } = this;
+      if (members.length > displayNumber)
+        return members.slice(0, displayNumber);
+      return members;
     },
     computedStyle() {
       return function(index) {
-        let length = this.member.length;
+        let length = this.members.length;
         let zIndex = `z-index: ${length - index}`;
         if (index > 0) {
           return `${zIndex}; margin-left: -10px`;

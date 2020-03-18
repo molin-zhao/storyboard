@@ -7,5 +7,5 @@ module.exports = merge(prodEnv, {
   API_HOST: '"http://localhost:3000"',
   PASSPORT_HOST: '"http://localhost:3030"',
   DFS_HOST: '"http://localhost:3020"',
-  SOCKER_HOST: '"http://localhost:3010"'
+  SOCKET_HOST: '"http://localhost:3010"'
 });

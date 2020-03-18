@@ -6,7 +6,7 @@
           {{ $t("CREATE_PROJECT") }}
         </h5>
         <a
-          style="font-size: 20px"
+          style="font-size: 20px; cursor: pointer"
           class="display-only"
           aria-hidden="true"
           aria-label="Close"
@@ -30,6 +30,7 @@
                 :style="computedProjectNameStyle(projectNameError)"
                 v-model="projectName"
                 :placeholder="$t('REQUIRED')"
+                @input="nameOnInput($event)"
               />
             </div>
             <span class="form-text text-danger error-text">{{
@@ -165,11 +166,7 @@
         <button
           :disabled="computedCreateBtnDisabled"
           type="submit"
-          :class="
-            `btn btn-sm btn-${
-              projectCreateStatus === 'done' ? 'success' : 'primary'
-            } create-btn`
-          "
+          :class="computedCreateBtnClass"
           @click.stop="createNewProject"
         >
           <span
@@ -193,9 +190,10 @@ import searchInput from "@/components/searchInput";
 import userAddDeleteCell from "@/components/userAddDeleteCell";
 import avatar from "@/components/avatar";
 import vueScroll from "vuescroll";
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 import { parser } from "@/common/utils/array";
 import { sliceFromLeft } from "@/common/utils/string";
+import * as URL from "@/common/utils/url";
 export default {
   components: {
     searchInput,
@@ -231,7 +229,7 @@ export default {
   },
   computed: {
     ...mapState("team", ["teams"]),
-    ...mapState("user", ["id"]),
+    ...mapState("user", ["id", "token"]),
     computedSearchUrl() {
       return process.env.API_HOST + "/user/search";
     },
@@ -278,9 +276,18 @@ export default {
         // max length 10
         return sliceFromLeft(item.username, 10);
       };
+    },
+    computedCreateBtnClass() {
+      const { projectCreateStatus } = this;
+      return `btn btn-sm btn-${
+        projectCreateStatus === "done" ? "success" : "primary"
+      } create-btn`;
     }
   },
   methods: {
+    ...mapMutations({
+      add_projects: "project/add_projects"
+    }),
     formCheck() {
       if (!this.projectName) {
         this.projectNameError = this.$t("REQUIRED_FIELD");
@@ -298,10 +305,11 @@ export default {
       };
     },
     resetForm() {
-      (this.projectName = ""),
-        (this.projectDescription = ""),
-        (this.projectMembers = []),
-        (this.projectCreateStatus = "todo");
+      this.projectName = "";
+      this.projectDescription = "";
+      this.projectNameError = "";
+      this.projectMembers = [];
+      this.projectCreateStatus = "todo";
     },
     addMemberMethodSelect(e) {
       this.addMemberMethod = e.target.selectedIndex;
@@ -334,12 +342,9 @@ export default {
     },
     async createNewProject() {
       try {
-        let createProjectFormEle = this.$refs["create-project-form"];
-        if (!createProjectFormEle) return;
-        let valid = createProjectFormEle.formCheck();
-        if (!valid) return;
+        if (!this.formCheck()) return;
         this.projectCreateStatus = "doing";
-        let formData = createProjectFormEle.formData();
+        let formData = this.formData();
         let url = URL.POST_CREATE_PROJECT();
         const createRes = await this.$http.post(url, formData, {
           emulateJSON: true
@@ -350,13 +355,15 @@ export default {
       } catch (err) {
         this.projectCreateStatus = "todo";
       }
+    },
+    nameOnInput(e) {
+      this.projectNameError = "";
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "../../common/theme/container.css";
 .wrapper {
   height: 100%;
   width: 100%;

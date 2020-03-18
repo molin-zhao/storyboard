@@ -159,6 +159,7 @@ import { eventBus } from "@/common/utils/eventBus";
 import { bell } from "@/common/theme/icon";
 import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave } from "@/common/utils/mouse";
+import { createSocketConnection } from "@/common/utils/socket";
 export default {
   components: {
     badgeIcon,
@@ -202,8 +203,8 @@ export default {
     try {
       this.storyboardLoading = true;
       const info = await this.fetchInfo();
-      this.add_projects(info.projects);
-      this.add_teams(info.teams);
+      this.reload_projects(info.projects);
+      this.reload_teams(info.teams);
       this.add_userinfo(info.user);
       this.save_userinfo(info.user);
       $("#modal-create-project").on("hidden.bs.modal", () => {
@@ -223,8 +224,8 @@ export default {
       remove_userinfo: "user/remove_userinfo"
     }),
     ...mapMutations({
-      add_projects: "project/add_projects",
-      add_teams: "team/add_teams",
+      reload_projects: "project/reload_projects",
+      reload_teams: "team/reload_teams",
       add_userinfo: "user/add_userinfo"
     }),
     mouseover,
@@ -250,7 +251,7 @@ export default {
       try {
         this.reloading = true;
         const info = await this.fetchInfo();
-        this.add_projects(info.projects);
+        this.reload_projects(info.projects);
         this.add_teams(info.teams);
         this.add_userinfo(info.user);
         this.save_userinfo(info.user);
@@ -409,15 +410,6 @@ export default {
 }
 #create-project-btn:active {
   background-color: whitesmoke;
-}
-.create-btn {
-  height: 30px;
-  width: 70px;
-  border-radius: 30px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 .list-group-item:active {
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);

@@ -1,5 +1,6 @@
 const state = {
-  projects: []
+  projects: [],
+  logs: []
 };
 
 const getters = {};
@@ -10,6 +11,12 @@ const mutations = {
   },
   reload_projects(state, payload) {
     state.projects = payload;
+  },
+  add_log(state, payload) {
+    state.logs = state.logs.concat(payload);
+  },
+  remove_log(state, payload) {
+    state.logs = state.logs.filter(log => log.id !== payload.id);
   }
 };
 

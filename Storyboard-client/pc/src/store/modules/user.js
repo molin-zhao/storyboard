@@ -1,8 +1,9 @@
 import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
 import { encrypt } from "@/common/utils/form";
+
 const state = {
-  id: null,
-  token: null,
+  id: "",
+  token: "",
   socket: null,
   avatar: "",
   username: "",
@@ -60,6 +61,12 @@ const mutations = {
     state.gender = "m";
     state.email = "";
     state.phone = "";
+  },
+  add_socket(state, payload) {
+    state.socket = payload;
+  },
+  remove_socket(state) {
+    state.socket = null;
   }
 };
 

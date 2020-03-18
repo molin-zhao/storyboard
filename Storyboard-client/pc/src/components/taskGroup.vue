@@ -52,8 +52,8 @@
           />
         </transition-group>
         <group-row
-          v-for="taskItem in item.task"
-          :key="taskItem.id"
+          v-for="taskItem in item.tasks"
+          :key="taskItem._id"
           class="group-cell"
         >
           <group-cell
@@ -127,12 +127,12 @@ export default {
     }
   },
   props: {
-    projectId: {
+    projectIndex: {
       type: [Number, String],
       required: true,
       default: 0
     },
-    phaseId: {
+    phaseIndex: {
       type: [Number, String],
       required: true,
       default: 0

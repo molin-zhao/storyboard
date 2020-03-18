@@ -4,5 +4,5 @@ module.exports = {
   API_HOST: '"http://api.storyboard.cokewise.com"',
   PASSPORT_HOST: '"http://passport.storyboard.cokewise.com"',
   DFS_HOST: '"http://dfs.storyboard.cokewise.com"',
-  SOCKER_HOST: '"http://socker.storyboard.cokewise.com"'
+  SOCKET_HOST: '"http://socker.storyboard.cokewise.com"'
 };

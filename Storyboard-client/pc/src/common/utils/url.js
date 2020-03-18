@@ -38,6 +38,18 @@ export const POST_CREATE_PROJECT = () => {
   return API_HOST + "/project/create";
 };
 
+export const POST_CREATE_PHASE = () => {
+  return API_HOST + "/project/phase/create";
+};
+
+export const POST_CREATE_GROUP = () => {
+  return API_HOST + "/project/group/create";
+};
+
+export const POST_CREATE_TASK = () => {
+  return API_HOST + "/project/task/create";
+};
+
 export const GET_USER_STORYBOARD = id => {
   return API_HOST + `/user/storyboard?user=${id}`;
 };
@@ -48,4 +60,8 @@ export const GET_VERIFY_TOKEN = token => {
 
 export const GET_LOGOUT = id => {
   return PASSPORT_HOST + `/user/logout?user=${id}`;
+};
+
+export const CONNECT_SOCKET = () => {
+  return SOCKET_HOST;
 };

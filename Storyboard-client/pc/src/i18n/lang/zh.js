@@ -24,6 +24,10 @@ export default {
   ZH_CN: "中文-简体",
   PROJECTS: "我的项目:",
   NEW_PROJECT: "新建项目",
+
+  UNTITLE_PHASE: "未命名阶段",
+  UNTITLE_GROUP: "未命名任务组",
+
   CREATE: "创建",
   DONE: "完成!",
   ONLINE_MEMBER: "在线成员",
@@ -103,7 +107,10 @@ export default {
   MAIN_EDIT_SETTING: "更改系统偏好设置",
 
   PROJECT_NAME: "项目名称：",
+  PHASE_NAME: "阶段名称：",
+  PHASE_DESCRIPTION: "阶段描述：",
   PROJECT_DESCRIPTION: "项目描述：",
+  PHASE_DESCRIPTION: "阶段描述：",
   PROJECT_MEMBERS: "项目成员：",
   SEARCH_ADD: "搜索添加",
   TEAM_ADD: "从工作组添加",
@@ -131,6 +138,7 @@ export default {
   ADD_DESCRIPTION: "添加描述...",
   ADD_TASK: "添加任务...",
   CREATE_PROJECT: "创建新项目",
+  CREATE_PHASE: "创建新阶段",
 
   // errors
   SMS_ERROR: "暂时无法获得验证码信息",

@@ -41,7 +41,7 @@
         />
       </div>
       <div class="mainboard-phases">
-        <phase :project-id="index" />
+        <phase :project-index="index" :project-id="projects[index]._id" />
       </div>
     </div>
     <div v-else class="mainboard">
