@@ -41,6 +41,7 @@ body {
   font-family: kai;
   min-width: 1024px;
   min-height: 600px;
+  position: relative;
 }
 #app::-webkit-scrollbar {
   display: none;

@@ -25,13 +25,13 @@
         <div class="group-color" :style="`background-color: ${item.color}`" />
         <span :style="`color: ${item.color}`">{{ item.name }}</span>
         <span style="position: absolute; right: 5px">{{
-          $t("TASK_NUMBER", { number: item.task.length })
+          $t("TASK_NUMBER", { number: item.tasks.length })
         }}</span>
       </div>
     </div>
     <div
       class="collapse show"
-      :id="`collapseTask-${taskGroupId}`"
+      :id="`collapseTask-${groupId}`"
       style="width: 100%"
     >
       <div class="group-body">
@@ -62,6 +62,8 @@
             :title="title"
             :task="taskItem"
             :color="item.color"
+            :phase-index="phaseIndex"
+            :group-id="groupId"
             style="border-right: 1px solid white;"
           />
         </group-row>
@@ -98,7 +100,7 @@ export default {
     addTask
   },
   computed: {
-    ...mapState("user", ["projects"]),
+    ...mapState("user", ["projects", "activeIndex"]),
     computedTitleStyle() {
       const { index, title } = this;
       return `height: 100%; background-color: white; ${
@@ -127,20 +129,13 @@ export default {
     }
   },
   props: {
-    projectIndex: {
-      type: [Number, String],
-      required: true,
-      default: 0
-    },
     phaseIndex: {
-      type: [Number, String],
-      required: true,
-      default: 0
+      type: Number,
+      required: true
     },
-    taskGroupId: {
-      type: [Number, String],
-      required: true,
-      default: 0
+    groupId: {
+      type: String,
+      required: true
     },
     item: {
       type: Object
@@ -238,10 +233,11 @@ export default {
       if (this.titleResizing) this.titleResizing = false;
     },
     collapseGroup() {
+      const { groupId } = this;
       if (this.collapsed) {
-        $(`#collapseTask-${this.taskGroupId}`).collapse("show");
+        $(`#collapseTask-${groupId}`).collapse("show");
       } else {
-        $(`#collapseTask-${this.taskGroupId}`).collapse("hide");
+        $(`#collapseTask-${groupId}`).collapse("hide");
       }
       this.collapsed = !this.collapsed;
     },

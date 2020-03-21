@@ -16,7 +16,7 @@
       <tooltip
         content-style="
         width: 300px; 
-        height: 450px; 
+        height: 420px; 
         border-radius: 5px; 
         box-shadow: -5px 2px 5px lightgrey; 
         -webkit-box-shadow: -5px 2px 5px lightgrey;
@@ -27,19 +27,49 @@
         background-color="white"
         border-color="whitesmoke"
       >
-        <div class="datepicker-header"></div>
+        <div class="datepicker-header">
+          <span style="font-size: 18px">{{ $t("EDIT_DATE") }}</span>
+          <icon name="refresh" class="refresh-btn" @click.native.stop="clear" />
+          <div
+            style="
+            width: 90%; 
+            height: 1px; 
+            background-color: gainsboro;
+            position: absolute;
+            bottom: 0;
+            "
+          ></div>
+        </div>
         <div class="datepicker-body">
           <datepicker
-            :start="startDate"
-            :end="dueDate"
+            :init="projects[activeIndex].createdAt"
+            :start="computedStart"
+            :end="computedDue"
             :select-period="true"
-            @select-date="selectDate"
             @select-timeline="selectTimeline(arguments)"
             @select-start="selectStart"
             @select-end="selectEnd"
           />
         </div>
-        <div class="datepicker-footer"></div>
+        <div class="datepicker-footer">
+          <div
+            style="
+            width: 90%; 
+            height: 1px; 
+            background-color: gainsboro;
+            position: absolute;
+            top: 0;
+            "
+          ></div>
+          <div class="footer-btns">
+            <button @click="cancel" class="btn btn-sm btn-danger">
+              {{ $t("CANCEL") }}
+            </button>
+            <button @click.stop="confirm" class="btn btn-sm btn-primary">
+              {{ $t("CONFIRM") }}
+            </button>
+          </div>
+        </div>
       </tooltip>
     </popover>
   </div>
@@ -53,6 +83,8 @@ import datepicker from "@/components/datepicker";
 import { eventBus } from "@/common/utils/eventBus";
 import { mouseclick, hide } from "@/common/utils/mouse";
 import { NOW_ISO, parseISODate } from "@/common/utils/date";
+import { mapState, mapMutations } from "vuex";
+import { getTaskLog } from "@/common/utils/log";
 export default {
   components: {
     waveBtn,
@@ -63,6 +95,8 @@ export default {
   data() {
     return {
       hover: false,
+      selectedStartDate: "",
+      selectedEndDate: "",
       month_name: [
         "JAN",
         "FEB",
@@ -86,11 +120,23 @@ export default {
     },
     startDate: {
       type: String,
-      default: NOW_ISO
+      default: ""
     },
     dueDate: {
       type: String,
-      default: NOW_ISO
+      default: ""
+    },
+    groupId: {
+      type: String,
+      required: true
+    },
+    phaseIndex: {
+      type: Number,
+      required: true
+    },
+    taskId: {
+      type: String,
+      required: true
     }
   },
   mounted() {
@@ -101,23 +147,91 @@ export default {
   methods: {
     mouseclick,
     hide,
+    ...mapMutations({
+      add_log: "project/add_log",
+      remove_log: "project/remove_log"
+    }),
     mouseenter() {
       if (!this.hover) this.hover = true;
     },
     mouseleave() {
       if (this.hover) this.hover = false;
     },
-    selectDate(iso) {
-      console.log(iso);
-    },
     selectTimeline(args) {
-      console.log(`start ${args[0]}`);
-      console.log(`due ${args[1]}`);
+      this.selectedStartDate = args[0];
+      this.selectedEndDate = args[1];
     },
-    selectStart(iso) {},
-    selectEnd(iso) {}
+    selectStart(iso) {
+      this.selectedStartDate = iso;
+    },
+    selectEnd(iso) {
+      this.selectedEndDate = iso;
+    },
+    clear() {
+      this.selectedStartDate = null;
+      this.selectedEndDate = null;
+    },
+    cancel() {
+      console.log("cancel");
+    },
+    confirm() {
+      const {
+        startDate,
+        dueDate,
+        projects,
+        activeIndex,
+        groupId,
+        taskId,
+        phaseIndex,
+        selectedStartDate,
+        selectedEndDate
+      } = this;
+      let projectId = projects[activeIndex]._id;
+      let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+      let modifiedSelectedStartDate =
+        selectedStartDate === null ? "" : selectedStartDate;
+      let modifiedSelectedEndDate =
+        selectedEndDate === null ? "" : selectedEndDate;
+      if (startDate !== modifiedSelectedStartDate) {
+        this.add_log({
+          projectId,
+          phaseId,
+          groupId,
+          taskId,
+          field: "start_date",
+          value: selectedStartDate
+        });
+      } else {
+        this.remove_log({
+          projectId,
+          phaseId,
+          groupId,
+          taskId,
+          field: "start_date"
+        });
+      }
+      if (dueDate !== modifiedSelectedEndDate) {
+        this.add_log({
+          projectId,
+          phaseId,
+          groupId,
+          taskId,
+          field: "due_date",
+          value: selectedEndDate
+        });
+      } else {
+        this.remove_log({
+          projectId,
+          phaseId,
+          groupId,
+          taskId,
+          field: "due_date"
+        });
+      }
+    }
   },
   computed: {
+    ...mapState("project", ["projects", "activeIndex", "logs"]),
     isHover() {
       const popover = this.$refs["timeline-popover"];
       if (this.hover || (popover && popover.visible)) {
@@ -126,17 +240,110 @@ export default {
       return false;
     },
     computedTitle() {
-      const { startDate, dueDate } = this;
-      const { month_name } = this;
-      let start = parseISODate(startDate);
-      let startMonthIndex = start.getMonth();
-      let beginDate = start.getDate();
-      let end = parseISODate(dueDate);
-      let endMonthIndex = end.getMonth();
-      let endDate = end.getDate();
-      let startTimeStr = `${this.$t(month_name[startMonthIndex])} ${beginDate}`;
-      let endTimeStr = `${this.$t(month_name[endMonthIndex])} ${endDate}`;
+      const {
+        startDate,
+        dueDate,
+        month_name,
+        projects,
+        activeIndex,
+        phaseIndex,
+        groupId,
+        taskId,
+        logs,
+        selectedStartDate,
+        selectedEndDate
+      } = this;
+      let startTimeStr = this.$t("TITLE_INITDATE");
+      let endTimeStr = this.$t("TITLE_DUEDATE");
+      let cprojId = projects[activeIndex]._id;
+      let cphaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+      let logStart = getTaskLog(
+        logs,
+        cprojId,
+        cphaseId,
+        groupId,
+        taskId,
+        "start_date"
+      );
+      let logEnd = getTaskLog(
+        logs,
+        cprojId,
+        cphaseId,
+        groupId,
+        taskId,
+        "due_date"
+      );
+      let startSource =
+        selectedStartDate === null
+          ? ""
+          : selectedStartDate || logStart || startDate;
+      let endSource =
+        selectedEndDate === null ? "" : selectedEndDate || logEnd || dueDate;
+      if (startSource) {
+        let start = parseISODate(startSource);
+        let startMonthIndex = start.getMonth();
+        let beginDate = start.getDate();
+        startTimeStr = `${this.$t(month_name[startMonthIndex])} ${beginDate}`;
+      }
+      if (endSource) {
+        let end = parseISODate(endSource);
+        let endMonthIndex = end.getMonth();
+        let endDate = end.getDate();
+        endTimeStr = `${this.$t(month_name[endMonthIndex])} ${endDate}`;
+      }
       return `${startTimeStr} - ${endTimeStr}`;
+    },
+    computedStart() {
+      const {
+        projects,
+        selectedStartDate,
+        activeIndex,
+        logs,
+        phaseIndex,
+        groupId,
+        taskId,
+        startDate,
+        dueDate
+      } = this;
+      if (selectedStartDate === null) return "";
+      if (selectedStartDate) return selectedStartDate;
+      let cprojId = projects[activeIndex]._id;
+      let cphaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+      let logStart = getTaskLog(
+        logs,
+        cprojId,
+        cphaseId,
+        groupId,
+        taskId,
+        "start_date"
+      );
+      return logStart ? logStart : startDate;
+    },
+    computedDue() {
+      const {
+        projects,
+        selectedEndDate,
+        activeIndex,
+        logs,
+        phaseIndex,
+        groupId,
+        taskId,
+        startDate,
+        dueDate
+      } = this;
+      if (selectedEndDate === null) return "";
+      if (selectedEndDate) return selectedEndDate;
+      let cprojId = projects[activeIndex]._id;
+      let cphaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+      let logDue = getTaskLog(
+        logs,
+        cprojId,
+        cphaseId,
+        groupId,
+        taskId,
+        "due_date"
+      );
+      return logDue ? logDue : dueDate;
     }
   }
 };
@@ -150,6 +357,7 @@ export default {
   align-items: center;
   width: 100%;
   height: 100%;
+  background-color: whitesmoke;
   position: relative;
 }
 .timeline-wrapper-hover {
@@ -171,7 +379,11 @@ export default {
 .datepicker-header {
   height: 15%;
   width: 100%;
-  background-color: lightblue;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 .datepicker-body {
   height: 70%;
@@ -180,11 +392,32 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: relative;
 }
 .datepicker-footer {
   height: 15%;
   width: 100%;
-  background-color: lightblue;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  .footer-btns {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+  }
+}
+
+.refresh-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 20px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }
 </style>

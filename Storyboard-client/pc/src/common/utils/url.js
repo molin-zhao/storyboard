@@ -65,3 +65,7 @@ export const GET_LOGOUT = id => {
 export const CONNECT_SOCKET = () => {
   return SOCKET_HOST;
 };
+
+export const POST_SEARCH_USER = () => {
+  return API_HOST + "/user/search";
+};

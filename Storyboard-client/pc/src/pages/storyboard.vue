@@ -18,8 +18,7 @@
             badge-class="badge-danger"
             :icon-name="bell.iconName"
             :number="90"
-            @mouseover.native="mouseover('bell')"
-            @mouseleave.native="mouseleave('bell')"
+            @click.native="mouseclick('sidebar', $event)"
           >
             <popover ref="bell" style="left: 6vw; bottom: 0">
               <tooltip
@@ -86,8 +85,13 @@
                 v-for="(item, index) in projects"
                 :key="index"
                 :class="projectLabel(index)"
-                >{{ item.name }}</a
-              >
+                >{{ item.name
+                }}<span
+                  v-if="isEdited(logs[item._id])"
+                  class="editing-badge"
+                  :style="computedProjectEditedStyle(index)"
+                ></span
+              ></a>
             </div>
             <a
               id="create-project-btn"
@@ -114,7 +118,7 @@
 
       <!-- storyboard -->
       <div v-if="errorCode === -1" class="storyboard">
-        <mainboard :index="projectSelectedIndex" />
+        <mainboard />
         <router-view></router-view>
       </div>
       <div v-else class="storyboard">
@@ -141,9 +145,21 @@
     </div>
 
     <!-- modals -->
-    <div id="modal-create-project" class="modal fade" role="dialog">
-      <createProjectForm ref="create-project-form" />
-    </div>
+    <createProjectForm />
+
+    <!-- sidebar -->
+    <sidebar
+      ref="sidebar"
+      class="shadow"
+      sidebarStyle="
+      height: 100vh; 
+      width: 25vw; 
+      right: -5px; 
+      top: 0;
+      "
+    >
+      <div class="sidebar-content"></div>
+    </sidebar>
   </div>
 </template>
 
@@ -154,12 +170,14 @@ import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import mainboard from "@/components/mainboard";
 import createProjectForm from "@/components/form/createProject";
+import sidebar from "@/components/sidebar";
 import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
 import { bell } from "@/common/theme/icon";
 import { mapState, mapMutations, mapActions } from "vuex";
-import { mouseover, mouseleave } from "@/common/utils/mouse";
+import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
 import { createSocketConnection } from "@/common/utils/socket";
+import { isEdited } from "@/common/utils/log";
 export default {
   components: {
     badgeIcon,
@@ -167,13 +185,13 @@ export default {
     popover,
     mainboard,
     tooltip,
-    createProjectForm
+    createProjectForm,
+    sidebar
   },
   data() {
     return {
       storyboardLoading: false,
       reloading: false,
-      projectSelectedIndex: 0,
       bell,
       errorCode: -1
     };
@@ -188,14 +206,21 @@ export default {
       "phone",
       "email"
     ]),
-    ...mapState("project", ["projects"]),
+    ...mapState("project", ["projects", "activeIndex", "logs"]),
     ...mapState("team", ["teams"]),
     projectLabel() {
       return function(index) {
-        if (index === this.projectSelectedIndex) {
+        if (index === this.activeIndex) {
           return "list-group-item list-group-item-primary";
         }
         return "list-group-item list-group-item-action";
+      };
+    },
+    computedProjectEditedStyle() {
+      return function(index) {
+        const { activeIndex } = this;
+        if (index === activeIndex) return "background-color: #6495ed";
+        return "background-color: lightgrey";
       };
     }
   },
@@ -207,10 +232,6 @@ export default {
       this.reload_teams(info.teams);
       this.add_userinfo(info.user);
       this.save_userinfo(info.user);
-      $("#modal-create-project").on("hidden.bs.modal", () => {
-        let form = this.$refs["create-project-form"];
-        if (form) form.resetForm();
-      });
     } catch (err) {
       this.errorCode = err.status;
     } finally {
@@ -225,13 +246,16 @@ export default {
     }),
     ...mapMutations({
       reload_projects: "project/reload_projects",
+      select_index: "project/select_index",
       reload_teams: "team/reload_teams",
       add_userinfo: "user/add_userinfo"
     }),
     mouseover,
     mouseleave,
+    mouseclick,
+    isEdited,
     projectLabelClick(index) {
-      this.projectSelectedIndex = index;
+      this.select_index(index);
     },
     resetVisibleComponents() {
       return eventBus.$emit("reset-visible-component");
@@ -449,5 +473,15 @@ export default {
     -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
     box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   }
+}
+.editing-badge {
+  width: 10px;
+  height: 10px;
+  background-color: green;
+  border-radius: 5px;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 </style>

@@ -1,185 +1,187 @@
 <template>
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title display-only">
-          {{ $t("CREATE_PROJECT") }}
-        </h5>
-        <a
-          style="font-size: 20px; cursor: pointer"
-          class="display-only"
-          aria-hidden="true"
-          aria-label="Close"
-          data-target="#modal-create-project"
-          data-dismiss="modal"
-          >&times;</a
-        >
-      </div>
-      <div class="modal-body">
-        <form style="wrapper">
-          <div class="form-group form-left-centered">
-            <label
-              >{{ $t("PROJECT_NAME")
-              }}<span style="font-size: 12px;color: red">*</span></label
-            >
-            <div class="form-row" style="width: 100%; margin: 0; padding: 0">
-              <input
-                :class="
-                  `form-control ${projectNameError ? 'is-invalid' : null}`
-                "
-                :style="computedProjectNameStyle(projectNameError)"
-                v-model="projectName"
-                :placeholder="$t('REQUIRED')"
-                @input="nameOnInput($event)"
-              />
-            </div>
-            <span class="form-text text-danger error-text">{{
-              projectNameError
-            }}</span>
-          </div>
-          <div class="form-group form-left-centered">
-            <label>{{ $t("PROJECT_DESCRIPTION") }}</label>
-            <textarea
-              class="form-control"
-              rows="3"
-              :placeholder="$t('OPTIONAL')"
-              v-model="projectDescription"
-            ></textarea>
-          </div>
-          <div class="form-group form-left-centered">
-            <label
-              >{{ $t("PROJECT_MEMBERS")
-              }}<span style="color: grey">{{ $t("OPTIONAL") }}</span></label
-            >
-            <div class="select">
-              <div class="method">
-                <select
-                  class="custom-select"
-                  style="width: 100%; height: 90%"
-                  @change.stop="addMemberMethodSelect($event)"
-                >
-                  <option selected>{{ $t("SEARCH_ADD") }}</option>
-                  <option>{{ $t("TEAM_ADD") }}</option>
-                </select>
+  <div id="modal-create-project" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title display-only">
+            {{ $t("CREATE_PROJECT") }}
+          </h5>
+          <a
+            style="font-size: 20px; cursor: pointer"
+            class="display-only"
+            aria-hidden="true"
+            aria-label="Close"
+            data-target="#modal-create-project"
+            data-dismiss="modal"
+            >&times;</a
+          >
+        </div>
+        <div class="modal-body">
+          <form style="wrapper">
+            <div class="form-group form-left-centered">
+              <label
+                >{{ $t("PROJECT_NAME")
+                }}<span style="font-size: 12px;color: red">*</span></label
+              >
+              <div class="form-row" style="width: 100%; margin: 0; padding: 0">
+                <input
+                  :class="
+                    `form-control ${projectNameError ? 'is-invalid' : null}`
+                  "
+                  :style="computedProjectNameStyle(projectNameError)"
+                  v-model="projectName"
+                  :placeholder="$t('REQUIRED')"
+                  @input="nameOnInput($event)"
+                />
               </div>
-              <div class="source">
-                <div
-                  v-if="addMemberMethod === 0"
-                  style="width: 100%; height: 50px"
-                >
-                  <search-input
-                    style="margin-left: 10%;height: 90%; width: 90%; border-radius: 10px"
-                    :url="computedSearchUrl"
-                    :data-source="searchResult"
-                    :limit="5"
-                    @on-error="onSearchError"
-                    @on-result="onSearchResult"
-                    @input-change="searchInputChange"
-                  />
-                </div>
-                <div v-else style="width: 100%; height: 50px">
+              <span class="form-text text-danger error-text">{{
+                projectNameError
+              }}</span>
+            </div>
+            <div class="form-group form-left-centered">
+              <label>{{ $t("PROJECT_DESCRIPTION") }}</label>
+              <textarea
+                class="form-control"
+                rows="3"
+                :placeholder="$t('OPTIONAL')"
+                v-model="projectDescription"
+              ></textarea>
+            </div>
+            <div class="form-group form-left-centered">
+              <label
+                >{{ $t("PROJECT_MEMBERS")
+                }}<span style="color: grey">{{ $t("OPTIONAL") }}</span></label
+              >
+              <div class="select">
+                <div class="method">
                   <select
                     class="custom-select"
-                    style="margin-left: 10%; width: 90%; height: 90%"
-                    @change.stop="teamSelect($event)"
+                    style="width: 100%; height: 90%"
+                    @change.stop="addMemberMethodSelect($event)"
                   >
-                    <option v-if="teams.length === 0" selected>{{
-                      $t("NO_TEAM_FOUND")
-                    }}</option>
-                    <option v-else v-for="item in teams" :key="item._id">{{
-                      item.name
-                    }}</option>
+                    <option selected>{{ $t("SEARCH_ADD") }}</option>
+                    <option>{{ $t("TEAM_ADD") }}</option>
                   </select>
                 </div>
-                <div style="width: 100%" v-if="addMemberMethod === 0">
-                  <div class="source-display" v-if="computedShowSearchResult">
-                    <vue-scroll :ops="ops">
+                <div class="source">
+                  <div
+                    v-if="addMemberMethod === 0"
+                    style="width: 100%; height: 50px"
+                  >
+                    <search-input
+                      style="margin-left: 10%;height: 90%; width: 90%; border-radius: 10px"
+                      :url="computedSearchUrl"
+                      :data-source="searchResult"
+                      :limit="5"
+                      @on-error="onSearchError"
+                      @on-result="onSearchResult"
+                      @input-change="searchInputChange"
+                    />
+                  </div>
+                  <div v-else style="width: 100%; height: 50px">
+                    <select
+                      class="custom-select"
+                      style="margin-left: 10%; width: 90%; height: 90%"
+                      @change.stop="teamSelect($event)"
+                    >
+                      <option v-if="teams.length === 0" selected>{{
+                        $t("NO_TEAM_FOUND")
+                      }}</option>
+                      <option v-else v-for="item in teams" :key="item._id">{{
+                        item.name
+                      }}</option>
+                    </select>
+                  </div>
+                  <div style="width: 100%" v-if="addMemberMethod === 0">
+                    <div class="source-display" v-if="computedShowSearchResult">
+                      <vue-scroll :ops="ops">
+                        <div
+                          style="width: 90%; height: 50px"
+                          v-for="item in searchResult[searchValue].data"
+                          :key="item._id"
+                        >
+                          <user-add-delete-cell
+                            :item="item"
+                            :exclude-list="computedProjectMembers"
+                            @remove-user="removeUser"
+                            @add-user="addUser"
+                          />
+                        </div>
+                      </vue-scroll>
+                    </div>
+                    <div
+                      class="source-display-empty"
+                      v-else-if="computedShowSearchResultEmpty"
+                    >
+                      <span>{{ $t("NO_USER_FOUND") }}</span>
+                    </div>
+                    <div v-else></div>
+                  </div>
+                  <div style="width: 100%" v-else>
+                    <vue-scroll
+                      class="source-display"
+                      v-if="computedShowTeamResult"
+                    >
                       <div
                         style="width: 90%; height: 50px"
-                        v-for="item in searchResult[searchValue].data"
+                        v-for="item in teams[teamSelectIndex].members"
                         :key="item._id"
                       >
                         <user-add-delete-cell
                           :item="item"
-                          :exclude-list="computedProjectMembers"
+                          :exclude-list="projectMembers"
                           @remove-user="removeUser"
                           @add-user="addUser"
                         />
                       </div>
                     </vue-scroll>
-                  </div>
-                  <div
-                    class="source-display-empty"
-                    v-else-if="computedShowSearchResultEmpty"
-                  >
-                    <span>{{ $t("NO_USER_FOUND") }}</span>
-                  </div>
-                  <div v-else></div>
-                </div>
-                <div style="width: 100%" v-else>
-                  <vue-scroll
-                    class="source-display"
-                    v-if="computedShowTeamResult"
-                  >
-                    <div
-                      style="width: 90%; height: 50px"
-                      v-for="item in teams[teamSelectIndex].members"
-                      :key="item._id"
-                    >
-                      <user-add-delete-cell
-                        :item="item"
-                        :exclude-list="projectMembers"
-                        @remove-user="removeUser"
-                        @add-user="addUser"
-                      />
+                    <div v-else-if="computedShowTeamResultEmpty">
+                      <span>{{ $t("NO_USER_FOUND") }}</span>
                     </div>
-                  </vue-scroll>
-                  <div v-else-if="computedShowTeamResultEmpty">
-                    <span>{{ $t("NO_USER_FOUND") }}</span>
+                    <div v-else></div>
                   </div>
-                  <div v-else></div>
+                </div>
+              </div>
+              <div class="selected" v-if="projectMembers.length > 0">
+                <div
+                  class="selected-user"
+                  v-for="item in projectMembers"
+                  :key="item._id"
+                  @click.stop="removeUser(item)"
+                  data-toggle="tooltip"
+                  data-placement="right"
+                  :title="computedTooltipTitle(item)"
+                >
+                  <avatar
+                    style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover"
+                    :src="item.avatar"
+                    default-img="/static/image/user_empty.png"
+                  />
+                  <icon name="close" class="selected-user-remove" />
                 </div>
               </div>
             </div>
-            <div class="selected" v-if="projectMembers.length > 0">
-              <div
-                class="selected-user"
-                v-for="item in projectMembers"
-                :key="item._id"
-                @click.stop="removeUser(item)"
-                data-toggle="tooltip"
-                data-placement="right"
-                :title="computedTooltipTitle(item)"
-              >
-                <avatar
-                  style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover"
-                  :src="item.avatar"
-                  default-img="/static/image/user_empty.png"
-                />
-                <icon name="close" class="selected-user-remove" />
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button
-          :disabled="computedCreateBtnDisabled"
-          type="submit"
-          :class="computedCreateBtnClass"
-          @click.stop="createNewProject"
-        >
-          <span
-            v-if="projectCreateStatus === 'doing'"
-            class="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          <span v-else-if="projectCreateStatus === 'todo'">{{
-            $t("CREATE")
-          }}</span>
-          <span v-else>{{ $t("DONE") }}</span>
-        </button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            :disabled="computedCreateBtnDisabled"
+            type="submit"
+            :class="computedCreateBtnClass"
+            @click.stop="createNewProject"
+          >
+            <span
+              v-if="projectCreateStatus === 'doing'"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span v-else-if="projectCreateStatus === 'todo'">{{
+              $t("CREATE")
+            }}</span>
+            <span v-else>{{ $t("DONE") }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -227,11 +229,16 @@ export default {
       }
     };
   },
+  mounted() {
+    $("#modal-create-project").on("hidden.bs.modal", () => {
+      this.resetForm();
+    });
+  },
   computed: {
     ...mapState("team", ["teams"]),
     ...mapState("user", ["id", "token"]),
     computedSearchUrl() {
-      return process.env.API_HOST + "/user/search";
+      return URL.POST_SEARCH_USER();
     },
     computedProjectNameStyle() {
       return function(error) {

@@ -1,67 +1,69 @@
 <template>
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title display-only">
-          {{ $t("CREATE_PHASE") }}
-        </h5>
-        <a
-          style="font-size: 20px; cursor: pointer"
-          class="display-only"
-          aria-hidden="true"
-          aria-label="Close"
-          data-target="#modal-create-phase"
-          data-dismiss="modal"
-          >&times;</a
-        >
-      </div>
-      <div class="modal-body">
-        <form style="wrapper">
-          <div class="form-group form-left-centered">
-            <label
-              >{{ $t("PHASE_NAME")
-              }}<span style="font-size: 12px;color: red">*</span></label
-            >
-            <div class="form-row" style="width: 100%; margin: 0; padding: 0">
-              <input
-                :class="`form-control ${nameError ? 'is-invalid' : null}`"
-                :style="computedNameStyle(nameError)"
-                v-model="name"
-                :placeholder="$t('REQUIRED')"
-                @input="nameOnInput($event)"
-              />
-            </div>
-            <span class="form-text text-danger error-text">{{
-              nameError
-            }}</span>
-          </div>
-          <div class="form-group form-left-centered">
-            <label>{{ $t("PHASE_DESCRIPTION") }}</label>
-            <textarea
-              class="form-control"
-              rows="3"
-              :placeholder="$t('OPTIONAL')"
-              v-model="description"
-            ></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button
-          :disabled="computedCreateBtnDisabled"
-          type="submit"
-          :class="computedCreateBtnClass"
-          @click.stop="create"
-        >
-          <span
-            v-if="createStatus === 'doing'"
-            class="spinner-border spinner-border-sm"
-            role="status"
+  <div id="modal-create-phase" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title display-only">
+            {{ $t("CREATE_PHASE") }}
+          </h5>
+          <a
+            style="font-size: 20px; cursor: pointer"
+            class="display-only"
             aria-hidden="true"
-          ></span>
-          <span v-else-if="createStatus === 'todo'">{{ $t("CREATE") }}</span>
-          <span v-else>{{ $t("DONE") }}</span>
-        </button>
+            aria-label="Close"
+            data-target="#modal-create-phase"
+            data-dismiss="modal"
+            >&times;</a
+          >
+        </div>
+        <div class="modal-body">
+          <form style="wrapper">
+            <div class="form-group form-left-centered">
+              <label
+                >{{ $t("PHASE_NAME")
+                }}<span style="font-size: 12px;color: red">*</span></label
+              >
+              <div class="form-row" style="width: 100%; margin: 0; padding: 0">
+                <input
+                  :class="`form-control ${nameError ? 'is-invalid' : null}`"
+                  :style="computedNameStyle(nameError)"
+                  v-model="name"
+                  :placeholder="$t('REQUIRED')"
+                  @input="nameOnInput($event)"
+                />
+              </div>
+              <span class="form-text text-danger error-text">{{
+                nameError
+              }}</span>
+            </div>
+            <div class="form-group form-left-centered">
+              <label>{{ $t("PHASE_DESCRIPTION") }}</label>
+              <textarea
+                class="form-control"
+                rows="3"
+                :placeholder="$t('OPTIONAL')"
+                v-model="description"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            :disabled="computedCreateBtnDisabled"
+            type="submit"
+            :class="computedCreateBtnClass"
+            @click.stop="create"
+          >
+            <span
+              v-if="createStatus === 'doing'"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span v-else-if="createStatus === 'todo'">{{ $t("CREATE") }}</span>
+            <span v-else>{{ $t("DONE") }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -71,12 +73,6 @@
 import { mapState, mapMutations } from "vuex";
 import * as URL from "@/common/utils/url";
 export default {
-  props: {
-    projectId: {
-      type: String,
-      required: true
-    }
-  },
   data() {
     return {
       name: "",
@@ -92,9 +88,15 @@ export default {
       searchLimit: 5
     };
   },
+  mounted() {
+    $("#modal-create-phase").on("hidden.bs.modal", () => {
+      this.resetForm();
+    });
+  },
   computed: {
     ...mapState("team", ["teams"]),
     ...mapState("user", ["id", "token"]),
+    ...mapState("project", ["projects", "activeIndex"]),
     computedNameStyle() {
       return function(error) {
         return `width: 100%; ${error ? "border-color: lightcoral" : null}`;
@@ -107,8 +109,7 @@ export default {
     },
     computedCreateBtnClass() {
       const { createStatus } = this;
-      return;
-      `btn btn-sm btn-${
+      return `btn btn-sm btn-${
         createStatus === "done" ? "success" : "primary"
       } create-btn`;
     }
@@ -125,11 +126,12 @@ export default {
       return true;
     },
     formData() {
-      const { name, description, id } = this;
+      const { name, description, id, projects, activeIndex } = this;
       return {
         name: name.trim(),
         description: description.trim(),
-        user: id
+        user: id,
+        projectId: projects[activeIndex]._id
       };
     },
     resetForm() {

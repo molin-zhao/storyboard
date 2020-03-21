@@ -63,6 +63,7 @@ export default {
   TITLE_PROGRESS: "Progress",
   TITLE_TIMELINE: "Timeline",
   GROUP_TITLE: "Group title",
+  EDIT_DATE: "Change task timeline",
 
   STATUS_PLANNED: "Planned",
   STATUS_WORKING: "Working",
@@ -73,6 +74,7 @@ export default {
   PRIORITY_LOW: "Low",
   PRIORITY_MEDIUM: "Medium",
 
+  PROGRESS_UNTRACKED: "Not started",
   PROGRESS_BEFORE: "Start in {progress}",
   PROGRESS_UNDERGOING: "In progress {progress}",
   PROGRESS_DUE: "Due in {progress}",
@@ -105,6 +107,8 @@ export default {
   MAIN_CREATE_GROUP: "create or join a group",
   MAIN_EDIT_INFO: "update you personal information",
   MAIN_EDIT_SETTING: "change system settings",
+  EDITED: "Edited",
+  SAVEED: "Saved",
 
   PROJECT_NAME: "Project name:",
   PHASE_NAME: "Phase name:",
@@ -112,6 +116,10 @@ export default {
   PROJECT_DESCRIPTION: "Project description:",
   PHASE_DESCRIPTION: "Phase description",
   PROJECT_MEMBERS: "Project members:",
+  NO_PROJECT_MEMBER: "No available project member(s)",
+  ADD_PROJECT_MEMBER: "Add project member(s)",
+  ADD_PHASE_NAME: "Add phase name...",
+  ADD_PHASE_DESCRIPTION: "Add phase description...",
   SEARCH_ADD: "Search a user",
   TEAM_ADD: "Add from a team",
   NO_TEAM_FOUND: "No available team found",
@@ -137,6 +145,10 @@ export default {
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",
+  ADD_TASK_NAME: "Edit task name...",
+  TASK_MEMBERS: "Task members",
+  NO_TASK_MEMBER_ALLOC: "Task temporarily not assigned",
+  ASSIGN_TASK: "Allot task",
   CREATE_PROJECT: "Create new project",
   CREATE_PHASE: "Create new phase",
 

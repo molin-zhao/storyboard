@@ -27,16 +27,18 @@ import { parser } from "@/common/utils/array";
 export default {
   props: {
     url: {
-      type: String,
-      required: true
+      type: String
     },
     dataSource: {
-      type: Object,
-      required: true
+      type: Object
     },
     limit: {
       type: Number,
       default: 10
+    },
+    searchStrategy: {
+      type: Function,
+      default: null
     }
   },
   data() {
@@ -57,6 +59,7 @@ export default {
           this.$emit("input-change", value);
           this.timer = null;
           let trimmedVal = value.trim(" ");
+          if (this.searchStrategy) return this.searchStrategy(trimmedVal);
           if (
             this.dataSource[trimmedVal] != null &&
             this.dataSource[trimmedVal].data.length > 0
@@ -64,7 +67,7 @@ export default {
             this.searching = false;
             return this.$emit("on-result", { value: trimmedVal, data: [] });
           }
-          this.startSearch(value);
+          return this.startSearch(trimmedVal);
         }, 1000);
       } else {
         this.$emit("input-change", "");
@@ -103,8 +106,9 @@ export default {
   border: lightgrey 1px solid;
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+  flex-wrap: nowrap;
   cursor: pointer;
   .icon-wrapper {
     width: 10%;
@@ -114,19 +118,15 @@ export default {
     align-items: center;
   }
   .input-wrapper {
-    width: 90%;
+    width: 80%;
     height: 100%;
   }
   .loading-wrapper {
-    position: absolute;
-    right: 0;
-    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 18%;
+    width: 10%;
     height: 100%;
-    background: none;
   }
 }
 .search-input {

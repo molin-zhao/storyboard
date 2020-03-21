@@ -17,6 +17,10 @@ const mouseclick = function(ref, event) {
       if (event) eventBus.$emit("reset-visible-component");
       return refCpnt.show();
     }
+  } else {
+    let targetEle = document.getElementById(ref);
+    if (!targetEle) return;
+    console.log(targetEle);
   }
 };
 
@@ -30,4 +34,8 @@ const show = function(ref) {
   if (refCpnt && !refCpnt.visible && refCpnt.show) return refCpnt.show();
 };
 
-export { mouseover, mouseleave, mouseclick, hide, show };
+const stopPropagation = function() {
+  console.log("stop");
+};
+
+export { mouseover, mouseleave, mouseclick, hide, show, stopPropagation };

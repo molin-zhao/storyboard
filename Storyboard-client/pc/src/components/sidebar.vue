@@ -1,11 +1,21 @@
 <template>
   <div ref="sidebar" class="sidebar" :style="computedStyle">
-    <slot></slot>
+    <div class="sidebar-content">
+      <div class="sidebar-header">
+        <a class="sidebar-close" @click.stop="hide"
+          ><icon name="close" style="width: 90%; height: 90%"
+        /></a>
+      </div>
+      <div class="sidebar-content">
+        <slot></slot>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { eventBus } from "@/common/utils/eventBus";
+import { stopPropagation } from "@/common/utils/mouse";
 export default {
   data() {
     return {
@@ -48,10 +58,25 @@ export default {
       ${this.sidebarStyle}`;
     }
   },
+  created() {
+    document.addEventListener("click", this.checkMouseClick);
+  },
+  beforeDestroy() {
+    document.removeEventListener("click", this.checkMouseClick);
+  },
   methods: {
+    stopPropagation,
+    checkMouseClick(event) {
+      const e = event || window.event;
+      const { type, target } = e;
+      const sidebar = this.$refs["sidebar"];
+      if (!sidebar) return;
+      if (!sidebar.contains(target)) return this.hide();
+    },
     show() {
       if (!this.visible) {
         this.visible = true;
+        this.$emit("sidebar-show");
         if (this.timer) {
           clearTimeout(this.timer);
           this.timer = null;
@@ -68,6 +93,7 @@ export default {
     hide() {
       if (this.visible) {
         this.visible = false;
+        this.$emit("sidebar-hide");
         if (this.timer) {
           clearTimeout(this.timer);
           this.timer = null;
@@ -83,17 +109,29 @@ export default {
     }
   },
   mounted() {
-    eventBus.$on("reset-visible-component", () => {
-      this.hide();
-    });
+    // eventBus.$on("reset-visible-component", () => {
+    //   this.hide();
+    // });
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "../common/theme/container.css";
 .sidebar {
   position: absolute;
   z-index: 1;
+}
+.sidebar-close {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: all 0.35s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+}
+.sidebar-close:active {
+  transform: rotate(1440deg);
 }
 </style>

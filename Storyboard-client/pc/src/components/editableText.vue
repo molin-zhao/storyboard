@@ -15,6 +15,7 @@
         v-model="inputValue"
         class="input"
         :style="fontStyle"
+        @keyup.enter="endEditing"
       />
       <textarea
         ref="input"
@@ -24,6 +25,7 @@
         class="input"
         :style="fontStyle"
         :rows="row"
+        @keyup.enter="endEditing"
       />
     </div>
   </div>
@@ -120,32 +122,33 @@ export default {
         this.$refs["editableText"] &&
         this.$refs["editableText"].contains(target)
       ) {
-        // click inside the wrapper, show textinput
-        if (!this.editing) {
-          // first time click, autofocus textinput
-          this.editing = true;
-          this.$nextTick(() => {
-            if (this.$refs["input"] && this.$refs["input"].focus) {
-              // autofocus
-              this.$refs["input"].focus();
-              this.$emit("on-focus");
-            }
-          });
-        }
+        return this.beginEditing();
       } else {
-        if (this.editing) {
-          // editing state changed
-          this.editing = false;
-          this.$emit("lost-focus");
-          if (
-            this.inputValue !== this.value &&
-            this.inputValue !== this.computedValue
-          ) {
-            // props value does not match input value, emit change event
-            this.$emit("input-change", this.inputValue);
-          }
-        }
+        return this.endEditing();
       }
+    },
+    endEditing() {
+      const { editing, inputValue, value, computedValue } = this;
+      if (!editing) return;
+      this.editing = false;
+      this.$emit("lost-focus");
+      let trimmedValue = inputValue ? inputValue.trim() : "";
+      if (trimmedValue !== value) {
+        // props value does not match input value, emit change event
+        this.$emit("input-change", trimmedValue);
+      }
+    },
+    beginEditing() {
+      if (this.editing) return;
+      // first time click, autofocus textinput
+      this.editing = true;
+      this.$nextTick(() => {
+        if (this.$refs["input"] && this.$refs["input"].focus) {
+          // autofocus
+          this.$refs["input"].focus();
+          this.$emit("on-focus");
+        }
+      });
     }
   }
 };

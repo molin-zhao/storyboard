@@ -2,34 +2,55 @@
   <div class="row-item-wrapper" :style="computedStyle">
     <div class="row-item" v-if="isType('TITLE_NAME')">
       <name
+        :phase-index="phaseIndex"
+        :group-id="groupId"
         :editable="true"
         :value="task.name"
-        :default-value="task.name"
+        :task-id="task._id"
+        :default-value="$t('ADD_TASK_NAME')"
         :color="color"
         @name-change="taskNameChange"
       />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_STATUS')">
-      <status :status="task.status" :editable="true" :index="task.id" />
+      <status
+        :phase-index="phaseIndex"
+        :group-id="groupId"
+        :status="task.status"
+        :task-id="task._id"
+        :editable="true"
+      />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_MEMBER')">
       <member :member="task.members" />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_PRIORITY')">
-      <priority :priority="task.priority" :editable="true" />
+      <priority
+        :phase-index="phaseIndex"
+        :group-id="groupId"
+        :priority="task.priority"
+        :editable="true"
+        :task-id="task._id"
+      />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_TIMELINE')">
       <timeline
         :start-date="task.start_date"
         :due-date="task.due_date"
+        :phase-index="phaseIndex"
+        :group-id="groupId"
         :editable="true"
+        :task-id="task._id"
       />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_PROGRESS')">
       <task-progress
-        :task-status="task.status"
+        :phase-index="phaseIndex"
+        :group-id="groupId"
+        :status="task.status"
         :start-date="task.start_date"
         :due-date="task.due_date"
+        :task-id="task._id"
         :editable="true"
       />
     </div>
@@ -40,7 +61,6 @@
 <script>
 import name from "@/components/cell/name";
 import member from "@/components/cell/member";
-
 import priority from "@/components/cell/priority";
 import status from "@/components/cell/status";
 import timeline from "@/components/cell/timeline";
@@ -66,6 +86,14 @@ export default {
     color: {
       type: String,
       default: "gainsboro"
+    },
+    phaseIndex: {
+      type: Number,
+      required: true
+    },
+    groupId: {
+      type: String,
+      required: true
     }
   },
   computed: {

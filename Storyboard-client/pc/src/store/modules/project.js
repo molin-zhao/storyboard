@@ -1,6 +1,8 @@
+import { addLog, removeLog } from "@/common/utils/log";
 const state = {
   projects: [],
-  logs: []
+  activeIndex: 0,
+  logs: {} // tree
 };
 
 const getters = {};
@@ -12,11 +14,14 @@ const mutations = {
   reload_projects(state, payload) {
     state.projects = payload;
   },
+  selete_index(state, payload) {
+    state.activeIndex = payload;
+  },
   add_log(state, payload) {
-    state.logs = state.logs.concat(payload);
+    state.logs = addLog(state.logs, payload);
   },
   remove_log(state, payload) {
-    state.logs = state.logs.filter(log => log.id !== payload.id);
+    state.logs = removeLog(state.logs, payload);
   }
 };
 

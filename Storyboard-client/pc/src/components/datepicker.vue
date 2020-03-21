@@ -1,7 +1,7 @@
 <template>
   <div class="datepicker-wrapper">
     <div class="datepicker-header">
-      <a @click.stop="prevMonth">
+      <a @click.stop="prevMonth" style="cursor: pointer">
         <icon name="left" style="width: 2vw; height: 2vw; color: #A5C4EC" />
       </a>
       <div class="display-only" style="font-family: kai">
@@ -15,8 +15,8 @@
           <span v-if="showYear">{{ displayYear }}</span>
         </transition>
       </div>
-      <a @click.stop="nextMonth"
-        ><icon name="right" style="width: 2vw; height: 2vw; color: #A5C4EC"
+      <a @click.stop="nextMonth" style="cursor: pointer">
+        <icon name="right" style="width: 2vw; height: 2vw; color: #A5C4EC"
       /></a>
     </div>
     <div class="datepicker-body">
@@ -86,8 +86,8 @@ export default {
       default: 0.5
     },
     init: {
-      type: Object,
-      default: null
+      type: String,
+      default: ""
     },
     start: {
       type: String,
@@ -135,6 +135,11 @@ export default {
         month: null,
         year: null
       },
+      init_date: {
+        date: null,
+        month: null,
+        year: null
+      },
       displayNumOfDaysOfMonth: 0,
       displayMonthIndex: 0, // cannot set index to -1!
       displayYear: 1970,
@@ -169,7 +174,7 @@ export default {
     computedDateClass() {
       return function(date) {
         const {
-          init,
+          init_date,
           current,
           displayYear,
           displayMonthIndex,
@@ -181,12 +186,13 @@ export default {
           displayMonthIndex === current.month &&
           date === current.date;
         let isPastDay =
-          init &&
-          (displayYear < init.year ||
-            (displayYear === init.year && displayMonthIndex < init.month) ||
-            (displayYear === init.year &&
-              displayMonthIndex === init.month &&
-              date < init.date));
+          init_date &&
+          (displayYear < init_date.year ||
+            (displayYear === init_date.year &&
+              displayMonthIndex < init_date.month) ||
+            (displayYear === init_date.year &&
+              displayMonthIndex === init_date.month &&
+              date < init_date.date));
         let isStartDay =
           displayYear === start_date.year &&
           displayMonthIndex === start_date.month &&
@@ -195,26 +201,23 @@ export default {
           displayYear === end_date.year &&
           displayMonthIndex === end_date.month &&
           date === end_date.date;
+        if (isPastDay) return "past-day";
+        if (isStartDay) return "start-day";
+        if (isEndDay) return "end-day";
+        let displayTimestamp = Date.parse(
+          `${displayYear}-${displayMonthIndex + 1}-${date}`
+        );
+        let startTimestamp = Date.parse(
+          `${start_date.year}-${start_date.month + 1}-${start_date.date}`
+        );
+        let endTimestamp = Date.parse(
+          `${end_date.year}-${end_date.month + 1}-${end_date.date}`
+        );
+        let isPeriodDay =
+          displayTimestamp > startTimestamp && displayTimestamp < endTimestamp;
+        if (isPeriodDay) return "period-day";
         if (isCurrentDay) return "current-day";
-        else if (isPastDay) return "past-day";
-        else if (isStartDay) return "start-day";
-        else if (isEndDay) return "end-day";
-        else {
-          let displayTimestamp = Date.parse(
-            `${displayYear}-${displayMonthIndex + 1}-${date}`
-          );
-          let startTimestamp = Date.parse(
-            `${start_date.year}-${start_date.month + 1}-${start_date.date}`
-          );
-          let endTimestamp = Date.parse(
-            `${end_date.year}-${end_date.month + 1}-${end_date.date}`
-          );
-          let isPeriodDay =
-            displayTimestamp > startTimestamp &&
-            displayTimestamp < endTimestamp;
-          if (isPeriodDay) return "period-day";
-          return "future-day";
-        }
+        return "future-day";
       };
     }
   },
@@ -226,18 +229,17 @@ export default {
     this.current.date = date;
     this.current.month = month;
     this.current.year = year;
-    const { start, end } = this;
+    const { start, end, init } = this;
     this.setStart(start);
     this.setEnd(end);
+    this.setInit(init);
     this.setDate(year, month);
   },
   watch: {
     start(newVal, oldVal) {
-      console.log("watch start");
       this.setStart(newVal);
     },
     end(newVal, oldVal) {
-      console.log("watch end");
       this.setEnd(newVal);
     }
   },
@@ -309,7 +311,7 @@ export default {
         let endDateTimestamp = getTimestampFromISODate(end);
         let distToStart = selectedDateTimestamp - startDateTimestamp;
         let distToEnd = endDateTimestamp - selectedDateTimestamp;
-        if (distToStart <= distToEnd) {
+        if (distToStart < distToEnd) {
           // recalculate start date
           return this.$emit("select-timeline", selectedDateISOStr, end);
         }
@@ -317,7 +319,15 @@ export default {
       } else {
         if (!selectPeriod) return this.$emit("select-date", selectedDateISOStr);
         if (!start) return this.$emit("select-start", selectedDateISOStr);
-        return this.$emit("select-end", selectedDateISOStr);
+        else {
+          // recalculate the relation between start and end
+          let startDateTimestamp = getTimestampFromISODate(start);
+          if (startDateTimestamp > selectedDateTimestamp) {
+            return this.$emit("select-timeline", selectedDateISOStr, start);
+          } else {
+            return this.$emit("select-end", selectedDateISOStr);
+          }
+        }
       }
     },
     setStart(isoStr) {
@@ -342,6 +352,18 @@ export default {
         this.end_date.date = null;
         this.end_date.month = null;
         this.end_date.year = null;
+      }
+    },
+    setInit(isoStr) {
+      if (isoStr) {
+        let initStandardTime = parseISODate(isoStr);
+        this.init_date.date = initStandardTime.getDate();
+        this.init_date.month = initStandardTime.getMonth();
+        this.init_date.year = initStandardTime.getFullYear();
+      } else {
+        this.init_date.date = null;
+        this.init_date.month = null;
+        this.init_date.year = null;
       }
     }
   }

@@ -2,9 +2,14 @@
   <div class="mainboard-wrapper">
     <div v-if="hasProject" class="mainboard">
       <div class="mainboard-title">
-        <h1 class="display-only" style="font-family: kai">
-          {{ projects[index].name }}
-        </h1>
+        <div class="project-name">
+          <span class="display-only" style="font-size: 40px">
+            {{ computedProjectName }}
+          </span>
+        </div>
+        <h5 v-if="isEdited(logs[projects[activeIndex]._id])">
+          <span class="badge badge-pill badge-warning">{{ $t("EDITED") }}</span>
+        </h5>
         <div class="mainboard-title-right">
           <div
             class="online-user"
@@ -25,23 +30,22 @@
             :wrapper-style="more.wrapperStyle"
             :icon-style="more.iconStyle"
             :icon-name="more.iconName"
-            @click.native="mouseclick('sidebar', $event)"
           >
           </badge-icon>
         </div>
       </div>
       <div class="mainboard-info">
         <editable-text
-          style="width: 30%; height: 100%; padding: 1px"
+          style="width: 40%; height: 100%; padding: 1px"
           default-value="ADD_DESCRIPTION"
-          :value="projects[index].description"
-          font-style="font-family: kai; font-size: 2vh;"
+          :value="computedProjectDescription"
+          font-style="font-size: 25px;"
           :row="3"
-          @change="descriptionChange"
+          @input-change="descriptionChange"
         />
       </div>
       <div class="mainboard-phases">
-        <phase :project-index="index" :project-id="projects[index]._id" />
+        <phase />
       </div>
     </div>
     <div v-else class="mainboard">
@@ -58,20 +62,6 @@
         <a class="link text-primary">{{ $t("MAIN_EDIT_INFO") }}</a>
       </div>
     </div>
-
-    <!-- sidebar -->
-    <sidebar
-      ref="sidebar"
-      class="shadow"
-      sidebarStyle="
-      height: 100vh; 
-      width: 25vw; 
-      right: -5px; 
-      top: 0;
-      "
-    >
-      <div class="sidebar-content"></div>
-    </sidebar>
   </div>
 </template>
 
@@ -83,9 +73,10 @@ import sidebar from "@/components/sidebar";
 import editableText from "@/components/editableText";
 import datepicker from "@/components/datepicker";
 import phase from "@/components/phase";
+import { isEdited } from "@/common/utils/log";
 import { mouseclick } from "@/common/utils/mouse";
 import { group, more } from "@/common/theme/icon";
-import { mapState, mapActions } from "vuex";
+import { mapState, mapMutations } from "vuex";
 export default {
   data() {
     return {
@@ -105,28 +96,51 @@ export default {
     datepicker,
     phase
   },
-  props: {
-    index: {
-      type: Number,
-      required: true,
-      default: 0
-    }
-  },
   computed: {
-    ...mapState("project", ["projects"]),
+    ...mapState("project", ["projects", "activeIndex", "logs"]),
     hasProject() {
-      return this.projects[this.index] ? true : false;
+      const { projects, activeIndex } = this;
+      return projects[activeIndex] ? true : false;
+    },
+    computedProjectName() {
+      const { projects, activeIndex, logs } = this;
+      let projectId = projects[activeIndex]._id;
+      if (logs[projectId] && logs[projectId]["name"]) {
+        return logs[projectId]["name"];
+      }
+      return projects[activeIndex].name;
+    },
+    computedProjectDescription() {
+      const { projects, activeIndex, logs } = this;
+      let projectId = projects[activeIndex]._id;
+      if (logs[projectId] && logs[projectId]["description"]) {
+        return logs[projectId]["description"];
+      }
+      return projects[activeIndex].description;
     }
   },
   methods: {
     mouseclick,
+    isEdited,
+    ...mapMutations({
+      add_log: "project/add_log",
+      remove_log: "project/remove_log"
+    }),
     descriptionChange(val) {
-      this.description = val;
-    }
-  },
-  watch: {
-    description(val) {
-      console.log(val);
+      const { projects, activeIndex } = this;
+      if (projects[activeIndex].description !== val) {
+        // original description changed, add a log
+        this.add_log({
+          projectId: projects[activeIndex]._id,
+          field: "description",
+          value: val
+        });
+      } else {
+        this.remove_log({
+          projectId: projects[activeIndex]._id,
+          field: "description"
+        });
+      }
     }
   },
   mounted() {
@@ -138,7 +152,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../common/theme/container.css";
 .mainboard-wrapper {
   width: 100%;
   height: 100%;
@@ -151,8 +164,24 @@ export default {
     justify-content: flex-start;
     align-items: center;
     .mainboard-title {
+      .project-name {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        width: 20%;
+        height: 100%;
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          text-align: left;
+          white-space: nowrap;
+          width: 100%;
+        }
+      }
       width: 100%;
-      height: 10%;
+      height: 8%;
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
@@ -170,16 +199,6 @@ export default {
       }
     }
   }
-}
-
-.sidebar-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  background-color: white;
 }
 
 .mainboard-info {

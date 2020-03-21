@@ -63,6 +63,7 @@ export default {
   TITLE_PROGRESS: "进度",
   TITLE_TIMELINE: "时间线",
   GROUP_TITLE: "组名",
+  EDIT_DATE: "更改任务时间线",
 
   STATUS_PLANNED: "计划中",
   STATUS_WORKING: "进行中",
@@ -74,6 +75,7 @@ export default {
   PRIORITY_LOW: "低",
   PRIORITY_MEDIUM: "中",
 
+  PROGRESS_UNTRACKED: "未开始",
   PROGRESS_BEFORE: "开始于{progress}后",
   PROGRESS_UNDERGOING: "已开始{progress}",
   PROGRESS_DUE: "结束于{progress}后",
@@ -105,6 +107,8 @@ export default {
   MAIN_CREATE_GROUP: "创建或加入组",
   MAIN_EDIT_INFO: "更改个人信息",
   MAIN_EDIT_SETTING: "更改系统偏好设置",
+  EDITED: "已编辑",
+  SAVEED: "已保存",
 
   PROJECT_NAME: "项目名称：",
   PHASE_NAME: "阶段名称：",
@@ -112,6 +116,10 @@ export default {
   PROJECT_DESCRIPTION: "项目描述：",
   PHASE_DESCRIPTION: "阶段描述：",
   PROJECT_MEMBERS: "项目成员：",
+  NO_PROJECT_MEMBER: "暂无项目成员",
+  ADD_PROJECT_MEMBER: "去添加项目成员",
+  ADD_PHASE_NAME: "添加阶段名称...",
+  ADD_PHASE_DESCRIPTION: "添加阶段描述...",
   SEARCH_ADD: "搜索添加",
   TEAM_ADD: "从工作组添加",
   NO_TEAM_FOUND: "暂时没有可用工作组",
@@ -137,6 +145,10 @@ export default {
   // actions
   ADD_DESCRIPTION: "添加描述...",
   ADD_TASK: "添加任务...",
+  ADD_TASK_NAME: "添加任务名称...",
+  TASK_MEMBERS: "任务人员列表",
+  NO_TASK_MEMBER_ALLOC: "暂时没有任务负责人",
+  ASSIGN_TASK: "去分配任务",
   CREATE_PROJECT: "创建新项目",
   CREATE_PHASE: "创建新阶段",
 
