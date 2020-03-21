@@ -53,7 +53,7 @@
             :value="computedSelectedPhaseName"
             :default-value="$t('ADD_PHASE_NAME')"
             @input-change="nameChange"
-            font-style="font-size: 20px"
+            input-style="font-size: 20px"
             style="width: 100%; height: 100%; padding: 1px"
           />
         </div>
@@ -62,7 +62,7 @@
             style="width: 100%; height: 100%; padding: 1px"
             :default-value="$t('ADD_PHASE_DESCRIPTION')"
             :value="computedSelectedPhaseDescription"
-            font-style="font-size: 20px;"
+            input-style="font-size: 20px;"
             :row="5"
             @input-change="descriptionChange"
           />

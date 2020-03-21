@@ -11,7 +11,7 @@ export const group = {
 };
 export const more = {
   wrapperStyle: {
-    plain: "width: 2vw; height: 2vw; border-radius: 1vw",
+    plain: "cursor: pointer; width: 2vw; height: 2vw; border-radius: 1vw",
     hover: "background-color: lightgrey"
   },
   iconStyle: {

@@ -69,6 +69,8 @@
         </group-row>
         <!-- add a task -->
         <addTask
+          :phase-index="phaseIndex"
+          :group-id="groupId"
           :color="item.color"
           :editable="true"
           class="group-cell"

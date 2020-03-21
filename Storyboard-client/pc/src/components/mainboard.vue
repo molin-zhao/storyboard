@@ -30,7 +30,99 @@
             :wrapper-style="more.wrapperStyle"
             :icon-style="more.iconStyle"
             :icon-name="more.iconName"
+            @mouseover.native="mouseover('more')"
+            @mouseleave.native="mouseleave('more')"
           >
+            <popover ref="more" style="right: 40px; top: -20px">
+              <tooltip
+                content-style="
+                width: 200px;
+                height: 200px;
+                border-radius: 10px;
+                box-shadow: -5px 2px 5px lightgrey; 
+                -webkit-box-shadow: -5px 2px 5px lightgrey;
+                border: 1px solid whitesmoke;
+                "
+                arrow-placement="right"
+                arrow-position="top: calc(0.4vh + 20px)"
+                background-color="white"
+                border-color="whitesmoke"
+              >
+                <div class="settings-top-align">
+                  <a
+                    @click.stop="syncProject"
+                    style="
+                    border-top: none;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px
+                  "
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="refresh"
+                      style="color: grey"
+                    />
+                    <span style="color: grey">{{ $t("SYNC_PROJECT") }}</span>
+                  </a>
+                  <a
+                    :style="
+                      `pointer-events: ${computedLogNumber ? 'auto' : 'none'};`
+                    "
+                    @click.stop="saveProject"
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="save"
+                      :style="
+                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
+                      "
+                    />
+                    <span
+                      v-show="computedLogNumber"
+                      class="badge badge-danger badge-pill"
+                      style="
+                      position: absolute; 
+                      left: 35px; width: 28px; 
+                      height: 18px;font-size: 10px;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center
+                      "
+                      >{{ computedLogNumber }}</span
+                    >
+                    <span
+                      :style="
+                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
+                      "
+                      >{{ $t("SAVE_PROJECT") }}</span
+                    >
+                  </a>
+                  <a @click.stop="importProject">
+                    <icon
+                      class="setting-icon"
+                      name="import"
+                      style="color: grey"
+                    />
+                    <span style="color: grey">{{ $t("IMPORT_PROJECT") }}</span>
+                  </a>
+                  <a
+                    @click.stop="exportProject"
+                    style="
+                    border-bottom: none;
+                    border-bottom-left-radius: 5px;
+                    border-bottom-right-radius: 5px
+                  "
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="export"
+                      style="color: grey"
+                    />
+                    <span style="color: grey">{{ $t("EXPORT_PROJECT") }}</span>
+                  </a>
+                </div>
+              </tooltip>
+            </popover>
           </badge-icon>
         </div>
       </div>
@@ -39,7 +131,7 @@
           style="width: 40%; height: 100%; padding: 1px"
           default-value="ADD_DESCRIPTION"
           :value="computedProjectDescription"
-          font-style="font-size: 25px;"
+          input-style="font-size: 25px;"
           :row="3"
           @input-change="descriptionChange"
         />
@@ -73,8 +165,8 @@ import sidebar from "@/components/sidebar";
 import editableText from "@/components/editableText";
 import datepicker from "@/components/datepicker";
 import phase from "@/components/phase";
-import { isEdited } from "@/common/utils/log";
-import { mouseclick } from "@/common/utils/mouse";
+import { isEdited, logCount } from "@/common/utils/log";
+import { mouseclick, mouseover, mouseleave } from "@/common/utils/mouse";
 import { group, more } from "@/common/theme/icon";
 import { mapState, mapMutations } from "vuex";
 export default {
@@ -117,10 +209,20 @@ export default {
         return logs[projectId]["description"];
       }
       return projects[activeIndex].description;
+    },
+    computedLogNumber() {
+      const { projects, activeIndex, logs } = this;
+      let project = logs[projects[activeIndex]._id];
+      let count = logCount(project);
+      if (count === 0) return "";
+      if (count > 99) return "99+";
+      return `${count}`;
     }
   },
   methods: {
     mouseclick,
+    mouseover,
+    mouseleave,
     isEdited,
     ...mapMutations({
       add_log: "project/add_log",
@@ -141,7 +243,15 @@ export default {
           field: "description"
         });
       }
-    }
+    },
+    syncProject() {
+      console.log("sync");
+    },
+    saveProject() {
+      console.log("save");
+    },
+    importProject() {},
+    exportProject() {}
   },
   mounted() {
     $(document).ready(function() {

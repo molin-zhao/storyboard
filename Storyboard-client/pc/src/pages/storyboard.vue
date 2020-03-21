@@ -52,8 +52,8 @@
                 background-color="white"
                 border-color="whitesmoke"
               >
-                <div class="personal-setting">
-                  <a @click="logout">
+                <div class="settings">
+                  <a @click.stop="logout">
                     <icon
                       class="setting-icon"
                       name="exit"
@@ -312,8 +312,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../common/theme/color.css";
-@import "../common/theme/container.css";
 .storyboard-container {
   width: 100%;
   height: 100%;
@@ -438,41 +436,6 @@ export default {
 .list-group-item:active {
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-}
-
-.personal-setting {
-  width: 100%;
-  height: 100%;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  a {
-    width: 100%;
-    height: 60px;
-    cursor: pointer;
-    border-top: 1px lightgrey solid;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    position: relative;
-    .setting-icon {
-      width: 25px;
-      height: 25px;
-      margin-left: 15px;
-    }
-    span {
-      font-size: 18px;
-      right: 15px;
-      position: absolute;
-    }
-  }
-  a:active {
-    -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  }
 }
 .editing-badge {
   width: 10px;

@@ -14,8 +14,9 @@
         :placeholder="computedValue"
         v-model="inputValue"
         class="input"
-        :style="fontStyle"
+        :style="inputStyle"
         @keyup.enter="endEditing"
+        @input="onInput($event)"
       />
       <textarea
         ref="input"
@@ -23,9 +24,10 @@
         :placeholder="computedValue"
         v-model="inputValue"
         class="input"
-        :style="fontStyle"
+        :style="inputStyle"
         :rows="row"
         @keyup.enter="endEditing"
+        @input="onInput($event)"
       />
     </div>
   </div>
@@ -46,7 +48,7 @@ export default {
       type: Number,
       default: 1
     },
-    fontStyle: {
+    inputStyle: {
       type: String,
       default: ""
     },
@@ -91,7 +93,7 @@ export default {
         text-align: left; 
         text-overflow: ellipsis; 
         white-space: nowrap; 
-        ${this.fontStyle}`;
+        ${this.inputStyle}`;
       } else {
         // multiple lines textarea
         return `
@@ -104,7 +106,7 @@ export default {
         text-overflow: ellipsis; 
         word-wrap: normal; 
         word-break: normal;
-        ${this.fontStyle}`;
+        ${this.inputStyle}`;
       }
     }
   },
@@ -149,6 +151,10 @@ export default {
           this.$emit("on-focus");
         }
       });
+    },
+    onInput(e) {
+      let value = e.target.value;
+      this.$emit("on-typing", value);
     }
   }
 };

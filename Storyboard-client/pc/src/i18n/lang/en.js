@@ -140,8 +140,12 @@ export default {
   REMOVE_AVATAR_MESSAGE: "Do you want to remove your avatar?",
   LOGOUT_TITLE: "Logout",
   LOGOUT_MESSAGE: "Are you sure you would like to logout?",
-
   WELCOME: "Welcome",
+  SYNC_PROJECT: "Sync",
+  EXPORT_PROJECT: "Export",
+  IMPORT_PROJECT: "Import",
+  SAVE_PROJECT: "Save",
+
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",

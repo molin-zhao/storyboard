@@ -154,6 +154,34 @@ const isEdited = rootProj => {
   return false;
 };
 
+const trimLog = (rootProj, root = true) => {
+  if (!rootProj) return null;
+  let rootRef = root ? Object.assign({}, rootProj) : rootProj;
+  let keys = Object.keys(rootRef);
+  for (key in keys) {
+    if (typeof rootRef[key] === "undefined") {
+      delete rootRef[key];
+      continue;
+    }
+    if (rootRef[key] && rootRef[key].constructor === Object) {
+      trimLog(rootRef[key], false);
+    }
+  }
+  return rootRef;
+};
+
+const logCount = rootProj => {
+  if (!rootProj) return 0;
+  let count = 0;
+  let values = Object.values(rootProj);
+  for (let i = 0; i < values.length; i++) {
+    if (typeof values[i] === "string") count++;
+    if (values[i] && values[i].constructor === Object)
+      count += logCount(values[i]);
+  }
+  return count;
+};
+
 const getTaskLog = (projects, projId, phaseId, groupId, taskId, field) => {
   try {
     return projects[projId]["phases"][phaseId]["groups"][groupId]["tasks"][
@@ -196,5 +224,7 @@ export {
   getTaskLog,
   getGroupLog,
   getPhaseLog,
-  getProjectLog
+  getProjectLog,
+  logCount,
+  trimLog
 };

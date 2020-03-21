@@ -141,6 +141,10 @@ export default {
   LOGOUT_TITLE: "登出",
   LOGOUT_MESSAGE: "确认登出吗?",
   WELCOME: "您好",
+  SYNC_PROJECT: "同步",
+  EXPORT_PROJECT: "导出",
+  IMPORT_PROJECT: "导入",
+  SAVE_PROJECT: "保存",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",

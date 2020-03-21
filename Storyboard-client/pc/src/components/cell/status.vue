@@ -1,5 +1,5 @@
 <template>
-  <div class="status-wrapper" @click="mouseclick(`status-popover`, $event)">
+  <div class="status-wrapper" @click="mouseclick('status-popover', $event)">
     <wave-btn
       class="status-btn"
       btn-style="width: 100%; height: 100%; color: white;"
