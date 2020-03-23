@@ -101,8 +101,8 @@ router.post(
         color,
         tasks: [{ name: "", members: [] }]
       };
-      const createRes = await Project.createTask(phaseId, newGroup);
-      return handleSuccess(res, createRes);
+      const resp = await Project.createTask(phaseId, newGroup);
+      return handleSuccess(res, resp);
     } catch (err) {
       return handleError(res, err);
     }
@@ -118,9 +118,23 @@ router.post(
   verifyUser,
   async (req, res) => {
     try {
-      let name = req.body.name;
-      let groupId = req.body.groupId;
-      let newTask = { name };
+      const {
+        name,
+        members,
+        status,
+        priority,
+        startDate,
+        dueDate,
+        groupId
+      } = req.body;
+      let newTask = {
+        name,
+        members,
+        start_date: startDate,
+        due_date: dueDate,
+        status,
+        priority
+      };
       const createRes = await Project.createTask(groupId, newTask);
       return handleSuccess(res, createRes);
     } catch (err) {

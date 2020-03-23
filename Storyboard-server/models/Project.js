@@ -35,7 +35,7 @@ const TaskSchema = new Schema({
     ],
     default: []
   },
-  createdAt: {
+  created_at: {
     type: Date,
     default: Date.now
   }
@@ -51,7 +51,7 @@ const GroupSchema = new Schema({
     default: "lightgrey"
   },
   tasks: [TaskSchema],
-  createdAt: {
+  created_at: {
     type: Date,
     default: Date.now
   }
@@ -145,12 +145,23 @@ ProjectSchema.statics.createGroup = function(phaseId, newGroup) {
 };
 
 ProjectSchema.statics.createTask = function(groupId, newTask) {
-  let id = objectId(groupId);
-  let task = new Task(newTask);
-  return this.updateOne(
-    { "phases.groups._id": id },
-    { $addToSet: { "phases.$.groups.0.tasks": task } }
-  );
+  return new Promise(async (resolve, reject) => {
+    try {
+      let id = objectId(groupId);
+      let task = new Task(newTask);
+      const resp = await this.updateOne(
+        { "phases.groups._id": id },
+        { $addToSet: { "phases.$.groups.0.tasks": task } }
+      );
+      if (resp.ok === 1 && resp.nModified === 1) {
+        return resolve(task);
+      } else {
+        return resolve(null);
+      }
+    } catch (err) {
+      return reject(err);
+    }
+  });
 };
 
 module.exports = mongoose.model("Project", ProjectSchema);
