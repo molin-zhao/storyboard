@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { JSONWEBTOKEN } = require("./config/encrypt.config");
 const redisOps = require("./redisOps");
-const { ERROR } = require("./response");
+const { AUTH } = require("./config/redis-cluster.config");
+const { ERROR, handleError } = require("./response");
 
 const getToken = cred => {
   return jwt.sign(cred, JSONWEBTOKEN.SECRETKEY, {
@@ -44,6 +45,16 @@ const verifyAuthorization = async (req, res, next) => {
   }
 };
 
+const verifyRedisAuth = async (req, res, next) => {
+  try {
+    let auth = req.body.auth || req.query.auth;
+    if (AUTH && auth !== AUTH) throw new Error(ERROR.UNAUTHORIZED);
+    return next();
+  } catch (err) {
+    return handleError(res, err);
+  }
+};
+
 const verifyUser = (req, res, next) => {
   let tokenUser = req.user._id;
   let requestUser = req.query.user || req.body.user;
@@ -58,5 +69,6 @@ module.exports = {
   getToken,
   decodeToken,
   verifyAuthorization,
-  verifyUser
+  verifyUser,
+  verifyRedisAuth
 };
