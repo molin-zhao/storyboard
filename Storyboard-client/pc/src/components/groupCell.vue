@@ -9,7 +9,6 @@
         :task-id="task._id"
         :default-value="$t('ADD_TASK_NAME')"
         :color="color"
-        @name-change="taskNameChange"
       />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_STATUS')">
@@ -104,11 +103,6 @@ export default {
     },
     computedStyle() {
       return `width: calc(${this.title.init_w} + ${this.title.offset_w}px); ${this.style};`;
-    }
-  },
-  methods: {
-    taskNameChange(val) {
-      console.log(val);
     }
   }
 };

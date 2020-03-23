@@ -3,9 +3,14 @@ import * as URL from "@/common/utils/url";
 import store from "@/store";
 
 const createSocketConnection = user => {
-  const socket = io(URL.CONNECT_SOCKET());
-  if (!socket.connected) socket.disconnect();
-  socket.on("connect", () => {
+  const socket = io(URL.CONNECT_SOCKET(), {
+    reconnection: true,
+    reconnectionDelay: 1000 * 60 * 2, // 2 minutes
+    reconnectionAttempts: Infinity,
+    reconnectionDelayMax: 1000 * 60 * 5
+  });
+  if (!socket.connected) socket.close();
+  socket.socket.on("connect", () => {
     socket.emit("establish-connection", user);
   });
   socket.on("establish-connection-success", () => {
