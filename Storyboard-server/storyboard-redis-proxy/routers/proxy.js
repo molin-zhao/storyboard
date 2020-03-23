@@ -1,144 +1,136 @@
 const express = require("express");
 const cluster = require("../redis-cluster");
-const { ERROR, SUCCESS } = require("../../response");
-const { AUTH } = require("../../config/redis-cluster.config");
+const { ERROR, handleError, handleSuccess } = require("../../response");
+const { verifyRedisAuth } = require("../../authenticate");
 const router = express.Router();
 
-router.post("/set", async (req, res) => {
-  let auth = req.body.auth;
-  let key = req.body.key;
-  let value = req.body.value;
-  let ex = req.body.expire;
-  if (AUTH && auth !== AUTH) {
-    return res.status(401).json({
-      message: ERROR.UNAUTHORIZED
-    });
-  }
+router.post("/set", verifyRedisAuth, async (req, res) => {
   try {
-    let result = ex
-      ? await cluster.set(key, value, "EX", ex)
-      : await cluster.set(key, value);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: result
-    });
-  } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR
-    });
-  }
-});
-
-router.post("/get", (req, res) => {
-  let auth = req.body.auth;
-  let key = req.body.key;
-  if (AUTH && auth !== AUTH) {
-    return res.status(401).json({
-      message: ERROR.UNAUTHORIZED
-    });
-  }
-  cluster.get(key, (err, result) => {
-    if (err) {
-      console.log(err.message);
-      return res.status(500).json({
-        message: ERROR.SERVER_ERROR
-      });
+    let key = req.body.key;
+    let value = req.body.value;
+    let ex = req.body.expire;
+    if (!key) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    let resp = null;
+    if (ex) {
+      resp = await cluster.set(key, value, "EX", ex);
+    } else {
+      resp = await cluster.set(key, value);
     }
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: result
-    });
-  });
-});
-
-router.get("/set", async (req, res) => {
-  let auth = req.query.auth;
-  let key = req.query.key;
-  let value = req.query.value;
-  let ex = req.query.expire;
-  if (AUTH && auth !== AUTH) {
-    return res.status(401).json({
-      message: ERROR.UNAUTHORIZED
-    });
-  }
-  try {
-    let result = ex
-      ? await cluster.set(key, value, "EX", ex)
-      : await cluster.set(key, value);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: result
-    });
+    return handleSuccess(res, resp);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR
-    });
+    return handleError(res, err);
   }
 });
 
-router.get("/get", (req, res) => {
-  let auth = req.query.auth;
-  let key = req.query.key;
-  if (AUTH && auth !== AUTH) {
-    return res.status(401).json({
-      message: ERROR.UNAUTHORIZED
-    });
+router.post("/get", verifyRedisAuth, async (req, res) => {
+  try {
+    let key = req.body.key;
+    if (!key) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.get(key);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
   }
-  cluster.get(key, (err, result) => {
-    if (err) {
-      console.log(err.message);
-      return res.status(500).json({
-        message: ERROR.SERVER_ERROR
-      });
+});
+
+router.get("/set", verifyRedisAuth, async (req, res) => {
+  try {
+    let key = req.query.key;
+    let value = req.query.value;
+    let ex = req.query.expire;
+    if (!key) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    let resp = null;
+    if (ex) {
+      resp = await cluster.set(key, value, "EX", ex);
+    } else {
+      resp = await cluster.set(key, value);
     }
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: result
-    });
-  });
-});
-
-router.get("/del", async (req, res) => {
-  let auth = req.query.auth;
-  let key = req.query.key;
-  if (AUTH && auth !== AUTH) {
-    return res.status(401).json({
-      message: ERROR.UNAUTHORIZED
-    });
-  }
-  try {
-    const resp = await cluster.del(key);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: resp
-    });
+    return handleSuccess(res, resp);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR,
-      data: err
-    });
+    return handleError(res, err);
   }
 });
 
-router.post("/del", async (req, res) => {
-  let auth = req.body.auth;
-  let key = req.body.key;
-  if (AUTH && auth !== AUTH) {
-    return res.status(401).json({
-      message: ERROR.UNAUTHORIZED
-    });
-  }
+router.get("/get", verifyRedisAuth, async (req, res) => {
   try {
-    const resp = await cluster.del(key);
-    return res.status(200).json({
-      message: SUCCESS.OK,
-      data: resp
-    });
+    let key = req.query.key;
+    if (!key) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.get(key);
+    return handleSuccess(res, resp);
   } catch (err) {
-    return res.status(500).json({
-      message: ERROR.SERVER_ERROR,
-      data: err
-    });
+    return handleError(res, err);
+  }
+});
+
+router.get("/del", verifyRedisAuth, async (req, res) => {
+  try {
+    let key = req.query.key;
+    if (!key) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.del(key);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.post("/del", verifyRedisAuth, async (req, res) => {
+  try {
+    let key = req.body.key;
+    if (!key) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.del(key);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.post("/hset", verifyRedisAuth, async (req, res) => {
+  try {
+    let key = req.body.key;
+    let field = req.body.field;
+    let value = req.body.value;
+    if (!key || !field) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.hset(key, field, value);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.post("/hget", async (req, res) => {
+  try {
+    let key = req.body.key;
+    let field = req.body.field;
+    if (!key || !field) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.hget(key, field);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.get("/hset", verifyRedisAuth, async (req, res) => {
+  try {
+    let key = req.query.key;
+    let field = req.query.field;
+    let value = req.query.value;
+    if (!key || !field) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.hset(key, field, value);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.get("/hget", async (req, res) => {
+  try {
+    let key = req.query.key;
+    let field = req.query.field;
+    if (!key || !field) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await cluster.hget(key, field);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
   }
 });
 
