@@ -69,3 +69,7 @@ export const CONNECT_SOCKET = () => {
 export const POST_SEARCH_USER = () => {
   return API_HOST + "/user/search";
 };
+
+export const GET_ONLINE_USER = projectId => {
+  return API_HOST + `/user/online?project=${projectId}`;
+};

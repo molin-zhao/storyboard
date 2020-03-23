@@ -37,12 +37,12 @@
       <div class="group-body">
         <transition-group class="group-title">
           <group-title
-            v-for="(item, index) in title"
+            v-for="(item, index) in titles"
             :item="item"
             :key="item.name"
             :title="$t(item.name)"
             :default-style="computedTitleStyle"
-            :resizer="index < title.length - 1 ? true : false"
+            :resizer="index < titles.length - 1 ? true : false"
             :sibling-resizing="titleResizing"
             @on-drag-start="onTitleDragStart"
             @on-drag-end="onTitleDragEnd"
@@ -57,7 +57,7 @@
           class="group-cell"
         >
           <group-cell
-            v-for="title in title"
+            v-for="title in titles"
             :key="title.name"
             :title="title"
             :task="taskItem"
@@ -69,12 +69,13 @@
         </group-row>
         <!-- add a task -->
         <addTask
+          :titles="titles"
           :phase-index="phaseIndex"
           :group-id="groupId"
           :color="item.color"
           :editable="true"
           class="group-cell"
-        ></addTask>
+        />
       </div>
     </div>
   </div>
@@ -104,11 +105,11 @@ export default {
   computed: {
     ...mapState("user", ["projects", "activeIndex"]),
     computedTitleStyle() {
-      const { index, title } = this;
+      const { index, titles } = this;
       return `height: 100%; background-color: white; ${
         index === 0 ? "border-top-left-radius: 10px;" : null
       };${
-        index === title.length - 1 ? "border-top-right-radius: 10px;" : null
+        index === titles.length - 1 ? "border-top-right-radius: 10px;" : null
       }`;
     },
     triangledownfill() {
@@ -145,7 +146,7 @@ export default {
   },
   data() {
     return {
-      title: [
+      titles: [
         {
           name: "TITLE_NAME",
           init_w: "25%",
@@ -203,12 +204,12 @@ export default {
     },
     onTitleDragEnter(item) {
       if (item === this.dragging) return;
-      const newTitle = [...this.title];
+      const newTitle = [...this.titles];
       const src = newTitle.indexOf(this.dragging);
       const dst = newTitle.indexOf(item);
       if (newTitle[dst].draggable && newTitle[src].draggable) {
         newTitle.splice(dst, 0, ...newTitle.splice(src, 1));
-        this.title = newTitle;
+        this.titles = newTitle;
       }
     },
     onTitleResizing(args) {
@@ -218,9 +219,9 @@ export default {
       let crntEleOffsetWd = args[2];
       let nxtEleOffsetWd = args[3];
 
-      let nextSiblingIndex = this.title.indexOf(currentElement) + 1;
-      if (nextSiblingIndex > this.title.length - 1) return;
-      let nextElement = this.title[nextSiblingIndex];
+      let nextSiblingIndex = this.titles.indexOf(currentElement) + 1;
+      if (nextSiblingIndex > this.titles.length - 1) return;
+      let nextElement = this.titles[nextSiblingIndex];
 
       let crntElMinWd = currentElement.min_w;
       let nxtElMinWd = nextElement.min_w;

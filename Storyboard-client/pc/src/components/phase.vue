@@ -241,6 +241,7 @@ export default {
       padding-left: 0;
       padding-right: 0;
       position: relative;
+      cursor: pointer;
       span {
         display: inline-block;
         vertical-align: middle;

@@ -47,8 +47,11 @@ export default {
       required: true
     },
     taskId: {
-      type: String,
-      required: true
+      type: String
+    },
+    newTask: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -88,8 +91,10 @@ export default {
         activeIndex,
         phaseIndex,
         groupId,
-        taskId
+        taskId,
+        newTask
       } = this;
+      if (newTask) return this.$emit("on-change", val);
       let projectId = projects[activeIndex]._id;
       let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
       if (val === value) {

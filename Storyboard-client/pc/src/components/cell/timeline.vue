@@ -16,7 +16,7 @@
       <tooltip
         content-style="
         width: 300px; 
-        height: 420px; 
+        height: 400px; 
         border-radius: 5px; 
         box-shadow: -5px 2px 5px lightgrey; 
         -webkit-box-shadow: -5px 2px 5px lightgrey;
@@ -51,7 +51,7 @@
             @select-end="selectEnd"
           />
         </div>
-        <div class="datepicker-footer">
+        <!-- <div class="datepicker-footer">
           <div
             style="
             width: 90%; 
@@ -61,15 +61,15 @@
             top: 0;
             "
           ></div>
-          <div class="footer-btns">
+          <div class="footer-btns" @click.stop="stopPropagation">
             <button @click="cancel" class="btn btn-sm btn-danger">
               {{ $t("CANCEL") }}
             </button>
-            <button @click.stop="confirm" class="btn btn-sm btn-primary">
+            <button @click="confirm" class="btn btn-sm btn-primary">
               {{ $t("CONFIRM") }}
             </button>
-          </div>
-        </div>
+          </div> -->
+        <!-- </div> -->
       </tooltip>
     </popover>
   </div>
@@ -81,7 +81,7 @@ import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import datepicker from "@/components/datepicker";
 import { eventBus } from "@/common/utils/eventBus";
-import { mouseclick, hide } from "@/common/utils/mouse";
+import { mouseclick, hide, stopPropagation } from "@/common/utils/mouse";
 import { NOW_ISO, parseISODate } from "@/common/utils/date";
 import { mapState, mapMutations } from "vuex";
 import { getTaskLog } from "@/common/utils/log";
@@ -135,8 +135,11 @@ export default {
       required: true
     },
     taskId: {
-      type: String,
-      required: true
+      type: String
+    },
+    newTask: {
+      type: Boolean,
+      default: false
     }
   },
   mounted() {
@@ -147,6 +150,7 @@ export default {
   methods: {
     mouseclick,
     hide,
+    stopPropagation,
     ...mapMutations({
       add_log: "project/add_log",
       remove_log: "project/remove_log"
@@ -160,16 +164,20 @@ export default {
     selectTimeline(args) {
       this.selectedStartDate = args[0];
       this.selectedEndDate = args[1];
+      this.confirm();
     },
     selectStart(iso) {
       this.selectedStartDate = iso;
+      this.confirm();
     },
     selectEnd(iso) {
       this.selectedEndDate = iso;
+      this.confirm();
     },
     clear() {
       this.selectedStartDate = null;
       this.selectedEndDate = null;
+      this.confirm();
     },
     cancel() {
       console.log("cancel");
@@ -184,7 +192,8 @@ export default {
         taskId,
         phaseIndex,
         selectedStartDate,
-        selectedEndDate
+        selectedEndDate,
+        newTask
       } = this;
       let projectId = projects[activeIndex]._id;
       let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
@@ -192,6 +201,12 @@ export default {
         selectedStartDate === null ? "" : selectedStartDate;
       let modifiedSelectedEndDate =
         selectedEndDate === null ? "" : selectedEndDate;
+      if (newTask)
+        return this.$emit(
+          "on-change",
+          modifiedSelectedStartDate,
+          modifiedSelectedEndDate
+        );
       if (startDate !== modifiedSelectedStartDate) {
         this.add_log({
           projectId,
@@ -377,7 +392,7 @@ export default {
   align-items: center;
 }
 .datepicker-header {
-  height: 15%;
+  height: 20%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -386,7 +401,7 @@ export default {
   position: relative;
 }
 .datepicker-body {
-  height: 70%;
+  height: 80%;
   width: 100%;
   display: flex;
   flex-direction: column;

@@ -21,7 +21,12 @@
       />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_MEMBER')">
-      <member :member="task.members" />
+      <member
+        :member="task.members"
+        :phase-index="phaseIndex"
+        :group-id="groupId"
+        :task-id="task._id"
+      />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_PRIORITY')">
       <priority
@@ -117,14 +122,6 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-  }
-  .row-item-name {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
     align-items: center;
   }
 }

@@ -99,6 +99,21 @@ export default {
     displayNumber: {
       type: Number,
       default: 3
+    },
+    groupId: {
+      type: String,
+      required: true
+    },
+    phaseIndex: {
+      type: Number,
+      required: true
+    },
+    taskId: {
+      type: String
+    },
+    newTask: {
+      type: Boolean,
+      defualt: false
     }
   },
   data() {

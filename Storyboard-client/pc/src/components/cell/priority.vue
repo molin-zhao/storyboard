@@ -6,7 +6,7 @@
       :wave-color="`${computedColor(computedPriority)}ff`"
       :title="$t(computedTitle(computedPriority))"
       btn-style="width: 100%; height: 100%; color: white;"
-      @click.native="mouseclick('priority', $event)"
+      @click.native.stop="mouseclick('priority', $event)"
     />
     <popover ref="priority" style="top: calc(100% + 10px);">
       <tooltip
@@ -29,7 +29,7 @@
             v-for="item in options"
             :key="item"
             :style="computedOptionStyle(item)"
-            @click="selectPriority(item)"
+            @click.stop="selectPriority(item)"
           >
             <wave-btn
               class="option-btn"
@@ -77,8 +77,11 @@ export default {
       required: true
     },
     taskId: {
-      type: String,
-      required: true
+      type: String
+    },
+    newTask: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -168,9 +171,11 @@ export default {
         activeIndex,
         phaseIndex,
         groupId,
-        taskId
+        taskId,
+        newTask
       } = this;
       if (this.computedPriority === item) return;
+      if (newTask) return this.$emit("on-change", item);
       let projectId = projects[activeIndex]._id;
       let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
       if (priority === item)
