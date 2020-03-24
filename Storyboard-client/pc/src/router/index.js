@@ -79,9 +79,11 @@ router.beforeEach(async (to, from, next) => {
     try {
       let url = URL.GET_VERIFY_TOKEN(store.state.user.token);
       const res = await Vue.http.get(url);
-      if (res.status === 205) {
+      if (res.status === 201) {
         // token valid but renewed, update local and vuex store
-        store.dispatch("user/save_credential", res.body.data);
+        store.dispatch("user/save_credential", res.data.data);
+        console.log(store.state.user.token);
+        return next();
       }
       return next();
     } catch (err) {

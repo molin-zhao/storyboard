@@ -1,7 +1,15 @@
 <template>
   <div class="tooltip-wrapper" :style="computedContentStyle">
-    <div class="tooltip-arrow-outside" :style="computedArrowOutsideStyle" />
-    <div class="tooltip-arrow-inside" :style="computedArrowInsideStyle" />
+    <div
+      v-show="arrowPlacement"
+      class="tooltip-arrow-outside"
+      :style="computedArrowOutsideStyle"
+    />
+    <div
+      v-show="arrowPlacement"
+      class="tooltip-arrow-inside"
+      :style="computedArrowInsideStyle"
+    />
     <div class="tooltip-content">
       <slot></slot>
     </div>
@@ -44,7 +52,7 @@ export default {
     },
     arrowPlacement: {
       type: String,
-      default: "top"
+      default: ""
     },
     arrowPosition: {
       type: String,

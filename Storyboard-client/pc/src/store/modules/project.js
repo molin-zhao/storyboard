@@ -1,8 +1,21 @@
-import { addLog, removeLog } from "@/common/utils/log";
+import {
+  addLog,
+  removeLog,
+  addTask,
+  addGroup,
+  addPhase,
+  deleteTask,
+  deleteGroup,
+  deletePhase,
+  deleteProject
+} from "@/common/utils/log";
 const state = {
   projects: [],
   activeIndex: 0,
-  logs: {} // tree
+  logs: {}, // tree
+  groupLookup: {}, // reverse index for group
+  phaseLookup: {}, // reverse index for phase
+  projectLookup: {} // reverse index for project
 };
 
 const getters = {};
@@ -22,6 +35,32 @@ const mutations = {
   },
   remove_log(state, payload) {
     state.logs = removeLog(state.logs, payload);
+  },
+  add_task(state, payload) {
+    addTask(state, payload.groupId, payload.task);
+  },
+  add_group(state, payload) {
+    addGroup(state, payload.phaseId, payload.group);
+  },
+  add_phase(state, payload) {
+    addPhase(state, payload.projectId, payload.phase);
+  },
+  delete_task(state, payload) {
+    deleteTask(state, payload.groupId, payload.taskId);
+  },
+  delete_group(state, payload) {
+    deleteGroup(state, payload.phaseId, payload.groupId);
+  },
+  delete_phase(state, payload) {
+    deletePhase(state, payload.projectId, payload.phaseId);
+  },
+  delete_project(state, payload) {
+    deleteProject(state, payload.projectId);
+  },
+  add_lookup(state, payload) {
+    state.groupLookup = payload.groupLookup;
+    state.phaseLookup = payload.phaseLookup;
+    state.projectLookup = payload.projectLookup;
   }
 };
 

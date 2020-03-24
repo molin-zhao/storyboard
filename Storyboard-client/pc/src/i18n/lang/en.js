@@ -146,6 +146,25 @@ export default {
   IMPORT_PROJECT: "Import",
   SAVE_PROJECT: "Save",
 
+  CHANGE_GROUP_COLOR: "Change color",
+  COLLAPSE_GROUP: "Collapse group",
+  ADD_GROUP: "Add group",
+  MANAGE_TASK: "Manage task(s)",
+  DELETE_GROUP: "Delete Group",
+
+  DELETE_TASK_TITLE: "Delete task",
+  DELETE_TASK_MESSAGE: "Would you like to delete this task?",
+  DELETE_TASK_ERROR: "Error on deleting task",
+  DELETE_GROUP_TITLE: "Delete group",
+  DELETE_GROUP_MESSAGE: "Would you like to delete this group?",
+  DELETE_GROUP_ERROR: "Error on deleting group",
+  DELETE_PHASE_TITLE: "Delete phase",
+  DELETE_PHASE_ERROR: "Error on deleting phase",
+  DELETE_PHASE_MESSAGE: "Would you like to delete this phase?",
+  DELETE_PROJECT_TITLE: "Delete project",
+  DELETE_PROJECT_MESSAGE: "Would you like to delete this project?",
+  DELETE_PROJECT_ERROR: "Error on deleting project",
+
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",

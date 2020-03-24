@@ -3,7 +3,7 @@
     class="member-wrapper"
     @mouseenter="mouseenter"
     @mouseleave="mouseleave"
-    @click="mouseclick(`member-popover`, $event)"
+    @click="mouseclick('member-popover', $event)"
   >
     <div
       :class="
@@ -19,9 +19,10 @@
         class="member-avatar"
         :style="computedStyle(index)"
       />
-      <popover ref="member-popover" style="top: calc(100% + 10px);">
-        <tooltip
-          content-style="
+    </div>
+    <popover ref="member-popover" style="top: calc(100% + 10px); z-index: 10">
+      <tooltip
+        content-style="
         width: 300px; 
         height: 250px; 
         border-radius: 5px; 
@@ -29,43 +30,42 @@
         -webkit-box-shadow: -5px 2px 5px lightgrey;
         border: 1px solid whitesmoke;
         "
-          arrow-placement="top"
-          arrow-position="left: 50%; transform: translateX(-50%)"
-          background-color="white"
-          border-color="whitesmoke"
-        >
-          <div class="member-detail">
-            <div class="member-detail-header">
-              <span class="display-only">{{ $t("TASK_MEMBERS") }}</span>
-            </div>
-            <div class="member-detail-body">
-              <div class="member-empty" v-if="members.length === 0">
-                <span style="font-size: 20px">{{
-                  $t("NO_TASK_MEMBER_ALLOC")
-                }}</span>
-                <a
-                  class="text-primary"
-                  style="
+        arrow-placement="top"
+        arrow-position="left: 50%; transform: translateX(-50%)"
+        background-color="white"
+        border-color="whitesmoke"
+      >
+        <div class="member-detail">
+          <div class="member-detail-header">
+            <span class="display-only">{{ $t("TASK_MEMBERS") }}</span>
+          </div>
+          <div class="member-detail-body">
+            <div class="member-empty" v-if="members.length === 0">
+              <span style="font-size: 20px">{{
+                $t("NO_TASK_MEMBER_ALLOC")
+              }}</span>
+              <a
+                class="text-primary"
+                style="
                   display: flex; 
                   flex-direction: row; 
                   justifycontent: center; 
                   align-items: center"
-                  @click="showCreateTaskMember"
-                  ><icon name="add" />{{ $t("ASSIGN_TASK") }}</a
-                >
-              </div>
-              <vue-scroll v-else :ops="ops">
-                <div
-                  style="width: 100%; height: 100px"
-                  v-for="item in members"
-                  :key="item._id"
-                ></div>
-              </vue-scroll>
+                @click="showCreateTaskMember"
+                ><icon name="add" />{{ $t("ASSIGN_TASK") }}</a
+              >
             </div>
+            <vue-scroll v-else :ops="ops">
+              <div
+                style="width: 100%; height: 100px"
+                v-for="item in members"
+                :key="item._id"
+              ></div>
+            </vue-scroll>
           </div>
-        </tooltip>
-      </popover>
-    </div>
+        </div>
+      </tooltip>
+    </popover>
 
     <!-- assign member modal -->
     <create-task-members />

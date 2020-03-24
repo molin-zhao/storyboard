@@ -2,7 +2,7 @@
   <div
     @mouseenter="mouseenter"
     @mouseleave="mouseleave"
-    @click="mouseclick(`timeline-popover`, $event)"
+    @click="mouseclick('timeline-popover', $event)"
     class="timeline-wrapper"
   >
     <wave-btn

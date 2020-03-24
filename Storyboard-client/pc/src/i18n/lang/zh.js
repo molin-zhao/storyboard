@@ -146,6 +146,25 @@ export default {
   IMPORT_PROJECT: "导入",
   SAVE_PROJECT: "保存",
 
+  CHANGE_GROUP_COLOR: "更改颜色",
+  COLLAPSE_GROUP: "折叠该组",
+  ADD_GROUP: "添加新组",
+  MANAGE_TASK: "管理任务",
+  DELETE_GROUP: "删除组",
+
+  DELETE_TASK_TITLE: "删除任务",
+  DELETE_TASK_MESSAGE: "确认删除此任务吗?",
+  DELETE_TASK_ERROR: "删除任务错误",
+  DELETE_GROUP_TITLE: "删除任务组",
+  DELETE_GROUP_MESSAGE: "确认删除该任务组和其包含的所有任务吗?",
+  DELETE_GROUP_ERROR: "删除任务组错误",
+  DELETE_PHASE_TITLE: "删除项目阶段",
+  DELETE_PHASE_MESSAGE: "确认删除该项目阶段吗?",
+  DELETE_PHASE_ERROR: "删除项目阶段错误",
+  DELETE_PROJECT_TITLE: "删除项目",
+  DELETE_PROJECT_MESSAGE: "确认删除该项目吗?",
+  DELETE_PROJECT_ERROR: "删除项目错误",
+
   // actions
   ADD_DESCRIPTION: "添加描述...",
   ADD_TASK: "添加任务...",

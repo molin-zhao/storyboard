@@ -155,6 +155,9 @@ export default {
     onInput(e) {
       let value = e.target.value;
       this.$emit("on-typing", value);
+    },
+    clear() {
+      this.inputValue = "";
     }
   }
 };

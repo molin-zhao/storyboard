@@ -8,15 +8,91 @@
             :icon-style="triangledownfill.iconStyle"
             :icon-name="triangledownfill.iconName"
             :reverse="true"
-            @click.native="collapseGroup"
-          />
+            @click.native="mouseclick('group-setting')"
+          >
+            <popover
+              ref="group-setting"
+              style="right: 0; top: calc(100% + 10px)"
+            >
+              <tooltip
+                content-style="
+                width: 200px; height: 250px;
+                border-radius: 10px;
+                box-shadow: -5px 2px 5px lightgrey; 
+                -webkit-box-shadow: -5px 2px 5px lightgrey;
+                border: 1px solid whitesmoke;
+                "
+                background-color="white"
+                border-color="whitesmoke"
+              >
+                <div class="settings-top-align">
+                  <a
+                    @click="collapseGroup"
+                    style="
+                    border-top: none;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px
+                  "
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="collapse"
+                      style="color: grey"
+                    />
+                    <span style="color: grey">{{ $t("COLLAPSE_GROUP") }}</span>
+                  </a>
+                  <a @click.stop="changeGroupColor">
+                    <icon
+                      class="setting-icon"
+                      name="eglasscolor"
+                      style="color: grey"
+                    />
+                    <span style="color: grey">{{
+                      $t("CHANGE_GROUP_COLOR")
+                    }}</span>
+                  </a>
+                  <a @click="manageTask">
+                    <icon
+                      class="setting-icon"
+                      name="manage"
+                      style="color: grey"
+                    />
+                    <span style="color: grey">{{ $t("MANAGE_TASK") }}</span>
+                  </a>
+                  <a @click="addGroup">
+                    <icon class="setting-icon" name="add" style="color: grey" />
+                    <span style="color: grey">{{ $t("ADD_GROUP") }}</span>
+                  </a>
+                  <a
+                    @click="deleteGroup"
+                    style="
+                    border-bottom: none;
+                    border-bottom-left-radius: 5px;
+                    border-bottom-right-radius: 5px
+                  "
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="delete"
+                      style="color: var(--main-color-danger)"
+                    />
+                    <span style="color: var(--main-color-danger)">{{
+                      $t("DELETE_GROUP")
+                    }}</span>
+                  </a>
+                </div>
+              </tooltip>
+            </popover>
+          </badge-icon>
         </div>
+
         <div class="setting-group-label">
           <div>
             <editable-text
               :default-value="$t('GROUP_TITLE')"
-              :value="item.name"
-              :font-style="`font-size: 18px; color: ${item.color}`"
+              :value="computedGroupTitle"
+              :input-style="`font-size: 18px; color: ${item.color}`"
+              @input-change="groupNameChange"
             />
           </div>
         </div>
@@ -36,6 +112,13 @@
     >
       <div class="group-body">
         <transition-group class="group-title">
+          <a v-show="showDeleteTask" class="delete-task" key="ban">
+            <icon
+              name="ban"
+              class="delete-task-icon"
+              @click.native.stop="hideDeleteTask"
+            />
+          </a>
           <group-title
             v-for="(item, index) in titles"
             :item="item"
@@ -52,23 +135,21 @@
           />
         </transition-group>
         <group-row
-          v-for="taskItem in item.tasks"
-          :key="taskItem._id"
+          v-for="task in item.tasks"
+          :key="task._id"
           class="group-cell"
         >
-          <group-cell
-            v-for="title in titles"
-            :key="title.name"
-            :title="title"
-            :task="taskItem"
+          <group-cell-wrapper
+            :titles="titles"
+            :task="task"
             :color="item.color"
             :phase-index="phaseIndex"
             :group-id="groupId"
-            style="border-right: 1px solid white;"
+            :show-delete-btn="showDeleteTask"
           />
         </group-row>
         <!-- add a task -->
-        <addTask
+        <add-task
           :titles="titles"
           :phase-index="phaseIndex"
           :group-id="groupId"
@@ -84,18 +165,23 @@
 <script>
 import groupRow from "@/components/groupRow";
 import groupCell from "@/components/groupCell";
+import groupCellWrapper from "@/components/groupCellWrapper";
 import groupTitle from "@/components/groupTitle";
 import badgeIcon from "@/components/badgeIcon";
 import editableText from "@/components/editableText";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import addTask from "@/components/addTask";
-import { mapState, mapActions } from "vuex";
+import { mapState, mapMutations } from "vuex";
+import { mouseclick } from "@/common/utils/mouse";
+import { getGroupLog } from "@/common/utils/log";
+import * as URL from "@/common/utils/url";
 export default {
   components: {
     groupTitle,
     groupRow,
     groupCell,
+    groupCellWrapper,
     badgeIcon,
     editableText,
     popover,
@@ -103,7 +189,7 @@ export default {
     addTask
   },
   computed: {
-    ...mapState("user", ["projects", "activeIndex"]),
+    ...mapState("project", ["projects", "activeIndex", "logs"]),
     computedTitleStyle() {
       const { index, titles } = this;
       return `height: 100%; background-color: white; ${
@@ -112,17 +198,22 @@ export default {
         index === titles.length - 1 ? "border-top-right-radius: 10px;" : null
       }`;
     },
+    computedGroupTitle() {
+      const { projects, activeIndex, logs, phaseIndex, groupId, item } = this;
+      let cprojId = projects[activeIndex]._id;
+      let cphaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+      let logName = getGroupLog(logs, cprojId, cphaseId, groupId, "name");
+      return logName ? logName : item.name;
+    },
     triangledownfill() {
       const { color } = this.item;
       return {
         wrapperStyle: {
           plain: `width: 16px; height: 16px; border-radius: 8px; background-color: ${color};`,
-          hover: "background-color: white; border: 1px solid black;",
           active: "background-color: aliceblue;"
         },
         iconStyle: {
           plain: "width: 100%; height: 100%; color: white;",
-          hover: "color: black;",
           active: "color: cornflowerblue;"
         },
         iconName: {
@@ -192,10 +283,19 @@ export default {
       ],
       dragging: null,
       titleResizing: false,
-      collapsed: false
+      collapsed: false,
+      showDeleteTask: false,
+      taskDeleting: false,
+      groupDeleting: false
     };
   },
   methods: {
+    mouseclick,
+    ...mapMutations({
+      add_log: "project/add_log",
+      remove_log: "project/remove_log",
+      delete_group: "project/delete_group"
+    }),
     onTitleDragStart(item) {
       this.dragging = item;
     },
@@ -248,13 +348,37 @@ export default {
       if (this.collapsed) {
         this.collapsed = false;
       }
+    },
+    addGroup() {},
+    changeGroupColor() {},
+    manageTask() {
+      this.showDeleteTask = true;
+    },
+    hideDeleteTask() {
+      this.showDeleteTask = false;
+    },
+    deleteGroup() {},
+    groupNameChange(val) {
+      const { item, projects, activeIndex, phaseIndex, groupId } = this;
+      let projectId = projects[activeIndex]._id;
+      let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+      if (val === item.name) {
+        this.remove_log({ projectId, phaseId, groupId, field: "name" });
+      } else {
+        this.add_log({
+          projectId,
+          phaseId,
+          groupId,
+          field: "name",
+          value: val
+        });
+      }
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-@import "../common/theme/container.css";
 .task-group-wrapper {
   width: 100%;
   display: flex;
@@ -299,6 +423,7 @@ export default {
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      position: relative;
     }
     .setting-group-label {
       width: 16%;
@@ -333,16 +458,12 @@ export default {
     justify-content: flex-start;
     align-items: center;
     flex-wrap: nowrap;
+    position: relative;
   }
   .group-cell {
     width: 96%;
     height: 40px;
     margin-bottom: 1px;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    flex-wrap: nowrap;
   }
 }
 </style>

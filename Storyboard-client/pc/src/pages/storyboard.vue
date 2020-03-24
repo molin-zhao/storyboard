@@ -128,7 +128,7 @@
           <div>
             <span
               v-if="reloading"
-              class="spinner-border spinner-border-sm"
+              class="spinner-border spinner-border-sm text-primary"
               role="status"
               aria-hidden="true"
             ></span>
@@ -177,7 +177,7 @@ import { bell } from "@/common/theme/icon";
 import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
 import { createSocketConnection } from "@/common/utils/socket";
-import { isEdited } from "@/common/utils/log";
+import { isEdited, generateLookup } from "@/common/utils/log";
 export default {
   components: {
     badgeIcon,
@@ -247,6 +247,7 @@ export default {
     ...mapMutations({
       reload_projects: "project/reload_projects",
       select_index: "project/select_index",
+      add_lookup: "project/add_lookup",
       reload_teams: "team/reload_teams",
       add_userinfo: "user/add_userinfo"
     }),
@@ -279,6 +280,7 @@ export default {
         this.add_teams(info.teams);
         this.add_userinfo(info.user);
         this.save_userinfo(info.user);
+        this.errorCode = -1;
       } catch (err) {
         this.errorCode = err.status;
       } finally {
@@ -306,6 +308,20 @@ export default {
         confirmLabel: this.$t("CONFIRM"),
         cancelLabel: this.$t("CANCEL")
       });
+    }
+  },
+  watch: {
+    projects: {
+      deep: true,
+      handler: function(newValue, oldValue) {
+        console.log("project changed");
+        let oldProjectKeys = oldValue.map(pro => pro._id);
+        let newProjectKeys = newValue.map(pro => pro._id);
+        if (newProjectKeys.toString() !== oldProjectKeys.toString()) {
+          const lookups = generateLookup(newValue);
+          this.add_lookup(lookups);
+        }
+      }
     }
   }
 };

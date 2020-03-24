@@ -61,6 +61,10 @@ export default {
     reverse: {
       type: Boolean,
       default: false
+    },
+    autoReset: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -99,13 +103,21 @@ export default {
       const e = event || window.event;
       let { type, target } = e;
       if (this.$refs.icon && this.$refs.icon.contains(target)) {
+        // click inside badgeicon
         if (this.reverse) {
           this.clicked = !this.clicked;
-        } else {
-          if (!this.clicked) this.clicked = true;
+          return;
+        }
+        if (!this.clicked) {
+          this.clicked = true;
+          return;
         }
       } else {
-        if (this.clicked) this.clicked = false;
+        // click outside badgeicon
+        if (this.autoReset) {
+          this.clicked = false;
+          return;
+        }
       }
     },
     checkMouseover() {
@@ -127,6 +139,7 @@ export default {
   align-items: center;
   padding: 0;
   position: relative;
+  cursor: pointer;
   span {
     position: absolute;
     top: 10px;

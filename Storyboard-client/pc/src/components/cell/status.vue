@@ -111,8 +111,7 @@ export default {
         taskId,
         "status"
       );
-      if (logStatus) return logStatus;
-      return status;
+      return logStatus ? logStatus : status;
     },
     computedColor() {
       return function(status) {

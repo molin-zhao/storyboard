@@ -73,3 +73,15 @@ export const POST_SEARCH_USER = () => {
 export const GET_ONLINE_USER = projectId => {
   return API_HOST + `/user/online?project=${projectId}`;
 };
+
+export const DELETE_TASK = taskId => {
+  return API_HOST + `/project/task/delete?id=${taskId}`;
+};
+
+export const DELETE_GROUP = groupId => {
+  return API_HOST + `/project/group/delete?id=${groupId}`;
+};
+
+export const DELETE_PHASE = phaseId => {
+  return API_HOST + `/project/phase/delete?id=${phaseId}`;
+};

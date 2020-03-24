@@ -15,8 +15,6 @@ import { mapState } from "vuex";
 export default {
   data() {
     return {
-      backgroundColor: "whitesmoke",
-      color: "black",
       label: ""
     };
   },
@@ -115,9 +113,9 @@ export default {
       return logStatus ? logStatus : status;
     },
     computedProgress() {
-      const { computedStartDate, computedEndDate, status } = this;
+      const { computedStartDate, computedEndDate, computedStatus } = this;
+      if (computedStatus === "done") return this.$t("PROGRESS_DONE");
       if (!computedStartDate) return this.$t("PROGRESS_UNTRACKED");
-      if (status === "done") return this.$t("PROGRESS_DONE");
 
       /**
        * compute progress by startDate and dueDate

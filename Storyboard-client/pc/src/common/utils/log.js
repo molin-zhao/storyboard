@@ -217,6 +217,200 @@ const getProjectLog = (projects, projId, field) => {
     return undefined;
   }
 };
+
+const addTask = (state, groupId, task) => {
+  // search for group by groupId, and concat tasks with new task
+  let projects = state.projects;
+  let groupLookup = state.groupLookup;
+  if (
+    groupLookup[groupId].constructor === Array &&
+    groupLookup[groupId].length === 3
+  ) {
+    console.log("lookup group");
+    let projectIndex = groupLookup[groupId][0];
+    let phaseIndex = groupLookup[groupId][1];
+    let groupIndex = groupLookup[groupId][2];
+    let tasks =
+      projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][
+        "tasks"
+      ];
+    tasks = tasks.concat(task);
+  } else {
+    for (let i = 0; i < projects.length; i++) {
+      let phases = projects[i]["phases"];
+      for (let j = 0; j < phases.length; j++) {
+        let groups = phases[j]["groups"];
+        for (let k = 0; k < groups.length; k++) {
+          if (groups[k]["_id"] === groupId) {
+            groups[k]["tasks"] = groups[k]["tasks"].concat(task);
+            return;
+          }
+        }
+      }
+    }
+  }
+};
+
+const addGroup = (state, phaseId, group) => {
+  let projects = state.projects;
+  let phaseLookup = state.phaseLookup;
+  if (
+    phaseLookup[phaseId].constructor === Array &&
+    phaseLookup[phaseId].length === 2
+  ) {
+    console.log("lookup phase");
+    let projectIndex = phaseLookup[phaseId][0];
+    let phaseIndex = phaseLookup[phaseId][1];
+    let groups = projects[projectIndex]["phases"][phaseIndex]["groups"];
+    groups = groups.concat(group);
+  } else {
+    for (let i = 0; i < projects.length; i++) {
+      let phases = projects[i]["phases"];
+      for (let j = 0; j < phases.length; j++) {
+        if (phases[j]["_id"] === phaseId) {
+          phases[j]["groups"] = phases[j]["groups"].concat(group);
+          return;
+        }
+      }
+    }
+  }
+};
+
+const addPhase = (state, projectId, phase) => {
+  let projects = state.projects;
+  let projectLookup = state.projectLookup;
+  if (
+    projectLookup[projectId].constructor === Array &&
+    projectLookup[projectId].length === 1
+  ) {
+    console.log("lookup project");
+    let projectIndex = projectLookup[projectId][0];
+    let phases = projects[projectIndex]["phases"];
+    phases = phases.concat(phase);
+  } else {
+    for (let i = 0; i < projects.length; i++) {
+      if (projects[i]["_id"] === projectId) {
+        projects[i]["phases"] = projects[i]["phases"].concat(phase);
+        return projects;
+      }
+    }
+  }
+};
+
+const deleteTask = (state, groupId, taskId) => {
+  let projects = state.projects;
+  let groupLookup = state.groupLookup;
+  if (
+    groupLookup[groupId].constructor === Array &&
+    groupLookup[groupId].length === 3
+  ) {
+    console.log("lookup group");
+    let projectIndex = groupLookup[groupId][0];
+    let phaseIndex = groupLookup[groupId][1];
+    let groupIndex = groupLookup[groupId][2];
+    let tasks =
+      projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][
+        "tasks"
+      ];
+    projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][
+      "tasks"
+    ] = tasks.filter(task => task._id !== taskId);
+  } else {
+    for (let i = 0; i < projects.length; i++) {
+      let phases = projects[i]["phases"];
+      for (let j = 0; j < phases.length; j++) {
+        let groups = phases[j]["groups"];
+        for (let k = 0; k < groups.length; k++) {
+          if (groups[k]["_id"] === groupId) {
+            groups[k]["tasks"] = groups[k]["tasks"].filter(
+              task => task._id !== taskId
+            );
+            return;
+          }
+        }
+      }
+    }
+  }
+};
+
+const deleteGroup = (state, phaseId, groupId) => {
+  let projects = state.projects;
+  let phaseLookup = state.phaseLookup;
+  if (
+    phaseLookup[phaseId].constructor === Array &&
+    phaseLookup[phaseId].length === 2
+  ) {
+    console.log("lookup phase");
+    let projectIndex = phaseLookup[phaseId][0];
+    let phaseIndex = phaseLookup[phaseId][1];
+    let groups = projects[projectIndex]["phases"][phaseIndex]["groups"];
+    projects[projectIndex]["phases"][phaseIndex]["groups"] = groups.filter(
+      group => group._id !== groupId
+    );
+  } else {
+    for (let i = 0; i < projects.length; i++) {
+      let phases = projects[i]["phases"];
+      for (let j = 0; j < phases.length; j++) {
+        if (phases[j]["_id"] === phaseId) {
+          phases[j]["groups"] = phases[j]["groups"].filter(
+            group => group._id !== groupId
+          );
+          return;
+        }
+      }
+    }
+  }
+};
+
+const deletePhase = (state, projectId, phaseId) => {
+  let projects = state.projects;
+  let projectLookup = state.projectLookup;
+  if (
+    projectLookup[projectId].constructor === Array &&
+    projectLookup[projectId].length === 1
+  ) {
+    console.log("lookup project");
+    let projectIndex = projectLookup[projectId][0];
+    let phases = projects[projectIndex]["phases"];
+    projects[projectIndex]["phases"] = phases.filter(
+      phase => phase._id !== phaseId
+    );
+  } else {
+    for (let i = 0; i < projects.length; i++) {
+      if (projects[i]["_id"] === projectId) {
+        projects[i]["phases"] = projects[i]["phases"].filter(
+          phase => phase._id !== phaseId
+        );
+        return;
+      }
+    }
+  }
+};
+
+const deleteProject = (state, projectId) => {
+  let projects = state.projects;
+  projects = projects.filter(project => project._id !== projectId);
+  return;
+};
+
+const generateLookup = projects => {
+  let projectLookup = {};
+  let phaseLookup = {};
+  let groupLookup = {};
+  for (let i = 0; i < projects.length; i++) {
+    projectLookup[projects[i]["_id"]] = [i];
+    let phases = projects[i]["phases"];
+    for (let j = 0; j < phases.length; j++) {
+      phaseLookup[phases[j]["_id"]] = [i, j];
+      let groups = phases[j]["groups"];
+      for (let k = 0; k < groups.length; k++) {
+        groupLookup[groups[k]["_id"]] = [i, j, k];
+      }
+    }
+  }
+  return { projectLookup, phaseLookup, groupLookup };
+};
+
 export {
   addLog,
   removeLog,
@@ -226,5 +420,13 @@ export {
   getPhaseLog,
   getProjectLog,
   logCount,
-  trimLog
+  trimLog,
+  addTask,
+  addGroup,
+  addPhase,
+  deleteTask,
+  deleteGroup,
+  deletePhase,
+  deleteProject,
+  generateLookup
 };

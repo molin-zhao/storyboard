@@ -12,6 +12,7 @@
           :style="`background-color: ${color}; opacity: ${focused ? 1 : 0.5}`"
         />
         <editableText
+          ref="input"
           @on-focus="onFocus"
           @lost-focus="lostFocus"
           defaultValue="ADD_TASK"
@@ -88,7 +89,7 @@ import priority from "@/components/cell/priority";
 import timeline from "@/components/cell/timeline";
 import { stopPropagation } from "@/common/utils/mouse";
 import * as URL from "@/common/utils/url";
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 export default {
   components: {
     editableText,
@@ -167,6 +168,9 @@ export default {
   },
   methods: {
     stopPropagation,
+    ...mapMutations({
+      add_task: "project/add_task"
+    }),
     onFocus() {
       if (!this.focused) this.focused = true;
     },
@@ -188,6 +192,20 @@ export default {
     onTimelineChange(args) {
       this.taskStartDate = args[0];
       this.taskDueDate = args[1];
+    },
+    init() {
+      this.taskName = "";
+      this.taskPriority = "medium";
+      this.taskStatus = "planned";
+      this.taskMembers = [];
+      this.taskStartDate = "";
+      this.taskDueDate = "";
+      this.taskCreating = false;
+      let inputEl = this.$refs["input"][0];
+      if (inputEl) {
+        inputEl.clear();
+        inputEl.endEditing();
+      }
     },
     async addTask() {
       try {
@@ -217,7 +235,9 @@ export default {
           },
           { emulateJSON: true }
         );
-        console.log(resp);
+        let task = resp.data.data;
+        this.add_task({ groupId, task });
+        return this.init();
       } catch (err) {
         console.log(err);
       } finally {
