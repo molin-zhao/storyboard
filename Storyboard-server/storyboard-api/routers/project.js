@@ -60,87 +60,102 @@ router.delete("/delete", verifyAuthorization, verifyUser, async (req, res) => {
 /**
  * create a phase
  */
-router.post(
-  "/phase/create",
-  verifyAuthorization,
-  verifyUser,
-  async (req, res) => {
-    try {
-      let name = req.body.name;
-      let description = req.body.description;
-      let projectId = req.body.projectId;
-      let color = generateRandomColor(COLORS);
-      let newPhase = {
-        name,
-        description,
-        groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }]
-      };
-      const createRes = await Project.createPhase(projectId, newPhase);
-      return handleSuccess(res, createRes);
-    } catch (err) {
-      return handleError(res, err);
-    }
+router.post("/phase/create", verifyAuthorization, async (req, res) => {
+  try {
+    let name = req.body.name;
+    let description = req.body.description;
+    let projectId = req.body.projectId;
+    let color = generateRandomColor(COLORS);
+    let newPhase = {
+      name,
+      description,
+      groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }]
+    };
+    const createRes = await Project.createPhase(projectId, newPhase);
+    return handleSuccess(res, createRes);
+  } catch (err) {
+    return handleError(res, err);
   }
-);
+});
 
 /**
  * create a group
  */
 
-router.post(
-  "/group/create",
-  verifyAuthorization,
-  verifyUser,
-  async (req, res) => {
-    try {
-      let name = req.body.name;
-      let phaseId = req.body.phaseId;
-      let color = generateRandomColor(COLORS);
-      let newGroup = {
-        name,
-        color,
-        tasks: [{ name: "", members: [] }]
-      };
-      const resp = await Project.createTask(phaseId, newGroup);
-      return handleSuccess(res, resp);
-    } catch (err) {
-      return handleError(res, err);
-    }
+router.post("/group/create", verifyAuthorization, async (req, res) => {
+  try {
+    let name = req.body.name;
+    let phaseId = req.body.phaseId;
+    let color = generateRandomColor(COLORS);
+    let newGroup = {
+      name,
+      color,
+      tasks: [{ name: "", members: [] }]
+    };
+    const resp = await Project.createTask(phaseId, newGroup);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
   }
-);
+});
 
 /**
  * create a task
  */
-router.post(
-  "/task/create",
-  verifyAuthorization,
-  verifyUser,
-  async (req, res) => {
-    try {
-      const {
-        name,
-        members,
-        status,
-        priority,
-        startDate,
-        dueDate,
-        groupId
-      } = req.body;
-      let newTask = {
-        name,
-        members,
-        start_date: startDate,
-        due_date: dueDate,
-        status,
-        priority
-      };
-      const createRes = await Project.createTask(groupId, newTask);
-      return handleSuccess(res, createRes);
-    } catch (err) {
-      return handleError(res, err);
-    }
+router.post("/task/create", verifyAuthorization, async (req, res) => {
+  try {
+    const {
+      name,
+      members,
+      status,
+      priority,
+      startDate,
+      dueDate,
+      groupId
+    } = req.body;
+    let newTask = {
+      name,
+      members,
+      start_date: startDate,
+      due_date: dueDate,
+      status,
+      priority
+    };
+    const createRes = await Project.createTask(groupId, newTask);
+    return handleSuccess(res, createRes);
+  } catch (err) {
+    return handleError(res, err);
   }
-);
+});
+
+router.delete("/task/delete", verifyAuthorization, async (req, res) => {
+  try {
+    let taskId = req.query.id;
+    const resp = await Project.deleteTask(taskId);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.delete("/group/delete", verifyAuthorization, async (req, res) => {
+  try {
+    let groupId = req.query.id;
+    const resp = await Project.deleteGroup(groupId);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.delete("/phase/delete", verifyAuthorization, async (req, res) => {
+  try {
+    let phaseId = req.query.id;
+    const resp = await Project.deletePhase(phaseId);
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
 
 module.exports = router;

@@ -47,7 +47,7 @@ router.get("/token/verify", async (req, res) => {
         if (renewResp.status === 200) {
           // successfully renewed token
           let newCred = { id: userId, token: newToken };
-          return handleSuccess(res, newCred, 205);
+          return handleSuccess(res, newCred, 201);
         }
       } catch (err) {
         // cannot renew token but current token is valid
