@@ -15,7 +15,6 @@
 
 <script>
 import { eventBus } from "@/common/utils/eventBus";
-import { stopPropagation } from "@/common/utils/mouse";
 export default {
   data() {
     return {
@@ -65,13 +64,14 @@ export default {
     document.removeEventListener("click", this.checkMouseClick);
   },
   methods: {
-    stopPropagation,
     checkMouseClick(event) {
       const e = event || window.event;
       const { type, target } = e;
       const sidebar = this.$refs["sidebar"];
       if (!sidebar) return;
-      if (!sidebar.contains(target)) return this.hide();
+      if (!sidebar.contains(target)) {
+        return this.hide();
+      }
     },
     show() {
       if (!this.visible) {
@@ -119,7 +119,7 @@ export default {
 <style lang="scss" scoped>
 .sidebar {
   position: absolute;
-  z-index: 1;
+  z-index: 999;
 }
 .sidebar-close {
   width: 30px;

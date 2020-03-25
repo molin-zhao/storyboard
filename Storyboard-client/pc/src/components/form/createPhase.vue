@@ -125,15 +125,6 @@ export default {
       }
       return true;
     },
-    formData() {
-      const { name, description, id, projects, activeIndex } = this;
-      return {
-        name: name.trim(),
-        description: description.trim(),
-        user: id,
-        projectId: projects[activeIndex]._id
-      };
-    },
     resetForm() {
       this.name = "";
       this.description = "";
@@ -142,16 +133,33 @@ export default {
     },
     async create() {
       try {
+        const { name, description, id, projects, activeIndex } = this;
+        let trimmedName = name.trim();
+        let trimmedDescription = description.trim();
+        let projectId = projects[activeIndex]._id;
         if (!this.formCheck()) return;
         this.createStatus = "doing";
         let url = URL.POST_CREATE_PHASE();
-        const createRes = await this.$http.post(url, this.formData(), {
-          emulateJSON: true
-        });
-        this.add_phase();
+        const resp = await this.$http.post(
+          url,
+          {
+            name: trimmedName,
+            description: trimmedDescription,
+            user: id,
+            projectId
+          },
+          {
+            emulateJSON: true
+          }
+        );
+        let phase = resp.data.data;
+        console.log(phase);
+        this.add_phase({ projectId, phase });
         this.createStatus = "done";
       } catch (err) {
         this.createStatus = "todo";
+      } finally {
+        $("#modal-create-phase").modal("hide");
       }
     },
     nameOnInput(e) {

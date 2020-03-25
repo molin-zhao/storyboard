@@ -82,12 +82,12 @@ export default {
       delete_task: "project/delete_task"
     }),
     deleteTask(taskId) {
-      const { groupId } = this;
       this.$confirm.show({
         title: this.$t("DELETE_TASK_TITLE"),
         message: this.$t("DELETE_TASK_MESSAGE"),
         success: async () => {
           try {
+            const { groupId } = this;
             let url = URL.DELETE_TASK(taskId);
             this.taskDeleting = true;
             const resp = await this.$http.delete(url);

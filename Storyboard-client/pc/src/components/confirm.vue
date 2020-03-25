@@ -1,5 +1,5 @@
 <template>
-  <div v-show="visible" class="confirm-wrapper" @click="hideModal">
+  <div v-show="visible" class="confirm-wrapper display-only" @click="hideModal">
     <div
       @click.stop="clickModal"
       class="modal-dialog modal-dialog-centered my-modal"

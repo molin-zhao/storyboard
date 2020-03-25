@@ -124,6 +124,7 @@ export default {
         this.$refs["editableText"] &&
         this.$refs["editableText"].contains(target)
       ) {
+        e.stopPropagation();
         return this.beginEditing();
       } else {
         return this.endEditing();

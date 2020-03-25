@@ -1,29 +1,23 @@
 <template>
   <div class="phase-wrapper">
     <div class="phase-nav">
-      <div
-        class="nav-link display-only"
+      <phase-nav-link
         v-for="(item, index) in projects[activeIndex]['phases']"
-        :key="item._id"
-        :style="navActiveStyle(index)"
-        @click="selectPhase(index, $event)"
-      >
-        <icon
-          v-show="selectedPhaseIndex === index"
-          class="attention"
-          :name="`${showPhase ? 'attentionfill' : 'attention'}`"
-          :style="`color: ${showPhase ? 'black' : 'white'}`"
-          @click.native.stop="showPhaseDetail($event)"
-        />
-        <span>{{ computedPhaseName(item._id, item.name) }}</span>
-      </div>
-      <div
-        class="nav-link"
-        style="padding: 0"
-        data-toggle="modal"
-        data-target="#modal-create-phase"
-      >
-        <icon name="add" style="width: 25px; height: 25px; color: grey" />
+        :key="index"
+        :index="index"
+        :phase="item"
+        :phase-active-index="selectedPhaseIndex"
+        @on-select="selectPhase"
+      />
+      <div class="phase-nav-item">
+        <div
+          class="nav-link"
+          style="padding: 0; background-color: whitesmoke"
+          data-toggle="modal"
+          data-target="#modal-create-phase"
+        >
+          <icon name="add" style="width: 25px; height: 25px; color: gray" />
+        </div>
       </div>
     </div>
     <div class="phase-body">
@@ -38,37 +32,6 @@
 
     <!-- create phase modal -->
     <create-phase-form />
-
-    <!-- sidebar -->
-    <sidebar
-      ref="sidebar"
-      class="shadow"
-      @sidebar-show="sidebarShow"
-      @sidebar-hide="sidebarHide"
-    >
-      <div style="width: 100%; height: 100%;">
-        <div class="phase-name">
-          <editable-text
-            :row="1"
-            :value="computedSelectedPhaseName"
-            :default-value="$t('ADD_PHASE_NAME')"
-            @input-change="nameChange"
-            input-style="font-size: 20px"
-            style="width: 100%; height: 100%; padding: 1px"
-          />
-        </div>
-        <div class="phase-description">
-          <editable-text
-            style="width: 100%; height: 100%; padding: 1px"
-            :default-value="$t('ADD_PHASE_DESCRIPTION')"
-            :value="computedSelectedPhaseDescription"
-            input-style="font-size: 20px;"
-            :row="5"
-            @input-change="descriptionChange"
-          />
-        </div>
-      </div>
-    </sidebar>
   </div>
 </template>
 
@@ -76,22 +39,22 @@
 import waveBtn from "@/components/waveBtn";
 import taskGroup from "@/components/taskGroup";
 import createPhaseForm from "@/components/form/createPhase";
-import sidebar from "@/components/sidebar";
+import phaseNavLink from "@/components/phaseNavLink";
 import editableText from "@/components/editableText";
 import { mouseclick, stopPropagation } from "@/common/utils/mouse";
 import { mapState, mapActions, mapMutations } from "vuex";
+import * as URL from "@/common/utils/url";
 export default {
   components: {
     waveBtn,
     taskGroup,
     createPhaseForm,
-    sidebar,
-    editableText
+    editableText,
+    phaseNavLink
   },
   data() {
     return {
-      selectedPhaseIndex: 0,
-      showPhase: false
+      selectedPhaseIndex: 0
     };
   },
   computed: {
@@ -103,50 +66,15 @@ export default {
           : "background-color: white";
       };
     },
-    computedPhaseName() {
-      return function(phaseId, phaseName) {
-        const { logs, projects, activeIndex, selectedPhaseIndex } = this;
-        let logProject = logs[projects[activeIndex]._id];
-        if (
-          logProject &&
-          logProject["phases"] &&
-          logProject["phases"][phaseId] &&
-          logProject["phases"][phaseId]["name"]
-        )
-          return logProject["phases"][phaseId]["name"];
-        else if (phaseName) return phaseName;
-        else return `${this.$t("UNTITLE_PHASE")}-${selectedPhaseIndex + 1}`;
-      };
-    },
-    computedSelectedPhaseName() {
-      const { logs, selectedPhaseIndex, projects, activeIndex } = this;
-      let selectedPhase = projects[activeIndex]["phases"][selectedPhaseIndex];
-      let logProject = logs[projects[activeIndex]._id];
-      if (
-        logProject &&
-        logProject["phases"] &&
-        logProject["phases"][selectedPhase._id] &&
-        logProject["phases"][selectedPhase._id]["name"]
-      )
-        return logProject["phases"][selectedPhase._id]["name"];
-      return selectedPhase.description;
-    },
-    computedSelectedPhaseDescription() {
-      const { logs, selectedPhaseIndex, projects, activeIndex } = this;
-      let selectedPhase = projects[activeIndex]["phases"][selectedPhaseIndex];
-      let logProject = logs[projects[activeIndex]._id];
-      if (
-        logProject &&
-        logProject["phases"] &&
-        logProject["phases"][selectedPhase._id] &&
-        logProject["phases"][selectedPhase._id]["description"]
-      )
-        return logProject["phases"][selectedPhase._id]["description"];
-      return selectedPhase.description;
-    },
     computedSelectedGroup() {
       const { projects, activeIndex, selectedPhaseIndex } = this;
-      return projects[activeIndex]["phases"][selectedPhaseIndex]["groups"];
+      // return projects[activeIndex]["phases"][selectedPhaseIndex]["groups"];
+      const phaseLength = projects[activeIndex]["phases"].length;
+      if (phaseLength === 0) return [];
+      if (selectedPhaseIndex < phaseLength) {
+        return projects[activeIndex]["phases"][selectedPhaseIndex]["groups"];
+      }
+      return projects[activeIndex]["phases"][phaseLength - 1]["groups"];
     }
   },
   methods: {
@@ -156,51 +84,21 @@ export default {
       add_log: "project/add_log",
       remove_log: "project/remove_log"
     }),
-    selectPhase(i, e) {
-      this.selectedPhaseIndex = i;
-    },
-    showPhaseDetail(e) {
-      this.mouseclick("sidebar", e);
-    },
-    nameChange(val) {
-      const { projects, activeIndex, selectedPhaseIndex } = this;
-      let oPhase = projects[activeIndex]["phases"][selectedPhaseIndex];
-      let oName = oPhase["name"];
-      if (oName !== val)
-        return this.add_log({
-          projectId: projects[activeIndex]._id,
-          phaseId: oPhase._id,
-          field: "name",
-          value: val
-        });
-      return this.remove_log({
-        projectId: projects[activeIndex]._id,
-        phaseId: oPhase._id,
-        field: "name"
-      });
-    },
-    descriptionChange(val) {
-      const { projects, activeIndex, selectedPhaseIndex } = this;
-      let oPhase = projects[activeIndex]["phases"][selectedPhaseIndex];
-      let oName = oPhase["description"];
-      if (oName !== val)
-        return this.add_log({
-          projectId: projects[activeIndex]._id,
-          phaseId: oPhase._id,
-          field: "description",
-          value: val
-        });
-      return this.remove_log({
-        projectId: projects[activeIndex]._id,
-        phaseId: oPhase._id,
-        field: "description"
-      });
-    },
-    sidebarShow() {
-      this.showPhase = true;
-    },
-    sidebarHide() {
-      this.showPhase = false;
+    selectPhase(val) {
+      this.selectedPhaseIndex = val;
+    }
+  },
+  watch: {
+    projects: {
+      deep: true,
+      handler: function(newValue, oldValue) {
+        // phase removed
+        const { activeIndex, selectedPhaseIndex } = this;
+        const phaseLength = newValue[activeIndex]["phases"].length;
+        if (selectedPhaseIndex >= phaseLength) {
+          this.selectedPhaseIndex = phaseLength - 1;
+        }
+      }
     }
   }
 };
@@ -223,39 +121,6 @@ export default {
     width: 100%;
     height: 50px;
     border-bottom: lightgrey 1px solid;
-    .nav-link {
-      width: 15%;
-      min-width: 150px;
-      max-width: 200px;
-      height: 95%;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      border-top-left-radius: 5px;
-      border-top-right-radius: 5px;
-      border: lightgrey 1px solid;
-      border-bottom: none;
-      margin-right: -1px;
-      padding-top: 10px;
-      padding-left: 0;
-      padding-right: 0;
-      position: relative;
-      cursor: pointer;
-      span {
-        display: inline-block;
-        vertical-align: middle;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: white;
-        font-size: 16px;
-      }
-    }
-    .nav-link:active {
-      -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-      box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-    }
   }
   .phase-body {
     width: 100%;
@@ -265,20 +130,5 @@ export default {
     justify-content: flex-start;
     align-items: center;
   }
-}
-.attention {
-  cursor: pointer;
-  position: absolute;
-  left: 10px;
-}
-.phase-name {
-  width: 100%;
-  height: 60px;
-  margin-top: 10px;
-}
-.phase-description {
-  width: 100%;
-  height: 300px;
-  margin-top: 10px;
 }
 </style>

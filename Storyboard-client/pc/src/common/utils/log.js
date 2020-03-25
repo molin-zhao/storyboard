@@ -137,7 +137,6 @@ const createProject = projectId => {
 const assignProject = (org, projectId, source) => {
   let obj = {};
   obj[projectId] = source;
-  console.log(obj);
   return Object.assign({}, org, obj);
 };
 
@@ -204,7 +203,6 @@ const getPhaseLog = (projects, projId, phaseId, field) => {
   try {
     return projects[projId]["phases"][phaseId][field];
   } catch (err) {
-    console.log(err.message);
     return undefined;
   }
 };
@@ -213,7 +211,6 @@ const getProjectLog = (projects, projId, field) => {
   try {
     return projects[projId][field];
   } catch (err) {
-    console.log(err.message);
     return undefined;
   }
 };
@@ -234,7 +231,9 @@ const addTask = (state, groupId, task) => {
       projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][
         "tasks"
       ];
-    tasks = tasks.concat(task);
+    projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][
+      "tasks"
+    ] = tasks.concat(task);
   } else {
     for (let i = 0; i < projects.length; i++) {
       let phases = projects[i]["phases"];
@@ -262,7 +261,9 @@ const addGroup = (state, phaseId, group) => {
     let projectIndex = phaseLookup[phaseId][0];
     let phaseIndex = phaseLookup[phaseId][1];
     let groups = projects[projectIndex]["phases"][phaseIndex]["groups"];
-    groups = groups.concat(group);
+    projects[projectIndex]["phases"][phaseIndex]["groups"] = groups.concat(
+      group
+    );
   } else {
     for (let i = 0; i < projects.length; i++) {
       let phases = projects[i]["phases"];
@@ -286,7 +287,7 @@ const addPhase = (state, projectId, phase) => {
     console.log("lookup project");
     let projectIndex = projectLookup[projectId][0];
     let phases = projects[projectIndex]["phases"];
-    phases = phases.concat(phase);
+    projects[projectIndex]["phases"] = phases.concat(phase);
   } else {
     for (let i = 0; i < projects.length; i++) {
       if (projects[i]["_id"] === projectId) {
