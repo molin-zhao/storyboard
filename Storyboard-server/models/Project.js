@@ -133,7 +133,7 @@ ProjectSchema.statics.createPhase = function(projectId, newPhase) {
   return new Promise(async (resolve, reject) => {
     try {
       let id = objectId(projectId);
-      let phase = new Phase({ newPhase });
+      let phase = new Phase(newPhase);
       const resp = await this.updateOne(
         { _id: id },
         { $addToSet: { phases: phase } }
@@ -195,9 +195,12 @@ ProjectSchema.statics.deleteTask = function(taskId) {
       let id = objectId(taskId);
       const resp = await this.updateOne(
         { "phases.groups.tasks._id": id },
-        { $pull: { "phases.$.groups.0.tasks": id } }
+        {
+          $pull: {
+            "phases.$.groups.0.tasks": { _id: id }
+          }
+        }
       );
-      console.log(resp);
       if (resp.ok === 1 && resp.nModified === 1) {
         return resolve("ok");
       } else {
@@ -215,7 +218,7 @@ ProjectSchema.statics.deleteGroup = function(groupId) {
       let id = objectId(groupId);
       const resp = await this.updateOne(
         { "phases.groups._id": id },
-        { $pull: { "phases.$.groups": id } }
+        { $pull: { "phases.$.groups": { _id: id } } }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
         return resolve("ok");
@@ -234,7 +237,7 @@ ProjectSchema.statics.deletePhase = function(phaseId) {
       let id = objectId(phaseId);
       const resp = await this.updateOne(
         { "phases._id": id },
-        { $pull: { phases: id } }
+        { $pull: { phases: { _id: id } } }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
         return resolve("ok");
