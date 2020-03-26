@@ -26,8 +26,8 @@
         width: 300px; 
         height: 250px; 
         border-radius: 5px; 
-        box-shadow: -5px 2px 5px lightgrey; 
-        -webkit-box-shadow: -5px 2px 5px lightgrey;
+        box-shadow: -5px 2px 5px gainsboro; 
+        -webkit-box-shadow: -5px 2px 5px gainsboro;
         border: 1px solid whitesmoke;
         "
         arrow-placement="top"

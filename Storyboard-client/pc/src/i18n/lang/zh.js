@@ -3,6 +3,10 @@ export default {
   LANGUAGE: "语言",
   LOGIN: "登录",
   LOGOUT: "登出",
+  SETTINGS: "设置",
+  MAINBOARD: "任务板",
+  PROFILE: "个人中心",
+  WAREHOUSE: "我的仓库",
   LOGGEDIN: "登录成功",
   REGISTER: "注册",
   REGISTERED: "注册成功",
@@ -149,6 +153,7 @@ export default {
   CHANGE_GROUP_COLOR: "更改颜色",
   COLLAPSE_GROUP: "折叠该组",
   ADD_GROUP: "添加新组",
+  ADD_GROUP_ERROR: "暂时无法添加组",
   MANAGE_TASK: "管理任务",
   DELETE_GROUP: "删除组",
 
@@ -164,11 +169,14 @@ export default {
   DELETE_PROJECT_TITLE: "删除项目",
   DELETE_PROJECT_MESSAGE: "确认删除该项目吗?",
   DELETE_PROJECT_ERROR: "删除项目错误",
+  ATLEAST_ONE_PHASE: "项目至少包含一个阶段",
+  ATLEAST_ONE_GROUP: "阶段至少包含一个组",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",
   ADD_TASK: "添加任务...",
   ADD_TASK_NAME: "添加任务名称...",
+  ADD_TASK_ERROR: "暂时无法添加新任务",
   TASK_MEMBERS: "任务人员列表",
   NO_TASK_MEMBER_ALLOC: "暂时没有任务负责人",
   ASSIGN_TASK: "去分配任务",

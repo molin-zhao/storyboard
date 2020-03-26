@@ -35,7 +35,7 @@ const show = function(ref) {
 };
 
 const stopPropagation = function() {
-  console.log("stop");
+  return;
 };
 
 export { mouseover, mouseleave, mouseclick, hide, show, stopPropagation };

@@ -21,13 +21,15 @@
       </div>
     </div>
     <div class="phase-body">
-      <task-group
-        v-for="item in computedSelectedGroup"
-        :key="item._id"
-        :phase-index="selectedPhaseIndex"
-        :group-id="item._id"
-        :item="item"
-      ></task-group>
+      <vue-scroll :ops="ops">
+        <task-group
+          v-for="item in computedSelectedGroup"
+          :key="item._id"
+          :phase-index="selectedPhaseIndex"
+          :group-id="item._id"
+          :item="item"
+        />
+      </vue-scroll>
     </div>
 
     <!-- create phase modal -->
@@ -41,6 +43,7 @@ import taskGroup from "@/components/taskGroup";
 import createPhaseForm from "@/components/form/createPhase";
 import phaseNavLink from "@/components/phaseNavLink";
 import editableText from "@/components/editableText";
+import vueScroll from "vuescroll";
 import { mouseclick, stopPropagation } from "@/common/utils/mouse";
 import { mapState, mapActions, mapMutations } from "vuex";
 import * as URL from "@/common/utils/url";
@@ -50,11 +53,23 @@ export default {
     taskGroup,
     createPhaseForm,
     editableText,
-    phaseNavLink
+    phaseNavLink,
+    vueScroll
   },
   data() {
     return {
-      selectedPhaseIndex: 0
+      selectedPhaseIndex: 0,
+      ops: {
+        vuescroll: {
+          mode: "native"
+        },
+        scrollPanel: {
+          scrollingX: false
+        },
+        bar: {
+          background: "lightgrey"
+        }
+      }
     };
   },
   computed: {
@@ -127,8 +142,10 @@ export default {
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
+    overflow-x: visible;
+    position: relative;
   }
 }
 </style>

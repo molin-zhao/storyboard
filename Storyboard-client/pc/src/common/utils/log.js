@@ -253,6 +253,7 @@ const addTask = (state, groupId, task) => {
 const addGroup = (state, phaseId, group) => {
   let projects = state.projects;
   let phaseLookup = state.phaseLookup;
+  let groupLookup = state.groupLookup;
   if (
     phaseLookup[phaseId].constructor === Array &&
     phaseLookup[phaseId].length === 2
@@ -261,6 +262,11 @@ const addGroup = (state, phaseId, group) => {
     let projectIndex = phaseLookup[phaseId][0];
     let phaseIndex = phaseLookup[phaseId][1];
     let groups = projects[projectIndex]["phases"][phaseIndex]["groups"];
+    // update groupLookup
+    let phaseLookupVector = phaseLookup[phaseId]; //[i, j]
+    let groupIndex = groups.length;
+    let groupLookupVector = [groupIndex]; // [k]
+    groupLookup[group._id] = phaseLookupVector.concat(groupLookupVector);
     projects[projectIndex]["phases"][phaseIndex]["groups"] = groups.concat(
       group
     );
@@ -280,6 +286,7 @@ const addGroup = (state, phaseId, group) => {
 const addPhase = (state, projectId, phase) => {
   let projects = state.projects;
   let projectLookup = state.projectLookup;
+  let phaseLookup = state.phaseLookup;
   if (
     projectLookup[projectId].constructor === Array &&
     projectLookup[projectId].length === 1
@@ -287,6 +294,11 @@ const addPhase = (state, projectId, phase) => {
     console.log("lookup project");
     let projectIndex = projectLookup[projectId][0];
     let phases = projects[projectIndex]["phases"];
+    // update groupLookup
+    let projectLookupVector = projectLookup[projectId]; // [i]
+    let phaseIndex = phases.length;
+    let phaseLookupVector = [phaseIndex]; // [j]
+    phaseLookup[phase._id] = projectLookupVector.concat(phaseLookupVector);
     projects[projectIndex]["phases"] = phases.concat(phase);
   } else {
     for (let i = 0; i < projects.length; i++) {
@@ -345,6 +357,8 @@ const deleteGroup = (state, phaseId, groupId) => {
     let projectIndex = phaseLookup[phaseId][0];
     let phaseIndex = phaseLookup[phaseId][1];
     let groups = projects[projectIndex]["phases"][phaseIndex]["groups"];
+    // update groupLookup
+    // TODO
     projects[projectIndex]["phases"][phaseIndex]["groups"] = groups.filter(
       group => group._id !== groupId
     );
@@ -373,6 +387,8 @@ const deletePhase = (state, projectId, phaseId) => {
     console.log("lookup project");
     let projectIndex = projectLookup[projectId][0];
     let phases = projects[projectIndex]["phases"];
+    // update phaseLookup and groupLookup
+    // TODO
     projects[projectIndex]["phases"] = phases.filter(
       phase => phase._id !== phaseId
     );

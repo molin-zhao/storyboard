@@ -1,5 +1,10 @@
 <template>
-  <div id="modal-create-task-member" class="modal fade" role="dialog">
+  <div
+    id="modal-create-task-member"
+    class="modal fade"
+    role="dialog"
+    @click.stop="stopPropagation"
+  >
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -55,7 +60,7 @@
                   flex-direction: row; 
                   justifycontent: center; 
                   align-items: center"
-                  @click="createProjectMember"
+                  @click.stop="createProjectMember"
                   ><icon name="add" />{{ $t("ADD_PROJECT_MEMBER") }}</a
                 >
               </div>
@@ -92,6 +97,7 @@ import userAddDeleteCell from "@/components/userAddDeleteCell";
 import avatar from "@/components/avatar";
 import vueScroll from "vuescroll";
 import { mapState, mapMutations } from "vuex";
+import { stopPropagation } from "@/common/utils/mouse";
 export default {
   components: {
     searchInput,
@@ -151,6 +157,7 @@ export default {
     ...mapMutations({
       add_projects: "project/add_projects"
     }),
+    stopPropagation,
     resetForm() {
       this.selectedTaskMembers = [];
     },

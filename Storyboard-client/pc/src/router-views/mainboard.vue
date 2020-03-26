@@ -53,8 +53,8 @@
                     @click.stop="syncProject"
                     style="
                     border-top: none;
-                    border-top-left-radius: 5px;
-                    border-top-right-radius: 5px
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px
                   "
                   >
                     <icon
@@ -109,8 +109,8 @@
                     @click.stop="exportProject"
                     style="
                     border-bottom: none;
-                    border-bottom-left-radius: 5px;
-                    border-bottom-right-radius: 5px
+                    border-bottom-left-radius: 10px;
+                    border-bottom-right-radius: 10px
                   "
                   >
                     <icon
@@ -274,22 +274,6 @@ export default {
     justify-content: flex-start;
     align-items: center;
     .mainboard-title {
-      .project-name {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        flex-wrap: nowrap;
-        width: 20%;
-        height: 100%;
-        span {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          text-align: left;
-          white-space: nowrap;
-          width: 100%;
-        }
-      }
       width: 100%;
       height: 8%;
       display: flex;
@@ -307,6 +291,22 @@ export default {
         justify-content: flex-end;
         align-items: center;
       }
+      .project-name {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        width: 20%;
+        height: 100%;
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          text-align: left;
+          white-space: nowrap;
+          width: 100%;
+        }
+      }
     }
   }
 }
@@ -320,7 +320,7 @@ export default {
   align-items: center;
 }
 .mainboard-phases {
-  height: 80%;
+  height: 82%;
   width: 100%;
   display: flex;
   flex-direction: column;

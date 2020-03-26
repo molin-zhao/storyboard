@@ -41,7 +41,7 @@
               <tooltip
                 content-style="
                 width: 300px;
-                height: 400px;
+                height: 300px;
                 border-radius: 10px;
                 box-shadow: -5px 2px 5px lightgrey; 
                 -webkit-box-shadow: -5px 2px 5px lightgrey;
@@ -53,7 +53,45 @@
                 border-color="whitesmoke"
               >
                 <div class="settings">
-                  <a @click.stop="logout">
+                  <a
+                    @click="goToMainboard"
+                    style="
+                  border-top: none;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px
+                  "
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="tasks"
+                      style="color: gray"
+                    />
+                    <span style="color: gray">{{ $t("MAINBOARD") }}</span>
+                  </a>
+                  <a @click="goToSettings">
+                    <icon
+                      class="setting-icon"
+                      name="setting"
+                      style="color: gray"
+                    />
+                    <span style="color: gray">{{ $t("SETTINGS") }}</span>
+                  </a>
+                  <a @click="goToAccount">
+                    <icon
+                      class="setting-icon"
+                      name="account"
+                      style="color: gray"
+                    />
+                    <span style="color: gray">{{ $t("PROFILE") }}</span>
+                  </a>
+                  <a
+                    @click="logout"
+                    style="
+                  border-bottom: none;
+                    border-bottom-left-radius: 10px;
+                    border-bottom-right-radius: 10px
+                  "
+                  >
                     <icon
                       class="setting-icon"
                       name="exit"
@@ -118,7 +156,6 @@
 
       <!-- storyboard -->
       <div v-if="errorCode === -1" class="storyboard">
-        <mainboard />
         <router-view></router-view>
       </div>
       <div v-else class="storyboard">
@@ -168,7 +205,6 @@ import badgeIcon from "@/components/badgeIcon";
 import imageBtn from "@/components/imageBtn";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
-import mainboard from "@/components/mainboard";
 import createProjectForm from "@/components/form/createProject";
 import sidebar from "@/components/sidebar";
 import * as URL from "@/common/utils/url";
@@ -183,7 +219,6 @@ export default {
     badgeIcon,
     imageBtn,
     popover,
-    mainboard,
     tooltip,
     createProjectForm,
     sidebar
@@ -232,6 +267,7 @@ export default {
       this.reload_teams(info.teams);
       this.add_userinfo(info.user);
       this.save_userinfo(info.user);
+      createSocketConnection(info.user);
     } catch (err) {
       this.errorCode = err.status;
     } finally {
@@ -257,6 +293,10 @@ export default {
     isEdited,
     projectLabelClick(index) {
       this.select_index(index);
+      if (this.$route.name !== "mainboard") {
+        console.log("go to mainboard");
+        this.$router.replace("/storyboard");
+      }
     },
     resetVisibleComponents() {
       return eventBus.$emit("reset-visible-component");
@@ -308,6 +348,21 @@ export default {
         confirmLabel: this.$t("CONFIRM"),
         cancelLabel: this.$t("CANCEL")
       });
+    },
+    goToAccount() {
+      if (this.$route.name !== "profile") {
+        return this.$router.replace({ name: "profile" });
+      }
+    },
+    goToSettings() {
+      if (this.$route.name !== "settings") {
+        return this.$router.replace({ name: "settings" });
+      }
+    },
+    goToMainboard() {
+      if (this.$route.name !== "mainboard") {
+        return this.$router.replace("/storyboard");
+      }
     }
   },
   watch: {

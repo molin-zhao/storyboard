@@ -27,9 +27,20 @@
         background-color="white"
         border-color="whitesmoke"
       >
-        <div class="datepicker-header">
+        <div
+          class="datepicker-header display-only"
+          @click.stop="stopPropagation"
+        >
+          <a
+            class="check-btn"
+            @click.stop="mouseclick('timeline-popover', $event)"
+          >
+            <icon name="check" class="check-btn-icon" />
+          </a>
           <span style="font-size: 18px">{{ $t("EDIT_DATE") }}</span>
-          <icon name="refresh" class="refresh-btn" @click.native.stop="clear" />
+          <a class="refresh-btn" @click.stop="clear">
+            <icon name="refresh" class="refresh-btn-icon" />
+          </a>
           <div
             style="
             width: 90%; 
@@ -40,7 +51,7 @@
             "
           ></div>
         </div>
-        <div class="datepicker-body">
+        <div class="datepicker-body" @click.stop="stopPropagtion">
           <datepicker
             :init="projects[activeIndex].createdAt"
             :start="computedStart"
@@ -51,25 +62,6 @@
             @select-end="selectEnd"
           />
         </div>
-        <!-- <div class="datepicker-footer">
-          <div
-            style="
-            width: 90%; 
-            height: 1px; 
-            background-color: gainsboro;
-            position: absolute;
-            top: 0;
-            "
-          ></div>
-          <div class="footer-btns" @click.stop="stopPropagation">
-            <button @click="cancel" class="btn btn-sm btn-danger">
-              {{ $t("CANCEL") }}
-            </button>
-            <button @click="confirm" class="btn btn-sm btn-primary">
-              {{ $t("CONFIRM") }}
-            </button>
-          </div> -->
-        <!-- </div> -->
       </tooltip>
     </popover>
   </div>
@@ -431,8 +423,43 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   right: 20px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.refresh-btn:active,
+.check-btn:active {
+  -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.check-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 20px;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.check-btn-icon {
   width: 20px;
   height: 20px;
-  cursor: pointer;
+  color: var(--main-color-success);
+}
+
+.refresh-btn-icon {
+  width: 20px;
+  height: 20px;
+  color: black;
 }
 </style>

@@ -236,10 +236,23 @@ export default {
           { emulateJSON: true }
         );
         let task = resp.data.data;
-        this.add_task({ groupId, task });
-        return this.init();
+        if (task) {
+          this.add_task({ groupId, task });
+          return this.init();
+        } else {
+          this.$alert.show({
+            type: "warning",
+            message: this.$t("ADD_TASK_ERROR"),
+            interval: 5000
+          });
+        }
       } catch (err) {
         console.log(err);
+        this.$alert.show({
+          type: "warning",
+          message: this.$t("ADD_TASK_ERROR"),
+          interval: 5000
+        });
       } finally {
         this.taskCreating = false;
       }

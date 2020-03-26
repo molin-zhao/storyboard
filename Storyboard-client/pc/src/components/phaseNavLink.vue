@@ -165,12 +165,19 @@ export default {
       });
     },
     deletePhase() {
+      const { activeIndex, projects, phase, index } = this;
+      if (projects[activeIndex]["phases"].length === 1) {
+        return this.$alert.show({
+          type: "warning",
+          message: this.$t("ATLEAST_ONE_PHASE"),
+          interval: 3000
+        });
+      }
       this.$confirm.show({
         title: this.$t("DELETE_PHASE_TITLE"),
         message: this.$t("DELETE_PHASE_MESSAGE"),
         success: async () => {
           try {
-            const { activeIndex, projects, phase, index } = this;
             let projectId = projects[activeIndex]._id;
             let phaseId = phase._id;
             let url = URL.DELETE_PHASE(phaseId);

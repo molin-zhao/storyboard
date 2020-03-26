@@ -198,10 +198,11 @@ export default {
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
-  border: 1px solid #ccc;
+  border: none;
+  // border: 1px dashed gainsboro;
 }
 .input:focus {
-  border: 1px dashed gainsboro;
+  border: 1.5px dashed gainsboro;
   outline: none;
 }
 </style>

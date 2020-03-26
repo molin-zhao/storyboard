@@ -27,7 +27,7 @@ const mutations = {
   reload_projects(state, payload) {
     state.projects = payload;
   },
-  selete_index(state, payload) {
+  select_index(state, payload) {
     state.activeIndex = payload;
   },
   add_log(state, payload) {

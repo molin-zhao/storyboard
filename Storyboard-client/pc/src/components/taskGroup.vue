@@ -3,7 +3,15 @@
     <div class="group-setting">
       <div v-if="!collapsed" class="group-setting-show">
         <div class="setting-btn">
+          <span
+            v-if="groupAdding || groupDeleting"
+            class="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+            :style="`color: ${item.color}; width: 16px; height: 16px`"
+          ></span>
           <badge-icon
+            v-else
             :wrapper-style="triangledownfill.wrapperStyle"
             :icon-style="triangledownfill.iconStyle"
             :icon-name="triangledownfill.iconName"
@@ -12,26 +20,26 @@
           >
             <popover
               ref="group-setting"
-              style="right: 0; top: calc(100% + 10px)"
+              style="left: 0; top: calc(100% + 10px)"
             >
               <tooltip
-                content-style="
-                width: 200px; height: 250px;
-                border-radius: 10px;
-                box-shadow: -5px 2px 5px lightgrey; 
-                -webkit-box-shadow: -5px 2px 5px lightgrey;
-                border: 1px solid whitesmoke;
-                "
                 background-color="white"
                 border-color="whitesmoke"
+                contentStyle="
+              width: 200px; height: 250px; background-color: white;
+              border-radius: 10px;
+              box-shadow: -5px 2px 5px lightgrey; 
+              -webkit-box-shadow: -5px 2px 5px lightgrey;
+              border: 1px solid whitesmoke;
+              "
               >
                 <div class="settings-top-align">
                   <a
                     @click="collapseGroup"
                     style="
                     border-top: none;
-                    border-top-left-radius: 5px;
-                    border-top-right-radius: 5px
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 10px
                   "
                   >
                     <icon
@@ -67,8 +75,8 @@
                     @click="deleteGroup"
                     style="
                     border-bottom: none;
-                    border-bottom-left-radius: 5px;
-                    border-bottom-right-radius: 5px
+                    border-bottom-left-radius: 10px;
+                    border-bottom-right-radius: 10px
                   "
                   >
                     <icon
@@ -190,6 +198,7 @@ export default {
   },
   computed: {
     ...mapState("project", ["projects", "activeIndex", "logs"]),
+    ...mapState("user", ["id", "token"]),
     computedTitleStyle() {
       const { index, titles } = this;
       return `height: 100%; background-color: white; ${
@@ -285,8 +294,8 @@ export default {
       titleResizing: false,
       collapsed: false,
       showDeleteTask: false,
-      taskDeleting: false,
-      groupDeleting: false
+      groupDeleting: false,
+      groupAdding: false
     };
   },
   methods: {
@@ -294,6 +303,7 @@ export default {
     ...mapMutations({
       add_log: "project/add_log",
       remove_log: "project/remove_log",
+      add_group: "project/add_group",
       delete_group: "project/delete_group"
     }),
     onTitleDragStart(item) {
@@ -349,7 +359,40 @@ export default {
         this.collapsed = false;
       }
     },
-    addGroup() {},
+    async addGroup() {
+      try {
+        const { projects, activeIndex, phaseIndex } = this;
+        let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+        let url = URL.POST_CREATE_GROUP();
+        this.groupAdding = true;
+        const resp = await this.$http.post(
+          url,
+          {
+            phaseId
+          },
+          { emulateJSON: true }
+        );
+        let group = resp.data.data;
+        if (group) {
+          this.add_group({ phaseId, group });
+        } else {
+          this.$alert.show({
+            type: "warning",
+            message: this.$t("ADD_GROUP_ERROR"),
+            interval: 5000
+          });
+        }
+      } catch (err) {
+        console.log(err);
+        this.$alert.show({
+          type: "warning",
+          message: this.$t("ADD_GROUP_ERROR"),
+          interval: 5000
+        });
+      } finally {
+        this.groupAdding = false;
+      }
+    },
     changeGroupColor() {},
     manageTask() {
       this.showDeleteTask = true;
@@ -357,7 +400,49 @@ export default {
     hideDeleteTask() {
       this.showDeleteTask = false;
     },
-    deleteGroup() {},
+    deleteGroup() {
+      const { projects, activeIndex, phaseIndex, groupId } = this;
+      if (projects[activeIndex]["phases"][phaseIndex]["groups"].length === 1) {
+        return this.$alert.show({
+          type: "warning",
+          message: this.$t("ATLEAST_ONE_GROUP"),
+          interval: 3000
+        });
+      }
+      this.$confirm.show({
+        title: this.$t("DELETE_GROUP_TITLE"),
+        message: this.$t("DELETE_GROUP_MESSAGE"),
+        success: async () => {
+          try {
+            let projectId = projects[activeIndex]._id;
+            let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+            let url = URL.DELETE_GROUP(groupId);
+            this.groupDeleting = true;
+            const resp = await this.$http.delete(url);
+            if (resp.data.data === "ok") {
+              this.delete_group({ phaseId, groupId });
+            } else {
+              this.$alert.show({
+                type: "warning",
+                message: this.$t("DELETE_GROUP_ERROR"),
+                interval: 5000
+              });
+            }
+          } catch (err) {
+            console.log(err);
+            this.$alert.show({
+              type: "warning",
+              message: this.$t("DELETE_GROUP_ERROR"),
+              interval: 5000
+            });
+          } finally {
+            this.groupDeleting = false;
+          }
+        },
+        confirmLabel: this.$t("CONFIRM"),
+        cancelLabel: this.$t("CANCEL")
+      });
+    },
     groupNameChange(val) {
       const { item, projects, activeIndex, phaseIndex, groupId } = this;
       let projectId = projects[activeIndex]._id;
@@ -385,6 +470,8 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
+  margin-bottom: 10px;
   .group-setting {
     width: 100%;
     height: 60px;

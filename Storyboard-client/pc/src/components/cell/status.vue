@@ -7,19 +7,18 @@
       :wave-color="`${computedColor(computedStatus)}ff`"
       :title="$t(computedTitle(computedStatus))"
     />
-    <popover :ref="`status-popover`" style="top: calc(100% + 10px);">
+    <popover ref="status-popover" style="top: calc(100% + 10px)">
       <tooltip
-        content-style="
-        width: 150px; 
-        height: 200px; 
-        border-radius: 5px; 
-        box-shadow: -5px 2px 5px lightgrey; 
-        -webkit-box-shadow: -5px 2px 5px lightgrey;
-        border: 1px solid whitesmoke;
-        "
+        contentStyle="
+          width: 150px; height: 200px; 
+          border-radius: 5px; 
+          box-shadow: -5px 2px 5px gainsboro; 
+          -webkit-box-shadow: -5px 2px 5px gainsboro;
+          border: 1px solid whitesmoke;
+          "
         arrow-placement="top"
-        arrow-position="left: 50%; transform: translateX(-50%)"
         background-color="white"
+        arrow-position="left: 50%; transform: translateX(-50%)"
         border-color="whitesmoke"
       >
         <div class="status-options">
@@ -232,13 +231,13 @@ export default {
 }
 
 .status-options {
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 5px;
+  width: 100%;
+  height: 100%;
   .status-option {
     width: 100%;
     height: 38px;

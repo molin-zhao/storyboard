@@ -4,6 +4,10 @@ export default {
   LOGIN: "Login",
   LOGGEDIN: "Logged in",
   LOGOUT: "Logout",
+  SETTINGS: "Settings",
+  PROFILE: "Profile",
+  MAINBOARD: "Storyboard",
+  WAREHOUSE: "Warehouse",
   REGISTER: "Register",
   REGISTERED: "Registered",
   ALREADY_REGISTERED: "Email or phone number exists",
@@ -149,6 +153,7 @@ export default {
   CHANGE_GROUP_COLOR: "Change color",
   COLLAPSE_GROUP: "Collapse group",
   ADD_GROUP: "Add group",
+  ADD_GROUP_ERROR: "Cannot add a new group temporarily",
   MANAGE_TASK: "Manage task(s)",
   DELETE_GROUP: "Delete Group",
 
@@ -164,11 +169,14 @@ export default {
   DELETE_PROJECT_TITLE: "Delete project",
   DELETE_PROJECT_MESSAGE: "Would you like to delete this project?",
   DELETE_PROJECT_ERROR: "Error on deleting project",
+  ATLEAST_ONE_PHASE: "A project must contain at least one phase",
+  ATLEAST_ONE_GROUP: "A phase must contain at least one group",
 
   // actions
   ADD_DESCRIPTION: "Add a description...",
   ADD_TASK: "Add a task...",
   ADD_TASK_NAME: "Edit task name...",
+  ADD_TASK_ERROR: "Cannot add a new task temporarily",
   TASK_MEMBERS: "Task members",
   NO_TASK_MEMBER_ALLOC: "Task temporarily not assigned",
   ASSIGN_TASK: "Allot task",

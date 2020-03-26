@@ -14,6 +14,9 @@ const error = () => import("@/router-views/error");
 const mobile = () => import("@/router-views/mobile");
 const login = () => import("@/pages/login");
 const register = () => import("@/pages/register");
+const settings = () => import("@/router-views/settings");
+const profile = () => import("@/router-views/profile");
+const mainboard = () => import("@/router-views/mainboard");
 
 const router = new vueRouter({
   mode: "history",
@@ -48,8 +51,24 @@ const router = new vueRouter({
     },
     {
       path: "/storyboard",
-      name: "storyboard",
-      component: storyboard
+      component: storyboard,
+      children: [
+        {
+          path: "",
+          name: "mainboard",
+          component: mainboard
+        },
+        {
+          path: "settings",
+          name: "settings",
+          component: settings
+        },
+        {
+          path: "profile",
+          name: "profile",
+          component: profile
+        }
+      ]
     },
     {
       path: "*",
@@ -63,7 +82,9 @@ router.beforeEach(async (to, from, next) => {
     if (
       from.matched.some(
         r =>
-          r.name === "storyboard" || r.name === "register" || r.name === "login"
+          r.path === "/storyboard" ||
+          r.name === "register" ||
+          r.name === "login"
       )
     )
       return next();
@@ -73,8 +94,17 @@ router.beforeEach(async (to, from, next) => {
       return next();
     }
   }
-  if (to.matched.some(r => r.name === "storyboard")) {
-    if (from.matched.some(r => r.name === "storyboard")) return next();
+  if (to.matched.some(r => r.path === "/storyboard")) {
+    if (
+      from.matched.some(
+        r =>
+          r.path === "/storyboard" ||
+          r.name === "mainboard" ||
+          r.name === "settings" ||
+          r.name === "profile"
+      )
+    )
+      return next();
     if (!isLogin()) return next({ name: "login" });
     try {
       let url = URL.GET_VERIFY_TOKEN(store.state.user.token);

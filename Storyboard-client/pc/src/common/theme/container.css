@@ -123,7 +123,11 @@
   justify-content: flex-start;
   align-items: center;
 }
-
+.setting > a:hover,
+.settings-top-align > a:hover,
+.settings-bottom-align > a:hover {
+  background-color: whitesmoke;
+}
 .settings > a,
 .settings-top-align > a,
 .settings-bottom-align > a {
@@ -204,8 +208,8 @@
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
   border: lightgrey 1px solid;
   border-bottom: none;
   cursor: pointer;
