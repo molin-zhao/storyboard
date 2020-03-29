@@ -18,7 +18,7 @@
             badge-class="badge-danger"
             :icon-name="bell.iconName"
             :number="90"
-            @click.native="mouseclick('sidebar', $event)"
+            @click.native="chat"
           >
             <popover ref="bell" style="left: 6vw; bottom: 0">
               <tooltip
@@ -363,6 +363,12 @@ export default {
       if (this.$route.name !== "mainboard") {
         return this.$router.replace("/storyboard");
       }
+    },
+    chat() {
+      const { id, avatar, username, gender } = this;
+      this.$chat.show({
+        to: { _id: id, avatar, username, gender }
+      });
     }
   },
   watch: {

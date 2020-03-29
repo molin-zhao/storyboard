@@ -59,8 +59,10 @@ const handleError = (res, err, data = null) => {
       code = 500;
       break;
   }
+  let message = code === 500 || !err.message ? ERROR.SERVER_ERROR : err.message;
+  console.log(err);
   return res.status(code).json({
-    message: err.message ? err.message : err,
+    message,
     data
   });
 };

@@ -14,15 +14,17 @@ import "@/assets/loading";
 import Alert from "@/plugins/alert";
 import Toast from "@/plugins/toast";
 import Confirm from "@/plugins/confirm";
+import Chat, { RewriteLocale } from "@/plugins/chat";
 
 import store from "@/store";
 import router from "@/router";
 import i18n from "@/i18n";
-
 Vue.config.productionTip = false;
+RewriteLocale(i18n);
 Vue.use(Alert);
 Vue.use(Toast);
 Vue.use(Confirm);
+Vue.use(Chat);
 Vue.use(VueResource);
 
 Vue.http.interceptors.push(function(req, next) {
@@ -34,7 +36,7 @@ Vue.http.interceptors.push(function(req, next) {
      * 406 not acceptable
      * 400 bad request -> params not provided or params error
      * 200 ok
-     * 205 reset content
+     * 201 reset token
      * 500 internal server error
      * 0 network error
      */

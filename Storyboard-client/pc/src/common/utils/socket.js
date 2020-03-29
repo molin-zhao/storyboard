@@ -24,13 +24,18 @@ const createSocketConnection = user => {
       store.commit("user/add_socket", socket);
     });
 
-    socket.on("establish-connection-failed", () => {
+    socket.on("establish-connection-failed", err => {
+      console.log(err);
       socket.disconnect();
       store.commit("user/remove_socket");
     });
     socket.on("disconnect", () => {
       socket.disconnect();
       store.commit("user/remove_socket");
+    });
+    socket.on("server-message", (message, callback) => {
+      console.log(message);
+      callback(true);
     });
   } catch (err) {
     console.log(err);

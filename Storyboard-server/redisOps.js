@@ -78,6 +78,37 @@ const getSmsCode = id => {
     });
 };
 
+const setSocketServer = (id, serverName) => {
+  return agent
+    .post(REDIS_SET)
+    .set("accept", "json")
+    .send({
+      auth: AUTH,
+      key: `${id}:${REDIS_KEY.SOCKET_SERVER}`,
+      value: serverName
+    });
+};
+
+const getSocketServer = id => {
+  return agent
+    .post(REDIS_GET)
+    .set("accept", "json")
+    .send({
+      auth: AUTH,
+      key: `${id}:${REDIS_KEY.SOCKET_SERVER}`
+    });
+};
+
+const delSocketServer = id => {
+  return agent
+    .post(REDIS_DEL)
+    .set("accept", "json")
+    .send({
+      auth: AUTH,
+      key: `${id}:${REDIS_KEY.SOCKET_SERVER}`
+    });
+};
+
 module.exports = {
   setJwtToken,
   getJwtToken,
@@ -85,5 +116,8 @@ module.exports = {
   setSmsPassword,
   getSmsPassword,
   setSmsCode,
-  getSmsCode
+  getSmsCode,
+  setSocketServer,
+  getSocketServer,
+  delSocketServer
 };

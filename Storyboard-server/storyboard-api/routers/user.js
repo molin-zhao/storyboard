@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { handleError, handleSuccess } = require("../../response");
+const { ERROR, handleError, handleSuccess } = require("../../response");
 const { verifyAuthorization, verifyUser } = require("../../authenticate");
+const redisOps = require("../../redisOps");
 const Project = require("../../models/Project");
 const Team = require("../../models/Team");
 const User = require("../../models/User");
@@ -56,6 +57,35 @@ router.post("/profile", verifyAuthorization, verifyUser, async (req, res) => {
       $set: { username, gender, avatar }
     });
     handleSuccess(res, user);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * get user avatar by user id
+ */
+router.get("/avatar", async (req, res) => {
+  try {
+    let userId = req.query.id;
+    if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await User.findOne({ _id: userId }).select("avatar");
+    return handleSuccess(res, resp.avatar);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * get user online status by id
+ */
+router.get("/online", async (req, res) => {
+  try {
+    let userId = req.query.id;
+    if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await redisOps.getSocketServer(userId);
+    if (resp.status === 200 && resp.body.data) return handleSuccess(res, true);
+    return handleSuccess(res, false);
   } catch (err) {
     return handleError(res, err);
   }

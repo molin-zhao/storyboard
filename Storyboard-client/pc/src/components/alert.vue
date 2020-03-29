@@ -65,5 +65,6 @@ div.alert {
   left: 50%;
   transform: translateX(-50%);
   z-index: 10050 !important;
+  min-width: 200px;
 }
 </style>

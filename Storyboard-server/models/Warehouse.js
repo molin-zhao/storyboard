@@ -1,18 +1,31 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const { objectId } = require("../utils");
+const FieldSchema = new Schema({
+  name: {
+    type: String,
+    default: ""
+  },
+  field_type: {
+    type: String,
+    enum: ["boolean", "numeric", "string", "date"],
+    default: "string"
+  },
+  field_value: {
+    type: String,
+    default: ""
+  }
+});
 const ItemSchema = new Schema({
   name: {
     type: String,
     required: true
   },
-  update_date: {
-    type: Date
-  },
   stock: {
     type: Number,
     default: 1
-  }
+  },
+  field: [FieldSchema]
 });
 const WarehouseSchema = new Schema(
   {

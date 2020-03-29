@@ -1,9 +1,9 @@
 <template>
   <div ref="sidebar" class="sidebar" :style="computedStyle">
-    <div class="sidebar-content">
+    <div class="sidebar-content-wrapper">
       <div class="sidebar-header">
         <a class="sidebar-close" @click.stop="hide"
-          ><icon name="close" style="width: 90%; height: 90%"
+          ><icon name="close" style="width: 70%; height: 70%"
         /></a>
       </div>
       <div class="sidebar-content">
@@ -121,17 +121,38 @@ export default {
   position: absolute;
   z-index: 999;
 }
+.sidebar-content-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.sidebar-header {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+.sidebar-content {
+  width: 100%;
+  height: calc(100% - 30px);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
 .sidebar-close {
   width: 30px;
   height: 30px;
   cursor: pointer;
-  transition: all 0.35s;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-end;
-}
-.sidebar-close:active {
-  transform: rotate(1440deg);
 }
 </style>

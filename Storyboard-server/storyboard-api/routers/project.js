@@ -84,15 +84,14 @@ router.post("/phase/create", verifyAuthorization, async (req, res) => {
 
 router.post("/group/create", verifyAuthorization, async (req, res) => {
   try {
-    let name = req.body.name;
     let phaseId = req.body.phaseId;
     let color = generateRandomColor(COLORS);
     let newGroup = {
-      name,
+      name: "",
       color,
       tasks: [{ name: "", members: [] }]
     };
-    const resp = await Project.createTask(phaseId, newGroup);
+    const resp = await Project.createGroup(phaseId, newGroup);
     return handleSuccess(res, resp);
   } catch (err) {
     return handleError(res, err);

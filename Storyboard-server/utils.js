@@ -165,6 +165,7 @@ const isEmail = value => {
 };
 
 const objectId = val => {
+  if (!val) throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
   if (val.constructor === Array) return val.map(item => ObjectId(item));
   return ObjectId(val);
 };

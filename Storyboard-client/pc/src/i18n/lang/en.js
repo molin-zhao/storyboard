@@ -35,6 +35,8 @@ export default {
   CREATE: "Create",
   DONE: "Done!",
   ONLINE_MEMBER: "Online member(s)",
+  ONLINE: "online",
+  OFFLINE: "offline",
   MON: "Mon",
   TUE: "Tue",
   WED: "Wed",
@@ -93,6 +95,7 @@ export default {
   REMEMBER_ME: "Remember me",
   RESEND_CODE: "Resend code",
   SEND_CODE: "Send code",
+  SEND: "Send",
   LOGIN_PASSWORD: "Login by password",
   LOGIN_SMS: "Login by sms code",
   LOGIN_UNMATCHED_ERROR: "Email or phone number does not match the password.",
@@ -171,6 +174,7 @@ export default {
   DELETE_PROJECT_ERROR: "Error on deleting project",
   ATLEAST_ONE_PHASE: "A project must contain at least one phase",
   ATLEAST_ONE_GROUP: "A phase must contain at least one group",
+  SEND_MESSAGE_ERROR: "Cannot connect to server",
 
   // actions
   ADD_DESCRIPTION: "Add a description...",

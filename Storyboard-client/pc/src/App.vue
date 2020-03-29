@@ -33,7 +33,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* protect browser from scrolling along x-axis */
-  overflow-x: hidden;
   text-align: center;
   color: #2c3e50;
   width: 100vw;
@@ -42,6 +41,7 @@ body {
   min-width: 1024px;
   min-height: 600px;
   position: relative;
+  overflow: hidden;
 }
 #app::-webkit-scrollbar {
   display: none;

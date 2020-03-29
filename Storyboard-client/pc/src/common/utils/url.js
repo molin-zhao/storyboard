@@ -85,3 +85,11 @@ export const DELETE_GROUP = groupId => {
 export const DELETE_PHASE = phaseId => {
   return API_HOST + `/project/phase/delete?id=${phaseId}`;
 };
+
+export const GET_USER_AVATAR = userId => {
+  return API_HOST + `/user/avatar?id=${userId}`;
+};
+
+export const GET_USER_ONLINE = userId => {
+  return API_HOST + `/user/online?id=${userId}`;
+};

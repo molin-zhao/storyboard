@@ -35,6 +35,8 @@ export default {
   CREATE: "创建",
   DONE: "完成!",
   ONLINE_MEMBER: "在线成员",
+  ONLINE: "在线",
+  OFFLINE: "离线",
   MON: "周一",
   TUE: "周二",
   WED: "周三",
@@ -94,6 +96,7 @@ export default {
   REMEMBER_ME: "记住我",
   RESEND_CODE: "重新发送",
   SEND_CODE: "发送验证码",
+  SEND: "发送",
   LOGIN_PASSWORD: "通过密码登录",
   LOGIN_SMS: "通过验证码登录",
   LOGIN_NOW: "立即登录",
@@ -171,6 +174,7 @@ export default {
   DELETE_PROJECT_ERROR: "删除项目错误",
   ATLEAST_ONE_PHASE: "项目至少包含一个阶段",
   ATLEAST_ONE_GROUP: "阶段至少包含一个组",
+  SEND_MESSAGE_ERROR: "无法连接至服务器",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",
