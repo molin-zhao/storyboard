@@ -17,28 +17,14 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
-import { createMessage } from "@/common/utils/message";
 export default {
-  props: {
-    to: {
-      type: Object,
-      default: () => null
-    }
-  },
   data() {
     return {
       message: "",
       maxHeight: 112
     };
   },
-  computed: {
-    ...mapState("user", ["id", "socket"])
-  },
   methods: {
-    ...mapMutations({
-      push_message: "message/push_message"
-    }),
     getHeight() {
       const { maxHeight } = this;
       let textarea = document.getElementById("input");
@@ -56,22 +42,9 @@ export default {
       }
     },
     sendMessage() {
-      const { socket, message, id, to } = this;
-      if (!socket) {
-        return this.$alert.show({
-          type: "warning",
-          message: this.$t("SEND_MESSAGE_ERROR"),
-          interval: 5000
-        });
-      } else {
-        let trimmedMsg = message.trim();
-        let data = createMessage("chat", trimmedMsg, id, to._id);
-        socket.$emit("client-message", data, ack => {
-          if (ack) {
-            this.push_message(data);
-          }
-        });
-      }
+      const { message } = this;
+      let trimmedMsg = message.trim();
+      this.$emit("send-message", trimmedMsg);
     }
   },
   watch: {
@@ -103,6 +76,7 @@ export default {
     border: 1px lightgrey solid;
     font-size: 18px;
     resize: none;
+    overflow: hidden;
   }
   textarea:focus {
     outline: none;

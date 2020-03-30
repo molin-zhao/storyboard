@@ -144,4 +144,14 @@ UserSchema.statics.searchUser = function(value, limit, exclude) {
   ]);
 };
 
+UserSchema.statics.setOnline = function(user) {
+  let id = objectId(user);
+  return this.updateOne({ _id: id }, { $set: { online: true } });
+};
+
+UserSchema.statics.setOffline = function(user) {
+  let id = objectId(user);
+  return this.updateOne({ _id: id }, { $set: { online: false } });
+};
+
 module.exports = mongoose.model("User", UserSchema);

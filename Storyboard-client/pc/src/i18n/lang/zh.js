@@ -96,6 +96,8 @@ export default {
   REMEMBER_ME: "记住我",
   RESEND_CODE: "重新发送",
   SEND_CODE: "发送验证码",
+  RESEND_MESSAGE: "重新发送",
+  DELETE_MESSAGE: "删除信息",
   SEND: "发送",
   LOGIN_PASSWORD: "通过密码登录",
   LOGIN_SMS: "通过验证码登录",

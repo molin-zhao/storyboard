@@ -14,17 +14,19 @@ import "@/assets/loading";
 import Alert from "@/plugins/alert";
 import Toast from "@/plugins/toast";
 import Confirm from "@/plugins/confirm";
-import Chat, { RewriteLocale } from "@/plugins/chat";
+import Chatbox from "@/plugins/chatbox";
+import Mailbox from "@/plugins/mailbox";
 
 import store from "@/store";
 import router from "@/router";
 import i18n from "@/i18n";
+
 Vue.config.productionTip = false;
-RewriteLocale(i18n);
 Vue.use(Alert);
 Vue.use(Toast);
 Vue.use(Confirm);
-Vue.use(Chat);
+Vue.use(Chatbox);
+Vue.use(Mailbox);
 Vue.use(VueResource);
 
 Vue.http.interceptors.push(function(req, next) {

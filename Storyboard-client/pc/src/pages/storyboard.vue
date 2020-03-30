@@ -33,7 +33,7 @@
             :src="avatar"
             default-img="/static/image/user_empty.png"
             wrapper-style="width: 100%; height: 4.5vw"
-            img-style="width: 4vw; height: 4vw; border-radius: 2vw"
+            img-style="width: 54px; height: 54px; border-radius: 27px"
             @mouseover.native="mouseover('avatar')"
             @mouseleave.native="mouseleave('avatar')"
           >
@@ -261,13 +261,17 @@ export default {
   },
   async mounted() {
     try {
+      const { id, token } = this;
       this.storyboardLoading = true;
       const info = await this.fetchInfo();
+      let socket = createSocketConnection({ id, token });
+      console.log("socket: " + socket);
+      this.add_socket(socket);
       this.reload_projects(info.projects);
       this.reload_teams(info.teams);
       this.add_userinfo(info.user);
       this.save_userinfo(info.user);
-      createSocketConnection(info.user);
+      this.restore_message();
     } catch (err) {
       this.errorCode = err.status;
     } finally {
@@ -278,14 +282,16 @@ export default {
     ...mapActions({
       save_userinfo: "user/save_userinfo",
       remove_credential: "/user/remove_credential",
-      remove_userinfo: "user/remove_userinfo"
+      remove_userinfo: "user/remove_userinfo",
+      restore_message: "message/restore_message"
     }),
     ...mapMutations({
       reload_projects: "project/reload_projects",
       select_index: "project/select_index",
       add_lookup: "project/add_lookup",
       reload_teams: "team/reload_teams",
-      add_userinfo: "user/add_userinfo"
+      add_userinfo: "user/add_userinfo",
+      add_socket: "user/add_socket"
     }),
     mouseover,
     mouseleave,
@@ -320,6 +326,7 @@ export default {
         this.add_teams(info.teams);
         this.add_userinfo(info.user);
         this.save_userinfo(info.user);
+        this.restore_message();
         this.errorCode = -1;
       } catch (err) {
         this.errorCode = err.status;
@@ -351,24 +358,25 @@ export default {
     },
     goToAccount() {
       if (this.$route.name !== "profile") {
-        return this.$router.replace({ name: "profile" });
+        return this.$router.push({ name: "profile" });
       }
     },
     goToSettings() {
       if (this.$route.name !== "settings") {
-        return this.$router.replace({ name: "settings" });
+        return this.$router.push({ name: "settings" });
       }
     },
     goToMainboard() {
       if (this.$route.name !== "mainboard") {
-        return this.$router.replace("/storyboard");
+        return this.$router.push("/storyboard");
       }
     },
     chat() {
       const { id, avatar, username, gender } = this;
-      this.$chat.show({
-        to: { _id: id, avatar, username, gender }
-      });
+      // this.$chatbox.show({
+      //   to: { _id: id, avatar, username, gender }
+      // });
+      this.$mailbox.show();
     }
   },
   watch: {

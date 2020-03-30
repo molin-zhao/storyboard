@@ -102,15 +102,13 @@ export default {
     checkMouseClick(event) {
       const e = event || window.event;
       let { type, target } = e;
-      if (this.$refs.icon && this.$refs.icon.contains(target)) {
+      if (this.$refs["icon"] && this.$refs["icon"].contains(target)) {
         // click inside badgeicon
         if (this.reverse) {
           this.clicked = !this.clicked;
-          return;
         }
         if (!this.clicked) {
           this.clicked = true;
-          return;
         }
       } else {
         // click outside badgeicon

@@ -7,6 +7,7 @@ const createSocketConnection = user => {
     // check if store has a socket connection
     let storeSocket = store.state.user.socket;
     if (storeSocket) {
+      console.log("removing existing socket");
       storeSocket.close();
       store.commit("user/remove_socket");
     }
@@ -16,29 +17,25 @@ const createSocketConnection = user => {
       reconnectionAttempts: Infinity,
       reconnectionDelayMax: 1000 * 60 * 5
     });
-    if (!socket.connected) return socket.close();
+    socket.emit("establish-connection", user, ack => {
+      if (!ack) socket.close();
+    });
     socket.on("connect", () => {
-      socket.emit("establish-connection", user);
-    });
-    socket.on("establish-connection-success", () => {
-      store.commit("user/add_socket", socket);
-    });
-
-    socket.on("establish-connection-failed", err => {
-      console.log(err);
-      socket.disconnect();
-      store.commit("user/remove_socket");
+      console.log("try to connect to server");
     });
     socket.on("disconnect", () => {
-      socket.disconnect();
+      console.log("disconnected");
+      socket.close();
       store.commit("user/remove_socket");
     });
-    socket.on("server-message", (message, callback) => {
-      console.log(message);
+    socket.on("receive-message", (message, callback) => {
+      store.commit("message/push_message", message);
       callback(true);
     });
+    return socket;
   } catch (err) {
     console.log(err);
+    return null;
   }
 };
 

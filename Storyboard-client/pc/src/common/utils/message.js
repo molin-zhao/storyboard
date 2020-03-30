@@ -1,10 +1,65 @@
 const pushMessage = (state, message) => {
-  let messages = state.messages;
-  const { from } = message;
-  if (messages[from]) {
-    messages[from] = messages[from].concat(message);
-  } else {
-    messages[from] = [message];
+  try {
+    let messages = state.messages;
+    const { from } = message;
+    if (messages[from._id]) {
+      messages[from._id]["username"] = from.username;
+      messages[from._id]["avatar"] = from.avatar;
+      messages[from._id]["gender"] = from.gender;
+      messages[from._id]["messages"] = messages[from._id]["messages"].concat(
+        message
+      );
+    } else {
+      messages[from._id] = {
+        username: from.username,
+        avatar: from.avatar,
+        gender: from.gender,
+        messages: [message]
+      };
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const removeMessasge = (state, message) => {
+  try {
+    let messages = state.messages;
+    const { from, to } = message;
+    if (messages[to]) {
+      messages[to]["messages"] = messages[to]["messages"].filter(
+        m => m._id !== message._id
+      );
+    } else if (messages[from._id]) {
+      messages[from._id]["messages"] = messages[from._id]["messages"].filter(
+        m => m._id !== message._id
+      );
+    } else {
+      return;
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const pushMessages = (state, messageArr) => {};
+
+const appendMessage = (state, message) => {
+  try {
+    let messages = state.messages;
+    const { from, to } = message;
+    if (messages[to]) {
+      messages[to]["messages"] = messages[to]["messages"].concat(message);
+    } else {
+      messages[to] = {
+        username: from.username,
+        avatar: from.avatar,
+        gender: from.gender,
+        messages: [message]
+      };
+    }
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -15,7 +70,7 @@ const createMessage = (type, content, from, to) => {
     _id,
     type,
     content,
-    from,
+    from, // include user avatar, gender, id and username
     to
   };
 };
@@ -52,4 +107,4 @@ const uuid = (len, radix) => {
   return uuid.join("");
 };
 
-export { pushMessage, createMessage, uuid };
+export { pushMessage, createMessage, appendMessage, removeMessasge };

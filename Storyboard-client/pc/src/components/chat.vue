@@ -1,113 +1,65 @@
 <template>
-  <transition name="fade">
-    <div
-      v-show="visible"
-      class="chat-wrapper"
-      :style="`font-family: ${font}`"
-      @click="hide"
-    >
-      <div class="chat-content-wrapper" @click.stop="stopPropagation">
-        <transition name="sidebar">
-          <div v-show="visible" class="chat-content shadow">
-            <div class="chat-header">
-              <a class="chat-close" @click.stop="hide"
-                ><icon name="close" style="width: 70%; height: 70%"
-              /></a>
-            </div>
-            <span
-              v-if="!to || loading"
-              class="spinner-border spinner-border-bg"
-              role="status"
-              aria-hidden="true"
-            ></span>
-            <div v-else class="chat">
-              <div class="chat-user">
-                <div class="chat-user-avatar-wrapper">
-                  <avatar
-                    class="chat-user-avatar"
-                    :user-id="to._id"
-                    :src="to.avatar"
-                  />
-                </div>
-                <div class="chat-user-meta">
-                  <div class="chat-user-label">
-                    <icon
-                      v-if="to.gender === 'm'"
-                      name="male"
-                      style="color: cornflowerblue"
-                    />
-                    <icon v-else name="female" style="color: lightpink" />
-                    <online-status
-                      style="margin-left: 5px"
-                      :status="onlineStatus"
-                    />
-                  </div>
-                  <div class="chat-user-name">
-                    <span>{{ to.username }}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="chat-body">
-                <vue-scroll :ops="ops">
-                  <div
-                    v-for="(message, index) in messages[to._id]"
-                    :key="index"
-                    class="message-wrapper"
-                  >
-                    <div class="message-from" v-if="message.from === to._id">
-                      <div class="message-avatar">
-                        <avatar
-                          style="width: 30px; height: 30px; border-radius: 15px"
-                        />
-                      </div>
-                      <div class="message-content">
-                        <div style="background-color: #5cb85c">
-                          <span>{{ message.content }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="message-to" v-else>
-                      <div class="message-avatar">
-                        <avatar
-                          style="width: 30px; height: 30px; border-radius: 15px"
-                        />
-                      </div>
-                      <div class="message-content">
-                        <div style="background-color: whitesmoke">
-                          <span>{{ message.content }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </vue-scroll>
-                <div class="chat-input">
-                  <chat-input />
-                </div>
-              </div>
-            </div>
+  <div class="chat-wrapper">
+    <span
+      v-if="!to || loading"
+      class="spinner-border spinner-border-bg"
+      role="status"
+      aria-hidden="true"
+    ></span>
+    <div v-else class="chat">
+      <div class="chat-user">
+        <div class="chat-user-avatar-wrapper">
+          <avatar class="chat-user-avatar" :user-id="to._id" :src="to.avatar" />
+        </div>
+        <div class="chat-user-meta">
+          <div class="chat-user-label">
+            <icon
+              v-if="to.gender === 'm'"
+              name="male"
+              style="color: cornflowerblue"
+            />
+            <icon v-else name="female" style="color: lightpink" />
+            <online-status style="margin-left: 5px" :status="onlineStatus" />
           </div>
-        </transition>
+          <div class="chat-user-name">
+            <span>{{ to.username }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chat-body">
+        <vue-scroll :ops="ops">
+          <chat-message
+            v-for="(message, index) in computedMessages"
+            :key="index"
+            :message="message"
+          />
+        </vue-scroll>
+        <div class="chat-input">
+          <chat-input @send-message="sendMessage" />
+        </div>
       </div>
     </div>
-  </transition>
+  </div>
 </template>
 
 <script>
-import sidebar from "@/components/sidebar";
 import vueScroll from "vuescroll";
 import avatar from "@/components/avatar";
 import onlineStatus from "@/components/onlineStatus";
 import chatInput from "@/components/chatInput";
-import { stopPropagation } from "@/common/utils/mouse";
+import chatMessage from "@/components/chatMessage";
+import { stopPropagation, mouseclick } from "@/common/utils/mouse";
 import { mapState, mapMutations } from "vuex";
 import * as URL from "@/common/utils/url";
+import { createMessage } from "@/common/utils/message";
+
 export default {
   components: {
-    sidebar,
     vueScroll,
     avatar,
     onlineStatus,
-    chatInput
+    chatInput,
+    chatMessage
   },
   props: {
     to: {
@@ -138,10 +90,31 @@ export default {
     };
   },
   computed: {
-    ...mapState("user", ["id", "token"]),
-    ...mapState("message", ["messages"])
+    ...mapState("user", [
+      "id",
+      "token",
+      "avatar",
+      "gender",
+      "username",
+      "socket"
+    ]),
+    ...mapState("message", ["messages", "pendingMessages", "failedMessages"]),
+    computedMessages() {
+      const { messages, to } = this;
+      if (messages[to._id]) return messages[to._id]["messages"];
+      return [];
+    }
   },
   methods: {
+    ...mapMutations({
+      save_message: "message/save_message",
+      append_message: "message/append_message",
+      add_pending: "message/add_pending",
+      remove_pending: "message/remove_pending",
+      add_failed: "message/add_failed",
+      remove_failed: "message/remove_failed"
+    }),
+    mouseclick,
     stopPropagation,
     show() {
       if (!this.visible) {
@@ -152,6 +125,36 @@ export default {
       if (this.visible) {
         this.visible = false;
       }
+    },
+    sendMessage(val) {
+      const { socket, id, to, gender, avatar, username } = this;
+      console.log(socket);
+      if (!socket)
+        return this.$alert.show({
+          type: "warning",
+          message: this.$t("SEND_MESSAGE_ERROR"),
+          interval: 5000
+        });
+
+      let data = createMessage(
+        "chat",
+        val,
+        {
+          _id: id,
+          gender,
+          avatar,
+          username
+        },
+        to._id
+      );
+      this.add_pending(data._id);
+      this.append_message(data);
+      this.save_message();
+      socket.emit("send-message", data, ack => {
+        if (!ack) this.add_failed(data._id);
+        this.remove_pending(data._id);
+        this.save_message();
+      });
     }
   },
   watch: {
@@ -176,47 +179,24 @@ export default {
 
 <style lang="scss" scoped>
 .chat-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10040 !important;
-  background-color: #0000001a;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
-.chat-content-wrapper {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
   width: 100%;
   height: 100%;
-  position: relative;
-}
-.chat-content {
-  position: absolute;
-  width: 400px;
-  height: 100%;
-  background-color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-
 .chat {
   width: 100%;
-  margin-top: 30px;
-  height: calc(100% - 30px);
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 10px;
   .chat-user {
     width: 100%;
     height: 10%;
+    padding: 10px;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
@@ -276,108 +256,15 @@ export default {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    background-color: lightblue;
+    background-color: #f5f5f580;
   }
-}
-.chat-header {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 30px;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
-}
-.chat-close {
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  transition: all 0.35s;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
 }
 .chat-input {
   position: absolute;
   bottom: 0;
+  border-top: 0.2px lightgrey solid;
+  padding: 15px 0px 15px 5px;
   width: 100%;
   background-color: whitesmoke;
-}
-
-.message-wrapper {
-  width: 100%;
-  height: auto;
-}
-.message-from {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-.message-to {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: flex-start;
-}
-.message-avatar {
-  width: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-}
-.message-content {
-  width: 30%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  div {
-    flex-wrap: wrap;
-    border: 1px lightgrey solid;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: flex-start;
-    span {
-      font-size: 16px;
-      color: black;
-    }
-  }
-}
-
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-.fade-leave,
-.fade-enter-to {
-  opacity: 1;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.2s;
-}
-
-.sidebar-enter,
-.sidebar-leave-to {
-  opacity: 0;
-  //   transform: translateX(400px);
-  right: -400px;
-}
-.sidebar-leave,
-.sidebar-enter-to {
-  opacity: 1;
-  //   transform: translateX(0);
-  right: 0px;
-}
-.sidebar-enter-active,
-.sidebar-leave-active {
-  transition: all 0.35s;
 }
 </style>

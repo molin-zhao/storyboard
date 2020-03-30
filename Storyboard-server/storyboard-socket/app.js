@@ -110,12 +110,14 @@ const unicastChannel = rabbitmqConn.createChannel({
           let message = JSON.parse(data.content.toString());
           const resp = await processMessage(message, app);
           if (resp) unicastChannel.ack(data);
+          else console.log(resp);
         } catch (err) {
           console.log(err);
         }
       })
     ])
 });
+
 app.locals.broadcast = broadcastChannel;
 app.locals.unicast = unicastChannel;
 

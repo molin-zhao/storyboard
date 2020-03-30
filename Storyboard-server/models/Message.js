@@ -37,7 +37,7 @@ MessageSchema.statics.createMessage = function(message) {
     type,
     meta,
     content,
-    from: objectId(from),
+    from: objectId(from._id),
     to: objectId(to)
   });
 };

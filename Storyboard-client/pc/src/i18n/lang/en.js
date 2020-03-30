@@ -94,6 +94,8 @@ export default {
   SMS_CODE: "SMS code",
   REMEMBER_ME: "Remember me",
   RESEND_CODE: "Resend code",
+  RESEND_MESSAGE: "Resend",
+  DELETE_MESSAGE: "Delete",
   SEND_CODE: "Send code",
   SEND: "Send",
   LOGIN_PASSWORD: "Login by password",
