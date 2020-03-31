@@ -15,10 +15,10 @@
           <badge-icon
             :wrapper-style="bell.wrapperStyle"
             :icon-style="bell.iconStyle"
-            badge-class="badge-danger"
+            badge-class="badge-danger badge-pill"
             :icon-name="bell.iconName"
-            :number="90"
-            @click.native="chat"
+            :number="computedUnreadMessageCount"
+            @click.native.stop="showMailbox"
           >
             <popover ref="bell" style="left: 6vw; bottom: 0">
               <tooltip
@@ -54,9 +54,9 @@
               >
                 <div class="settings">
                   <a
-                    @click="goToMainboard"
+                    @click="goTo('mainboard')"
                     style="
-                  border-top: none;
+                    border-top: none;
                     border-top-left-radius: 10px;
                     border-top-right-radius: 10px
                   "
@@ -64,25 +64,41 @@
                     <icon
                       class="setting-icon"
                       name="tasks"
-                      style="color: gray"
+                      style="color: black"
                     />
-                    <span style="color: gray">{{ $t("MAINBOARD") }}</span>
+                    <span style="color: black">{{ $t("MAINBOARD") }}</span>
                   </a>
-                  <a @click="goToSettings">
+                  <a @click="goTo('team')">
+                    <icon
+                      class="setting-icon"
+                      name="team"
+                      style="color: black"
+                    />
+                    <span style="color: black">{{ $t("TEAM") }}</span>
+                  </a>
+                  <a @click="goTo('warehouse')">
+                    <icon
+                      class="setting-icon"
+                      name="warehouse"
+                      style="color: black"
+                    />
+                    <span style="color: black">{{ $t("WAREHOUSE") }}</span>
+                  </a>
+                  <a @click="goTo('settings')">
                     <icon
                       class="setting-icon"
                       name="setting"
-                      style="color: gray"
+                      style="color: black"
                     />
-                    <span style="color: gray">{{ $t("SETTINGS") }}</span>
+                    <span style="color: black">{{ $t("SETTINGS") }}</span>
                   </a>
-                  <a @click="goToAccount">
+                  <a @click="goTo('account')">
                     <icon
                       class="setting-icon"
                       name="account"
-                      style="color: gray"
+                      style="color: black"
                     />
-                    <span style="color: gray">{{ $t("PROFILE") }}</span>
+                    <span style="color: black">{{ $t("PROFILE") }}</span>
                   </a>
                   <a
                     @click="logout"
@@ -214,6 +230,7 @@ import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
 import { createSocketConnection } from "@/common/utils/socket";
 import { isEdited, generateLookup } from "@/common/utils/log";
+import { getUnreadCount } from "@/common/utils/message";
 export default {
   components: {
     badgeIcon,
@@ -243,6 +260,7 @@ export default {
     ]),
     ...mapState("project", ["projects", "activeIndex", "logs"]),
     ...mapState("team", ["teams"]),
+    ...mapState("message", ["messages"]),
     projectLabel() {
       return function(index) {
         if (index === this.activeIndex) {
@@ -257,6 +275,10 @@ export default {
         if (index === activeIndex) return "background-color: #6495ed";
         return "background-color: lightgrey";
       };
+    },
+    computedUnreadMessageCount() {
+      const { messages } = this;
+      return getUnreadCount(messages);
     }
   },
   async mounted() {
@@ -265,7 +287,6 @@ export default {
       this.storyboardLoading = true;
       const info = await this.fetchInfo();
       let socket = createSocketConnection({ id, token });
-      console.log("socket: " + socket);
       this.add_socket(socket);
       this.reload_projects(info.projects);
       this.reload_teams(info.teams);
@@ -356,26 +377,11 @@ export default {
         cancelLabel: this.$t("CANCEL")
       });
     },
-    goToAccount() {
-      if (this.$route.name !== "profile") {
-        return this.$router.push({ name: "profile" });
-      }
+    goTo(route) {
+      if (this.$route.name !== route) return this.$router.push({ name: route });
     },
-    goToSettings() {
-      if (this.$route.name !== "settings") {
-        return this.$router.push({ name: "settings" });
-      }
-    },
-    goToMainboard() {
-      if (this.$route.name !== "mainboard") {
-        return this.$router.push("/storyboard");
-      }
-    },
-    chat() {
+    showMailbox() {
       const { id, avatar, username, gender } = this;
-      // this.$chatbox.show({
-      //   to: { _id: id, avatar, username, gender }
-      // });
       this.$mailbox.show();
     }
   },

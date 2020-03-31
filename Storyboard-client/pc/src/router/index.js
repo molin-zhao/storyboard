@@ -17,6 +17,8 @@ const register = () => import("@/pages/register");
 const settings = () => import("@/router-views/settings");
 const profile = () => import("@/router-views/profile");
 const mainboard = () => import("@/router-views/mainboard");
+const warehouse = () => import("@/router-views/warehouse");
+const team = () => import("@/router-views/team");
 
 const router = new vueRouter({
   mode: "history",
@@ -67,6 +69,16 @@ const router = new vueRouter({
           path: "profile",
           name: "profile",
           component: profile
+        },
+        {
+          path: "warehouse",
+          name: "warehouse",
+          component: warehouse
+        },
+        {
+          path: "team",
+          name: "team",
+          component: team
         }
       ]
     },
@@ -98,13 +110,15 @@ router.beforeEach(async (to, from, next) => {
     if (
       from.matched.some(
         r =>
-          r.path === "/storyboard" ||
           r.name === "mainboard" ||
           r.name === "settings" ||
-          r.name === "profile"
+          r.name === "profile" ||
+          r.name === "warehouse" ||
+          r.name === "team"
       )
-    )
+    ) {
       return next();
+    }
     if (!isLogin()) return next({ name: "login" });
     try {
       let url = URL.GET_VERIFY_TOKEN(store.state.user.token);

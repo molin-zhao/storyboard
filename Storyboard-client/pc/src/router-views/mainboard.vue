@@ -21,7 +21,21 @@
               :wrapper-style="group.wrapperStyle"
               :icon-style="group.iconStyle"
               :icon-name="group.iconName"
-            />
+              @mouseover.native="mouseover('online-member')"
+              @mouseleave.native="mouseleave('online-member')"
+            >
+              <popover ref="online-member" style="right: 3vw; top: 0">
+                <tooltip
+                  content-style="width: 200px; height: 200px;border-radius: 10px;box-shadow: -5px 2px 5px lightgrey; -webkit-box-shadow: -5px 2px 5px lightgrey;border: 1px solid whitesmoke;"
+                  arrow-placement="right"
+                  arrow-position="top: 1vw"
+                  background-color="white"
+                  border-color="whitesmoke"
+                >
+                  <div class="settings-top-align"></div>
+                </tooltip>
+              </popover>
+            </badge-icon>
             <span class="online-user-count display-only">{{
               onlineUsers
             }}</span>
@@ -33,7 +47,7 @@
             @mouseover.native="mouseover('more')"
             @mouseleave.native="mouseleave('more')"
           >
-            <popover ref="more" style="right: 40px; top: -20px">
+            <popover ref="more" style="right: 2.5vw; top: -20px">
               <tooltip
                 content-style="
                 width: 200px;
@@ -44,7 +58,7 @@
                 border: 1px solid whitesmoke;
                 "
                 arrow-placement="right"
-                arrow-position="top: calc(0.4vh + 20px)"
+                arrow-position="top: calc(1.5vw)"
                 background-color="white"
                 border-color="whitesmoke"
               >
@@ -344,6 +358,7 @@ export default {
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
   .online-user-count {
     width: 3vw;
     height: 100%;

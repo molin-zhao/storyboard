@@ -14,14 +14,21 @@
             @click.stop="stopPropagation"
           >
             <div class="mailbox-header">
-              <icon v-show="to" name="back" class="back" />
-              <icon name="close" class="close" />
+              <icon name="close" class="close" @click.native.stop="hide" />
             </div>
             <div class="mailbox-body">
               <message-list @on-select="selectTo" />
-              <transition name="sidebar">
-                <chat v-show="to" :font="font" />
-              </transition>
+            </div>
+          </div>
+        </transition>
+        <transition name="sidebar">
+          <div v-show="to" class="mailbox-wrapper" style="z-index: 1">
+            <div class="mailbox-header">
+              <icon name="back" class="back" @click.native.stop="back" />
+              <icon name="close" class="close" @click.native.stop="hide" />
+            </div>
+            <div class="mailbox-body">
+              <chat :font="font" :to="to" />
             </div>
           </div>
         </transition>
@@ -62,10 +69,14 @@ export default {
     hide() {
       if (this.visible) {
         this.visible = false;
+        this.to = null;
       }
     },
     selectTo(val) {
       this.to = val;
+    },
+    back() {
+      this.to = null;
     }
   }
 };
@@ -117,6 +128,7 @@ export default {
 
 .mailbox-body {
   width: 100%;
+  position: relative;
   height: calc(100% - 30px);
   display: flex;
   flex-direction: column;
@@ -127,14 +139,14 @@ export default {
 .close {
   position: absolute;
   right: 5px;
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   color: black;
 }
 .back {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   color: black;
 }

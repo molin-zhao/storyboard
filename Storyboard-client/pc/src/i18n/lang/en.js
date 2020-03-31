@@ -8,6 +8,7 @@ export default {
   PROFILE: "Profile",
   MAINBOARD: "Storyboard",
   WAREHOUSE: "Warehouse",
+  TEAM: "Team",
   REGISTER: "Register",
   REGISTERED: "Registered",
   ALREADY_REGISTERED: "Email or phone number exists",
@@ -177,6 +178,8 @@ export default {
   ATLEAST_ONE_PHASE: "A project must contain at least one phase",
   ATLEAST_ONE_GROUP: "A phase must contain at least one group",
   SEND_MESSAGE_ERROR: "Cannot connect to server",
+  MAILBOX: "Mailbox",
+  NO_MESSAGE: "No messages",
 
   // actions
   ADD_DESCRIPTION: "Add a description...",

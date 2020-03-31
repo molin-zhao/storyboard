@@ -7,6 +7,7 @@ export default {
   MAINBOARD: "任务板",
   PROFILE: "个人中心",
   WAREHOUSE: "我的仓库",
+  TEAM: "我的小组",
   LOGGEDIN: "登录成功",
   REGISTER: "注册",
   REGISTERED: "注册成功",
@@ -177,6 +178,8 @@ export default {
   ATLEAST_ONE_PHASE: "项目至少包含一个阶段",
   ATLEAST_ONE_GROUP: "阶段至少包含一个组",
   SEND_MESSAGE_ERROR: "无法连接至服务器",
+  MAILBOX: "收信箱",
+  NO_MESSAGE: "暂无信息",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",

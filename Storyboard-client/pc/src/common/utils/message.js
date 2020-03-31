@@ -75,6 +75,20 @@ const createMessage = (type, content, from, to) => {
   };
 };
 
+const getUnreadCount = messages => {
+  let count = 0;
+  if (!messages || messages.constructor !== Object) return null;
+  if (Object.keys(messages).length === 0) return null;
+  for (let key in messages) {
+    let mArr = messages[key]["messages"];
+    for (let index in mArr) {
+      if (mArr[index]["read"]) continue;
+      count++;
+    }
+  }
+  return count > 0 ? count : null;
+};
+
 const uuid = (len, radix) => {
   var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split(
     ""
@@ -107,4 +121,10 @@ const uuid = (len, radix) => {
   return uuid.join("");
 };
 
-export { pushMessage, createMessage, appendMessage, removeMessasge };
+export {
+  pushMessage,
+  createMessage,
+  appendMessage,
+  removeMessasge,
+  getUnreadCount
+};

@@ -9,12 +9,16 @@
     <div v-else class="chat">
       <div class="chat-user">
         <div class="chat-user-avatar-wrapper">
-          <avatar class="chat-user-avatar" :user-id="to._id" :src="to.avatar" />
+          <avatar
+            class="chat-user-avatar"
+            :user-id="to"
+            :src="messages[to]['avatar']"
+          />
         </div>
         <div class="chat-user-meta">
           <div class="chat-user-label">
             <icon
-              v-if="to.gender === 'm'"
+              v-if="messages[to]['gender'] === 'm'"
               name="male"
               style="color: cornflowerblue"
             />
@@ -22,7 +26,7 @@
             <online-status style="margin-left: 5px" :status="onlineStatus" />
           </div>
           <div class="chat-user-name">
-            <span>{{ to.username }}</span>
+            <span>{{ messages[to]["username"] }}</span>
           </div>
         </div>
       </div>
@@ -63,8 +67,8 @@ export default {
   },
   props: {
     to: {
-      type: Object,
-      default: () => null
+      type: String,
+      default: ""
     },
     font: {
       type: String,
@@ -101,7 +105,7 @@ export default {
     ...mapState("message", ["messages", "pendingMessages", "failedMessages"]),
     computedMessages() {
       const { messages, to } = this;
-      if (messages[to._id]) return messages[to._id]["messages"];
+      if (messages[to]) return messages[to]["messages"];
       return [];
     }
   },
@@ -145,7 +149,7 @@ export default {
           avatar,
           username
         },
-        to._id
+        to
       );
       this.add_pending(data._id);
       this.append_message(data);
@@ -161,9 +165,8 @@ export default {
     async to(newVal, oldVal) {
       if (newVal) {
         try {
-          const { _id } = newVal;
           this.loading = true;
-          let url = URL.GET_USER_ONLINE(_id);
+          let url = URL.GET_USER_ONLINE(newVal);
           const resp = await this.$http.get(url);
           this.onlineStatus = resp.data.data;
         } catch (err) {

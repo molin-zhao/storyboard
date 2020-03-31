@@ -98,7 +98,7 @@ export default {
     },
     onResizerMousedown() {
       const e = event || window.event;
-      const { type, target, clientX } = e;
+      const { target, clientX } = e;
       const { name } = this.item;
       if (
         this.$refs[`resizer-${name}`] &&

@@ -7,9 +7,11 @@
     @mouseleave="checkMouseleave"
   >
     <icon :name="computedIconName" :style="computedIconStyle" />
-    <span :class="`display-only badge ${badgeClass}`" :style="badgeStyle">{{
-      computedBadgeNumber
-    }}</span>
+    <div :style="badgeStyle">
+      <span :class="`display-only badge ${badgeClass}`">{{
+        computedBadgeNumber
+      }}</span>
+    </div>
     <slot></slot>
   </div>
 </template>
@@ -69,9 +71,12 @@ export default {
   },
   computed: {
     computedBadgeNumber() {
-      if (this.number > 99) return "99+";
-      else if (this.number === 0) return "";
-      else return `${this.number}`;
+      const { number } = this;
+      if (!number) return "";
+      if (typeof number !== "number") return "";
+      if (number > 99) return "99+";
+      if (number === 0) return "";
+      return `${number}`;
     },
     computedWrapperStyle() {
       const { plain, active, hover } = this.wrapperStyle;
@@ -138,12 +143,13 @@ export default {
   padding: 0;
   position: relative;
   cursor: pointer;
-  span {
+  div {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1;
-    font-size: 0.7vw;
+    top: 5px;
+    right: 5px;
+  }
+  span {
+    font-size: 12px;
   }
 }
 </style>

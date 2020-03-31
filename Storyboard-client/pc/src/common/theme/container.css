@@ -123,7 +123,7 @@
   justify-content: flex-start;
   align-items: center;
 }
-.setting > a:hover,
+.settings > a:hover,
 .settings-top-align > a:hover,
 .settings-bottom-align > a:hover {
   background-color: whitesmoke;

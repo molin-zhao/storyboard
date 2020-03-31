@@ -1,12 +1,12 @@
 <template>
   <div class="tooltip-wrapper" :style="computedContentStyle">
     <div
-      v-show="arrowPlacement"
+      v-show="computedShowArrow"
       class="tooltip-arrow-outside"
       :style="computedArrowOutsideStyle"
     />
     <div
-      v-show="arrowPlacement"
+      v-show="computedShowArrow"
       class="tooltip-arrow-inside"
       :style="computedArrowInsideStyle"
     />
@@ -35,6 +35,11 @@ export default {
       let borderColor = `border-color: ${this.drawArrowIsOutside(false)};`;
       let borderOffset = `${this.getArrowOffsetIsOutside(false)}`;
       return `${borderWidth}; ${borderColor}; ${borderOffset}; ${this.arrowPosition}`;
+    },
+    computedShowArrow() {
+      const { arrowPlacement, arrowVisibleMinHeight } = this;
+      let height = window.innerHeight || document.documentElement.clientHeight;
+      return arrowVisibleMinHeight < height && arrowPlacement;
     }
   },
   props: {
@@ -68,6 +73,10 @@ export default {
     },
     contentStyle: {
       type: String
+    },
+    arrowVisibleMinHeight: {
+      type: Number,
+      default: 768
     }
   },
   methods: {
