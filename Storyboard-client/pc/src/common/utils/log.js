@@ -310,6 +310,20 @@ const addPhase = (state, projectId, phase) => {
   }
 };
 
+const addProjectMembers = (state, projectId, members) => {
+  let projects = state.projects;
+  for (let i = 0; i < projects.length; i++) {
+    if (projects[i]["_id"] === projectId) {
+      if (projects["members"]) {
+        projects["members"] = projects["members"].concat(members);
+      } else {
+        projects["members"] = members;
+      }
+      break;
+    }
+  }
+};
+
 const deleteTask = (state, groupId, taskId) => {
   let projects = state.projects;
   let groupLookup = state.groupLookup;
@@ -445,5 +459,6 @@ export {
   deleteGroup,
   deletePhase,
   deleteProject,
-  generateLookup
+  generateLookup,
+  addProjectMembers
 };

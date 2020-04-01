@@ -7,7 +7,8 @@ import {
   deleteTask,
   deleteGroup,
   deletePhase,
-  deleteProject
+  deleteProject,
+  addProjectMembers
 } from "@/common/utils/log";
 const state = {
   projects: [],
@@ -61,6 +62,10 @@ const mutations = {
     state.groupLookup = payload.groupLookup;
     state.phaseLookup = payload.phaseLookup;
     state.projectLookup = payload.projectLookup;
+  },
+  add_project_members(state, payload) {
+    const { _id, members } = payload;
+    addProjectMembers(state, _id, members);
   }
 };
 

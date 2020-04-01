@@ -14,10 +14,10 @@ const User = require("../../models/User");
 router.post("/search", async (req, res) => {
   try {
     let value = req.body.value;
-    let limit = req.body.limit;
+    let limit = parseInt(req.body.limit);
     let exclude = req.body.exclude ? req.body.exclude : [];
     const users = await User.searchUser(value, limit, exclude);
-    return handleSuccess(res, users);
+    return handleSuccess(res, { value, data: users });
   } catch (err) {
     return handleError(res, err);
   }

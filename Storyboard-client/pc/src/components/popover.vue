@@ -21,10 +21,16 @@ export default {
   },
   methods: {
     show() {
-      if (!this.visible) this.visible = true;
+      if (!this.visible) {
+        this.visible = true;
+        this.$emit("popover-visible", true);
+      }
     },
     hide() {
-      if (this.visible) this.visible = false;
+      if (this.visible) {
+        this.visible = false;
+        this.$emit("popover-visible", false);
+      }
     }
   }
 };

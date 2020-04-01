@@ -7,7 +7,6 @@ const createSocketConnection = user => {
     // check if store has a socket connection
     let storeSocket = store.state.user.socket;
     if (storeSocket) {
-      console.log("removing existing socket");
       storeSocket.close();
       store.commit("user/remove_socket");
     }
@@ -39,4 +38,15 @@ const createSocketConnection = user => {
   }
 };
 
-export { createSocketConnection };
+const getNotifyMembers = projects => {
+  let notifyMembers = {};
+  projects.map(project => {
+    let members = project["members"];
+    members.map(member => {
+      notifyMembers[member._id] = "";
+    });
+  });
+  return Object.keys(notifyMembers);
+};
+
+export { createSocketConnection, getNotifyMembers };

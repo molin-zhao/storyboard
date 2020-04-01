@@ -250,4 +250,71 @@ ProjectSchema.statics.deletePhase = function(phaseId) {
   });
 };
 
+ProjectSchema.statics.fetchOnlineMembers = function(projectId) {
+  let id = objectId(projectId);
+  return this.aggregate([
+    {
+      $match: {
+        _id: id
+      }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "members",
+        foreignField: "_id",
+        as: "members"
+      }
+    },
+    {
+      $unwind: {
+        path: "$location",
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        members: {
+          _id: 1,
+          username: 1,
+          avatar: 1,
+          gender: 1,
+          online: 1
+        }
+      }
+    },
+    {
+      $sort: {
+        "members.online": 1
+      }
+    }
+  ]);
+};
+
+ProjectSchema.statics.addProjectMembers = function(projectId, members) {
+  return new Promise((resolve, reject) => {
+    return this.findByIdAndUpdate(
+      projectId,
+      {
+        $addToSet: { members }
+      },
+      { fields: { _id: 1, members: 1 }, new: true }
+    ).exec(async (err, doc) => {
+      if (err) return reject(err);
+      try {
+        const result = await doc
+          .populate({
+            path: "members",
+            select: "_id username avatar gender",
+            model: "User"
+          })
+          .execPopulate();
+        return resolve(result);
+      } catch (e) {
+        return reject(e);
+      }
+    });
+  });
+};
 module.exports = mongoose.model("Project", ProjectSchema);

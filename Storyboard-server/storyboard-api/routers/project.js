@@ -157,4 +157,35 @@ router.delete("/phase/delete", verifyAuthorization, async (req, res) => {
   }
 });
 
+/**
+ * get project online users
+ */
+router.get("/member/online", async (req, res) => {
+  try {
+    let projectId = req.query.id;
+    const resp = await Project.fetchOnlineMembers(projectId);
+    return handleSuccess(res, resp.shift());
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * add project members
+ */
+router.post(
+  "/member/add",
+  verifyAuthorization,
+  verifyUser,
+  async (req, res) => {
+    try {
+      let projectId = req.body.projectId;
+      let members = req.body.members;
+      const resp = await Project.addProjectMembers(projectId, members);
+      return handleSuccess(res, resp);
+    } catch (err) {
+      return handleError(res, err);
+    }
+  }
+);
 module.exports = router;

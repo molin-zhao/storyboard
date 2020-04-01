@@ -24,7 +24,14 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
       name,
       members
     });
-    const team = newTeam.save();
+    let teamDoc = await newTeam.save();
+    const team = await teamDoc
+      .populate({
+        path: "members",
+        select: "_id username avatar gender",
+        model: "User"
+      })
+      .execPopulate();
     return handleSuccess(res, team);
   } catch (err) {
     return handleError(res, err);

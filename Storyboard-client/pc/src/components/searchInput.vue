@@ -62,6 +62,7 @@ export default {
           if (this.searchStrategy) return this.searchStrategy(trimmedVal);
           if (
             this.dataSource[trimmedVal] != null &&
+            this.dataSource[trimmedVal].data &&
             this.dataSource[trimmedVal].data.length > 0
           ) {
             this.searching = false;
@@ -81,12 +82,12 @@ export default {
         let exclude = dataSource[value]
           ? parser(dataSource[value].data, "_id")
           : [];
-        const result = await this.$http.post(
+        const resp = await this.$http.post(
           url,
           { value, exclude, limit },
           { emulateJSON: true }
         );
-        this.$emit("on-result", result.data.data);
+        this.$emit("on-result", resp.data.data);
       } catch (err) {
         this.$emit("on-error", err);
       } finally {

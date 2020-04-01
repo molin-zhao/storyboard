@@ -198,7 +198,10 @@
     </div>
 
     <!-- modals -->
-    <createProjectForm />
+    <create-project-form />
+    <create-task-members />
+    <create-project-members />
+    <create-team />
 
     <!-- sidebar -->
     <sidebar
@@ -222,13 +225,19 @@ import imageBtn from "@/components/imageBtn";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import createProjectForm from "@/components/form/createProject";
+import createTaskMembers from "@/components/form/createTaskMembers";
+import createProjectMembers from "@/components/form/createProjectMembers";
+import createTeam from "@/components/form/createTeam";
 import sidebar from "@/components/sidebar";
 import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
 import { bell } from "@/common/theme/icon";
 import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
-import { createSocketConnection } from "@/common/utils/socket";
+import {
+  createSocketConnection,
+  getNotifyMembers
+} from "@/common/utils/socket";
 import { isEdited, generateLookup } from "@/common/utils/log";
 import { getUnreadCount } from "@/common/utils/message";
 export default {
@@ -238,6 +247,9 @@ export default {
     popover,
     tooltip,
     createProjectForm,
+    createTaskMembers,
+    createProjectMembers,
+    createTeam,
     sidebar
   },
   data() {
@@ -286,13 +298,18 @@ export default {
       const { id, token } = this;
       this.storyboardLoading = true;
       const info = await this.fetchInfo();
-      let socket = createSocketConnection({ id, token });
-      this.add_socket(socket);
       this.reload_projects(info.projects);
       this.reload_teams(info.teams);
       this.add_userinfo(info.user);
       this.save_userinfo(info.user);
       this.restore_message();
+      this.add_socket(
+        createSocketConnection({
+          id,
+          token,
+          nList: getNotifyMembers(info.projects)
+        })
+      );
     } catch (err) {
       this.errorCode = err.status;
     } finally {
@@ -344,7 +361,7 @@ export default {
         this.reloading = true;
         const info = await this.fetchInfo();
         this.reload_projects(info.projects);
-        this.add_teams(info.teams);
+        this.reload_teams(info.teams);
         this.add_userinfo(info.user);
         this.save_userinfo(info.user);
         this.restore_message();

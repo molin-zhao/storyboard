@@ -26,7 +26,7 @@
             <div class="form-group form-left-centered">
               <label>{{ $t("TASK_MEMBERS") }}</label>
               <div
-                v-if="projects[activeIndex].members.length > 0"
+                v-if="computedProjectMembers.length > 0"
                 class="member-source"
               >
                 <search-input
@@ -150,6 +150,16 @@ export default {
         processStatus === "done" ? "success" : "primary"
       } create-btn`;
     },
+    computedProjectMembers() {
+      const { projects, activeIndex } = this;
+      if (
+        !projects ||
+        !projects[activeIndex] ||
+        !projects[activeIndex]["members"]
+      )
+        return [];
+      return projects[activeIndex]["members"];
+    },
     computedTaskMembers() {},
     computedMemberResult() {}
   },
@@ -182,21 +192,13 @@ export default {
       $("#modal-create-task-member").modal("hide");
       setTimeout(() => {
         $("#modal-create-project-member").modal("show");
-      }, 1000);
+      }, 350);
     }
   }
 };
 </script>
 
 <style lang="scss" scoped>
-.wrapper {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
 .member-source {
   width: 100%;
   height: 300px;

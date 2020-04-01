@@ -50,6 +50,14 @@ export const POST_CREATE_TASK = () => {
   return API_HOST + "/project/task/create";
 };
 
+export const POST_CREATE_TEAM = () => {
+  return API_HOST + "/team/create";
+};
+
+export const POST_ADD_PROJECT_MEMBER = () => {
+  return API_HOST + "/project/member/add";
+};
+
 export const GET_USER_STORYBOARD = id => {
   return API_HOST + `/user/storyboard?user=${id}`;
 };
@@ -92,4 +100,8 @@ export const GET_USER_AVATAR = userId => {
 
 export const GET_USER_ONLINE = userId => {
   return API_HOST + `/user/online?id=${userId}`;
+};
+
+export const GET_PROJECT_ONLINE_MEMBERS = projectId => {
+  return API_HOST + `/project/member/online?id=${projectId}`;
 };

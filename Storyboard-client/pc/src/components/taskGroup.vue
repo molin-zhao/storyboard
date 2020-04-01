@@ -16,22 +16,18 @@
             :icon-style="triangledownfill.iconStyle"
             :icon-name="triangledownfill.iconName"
             :reverse="true"
-            @click.native="mouseclick('group-setting')"
+            :reset="computedGroupSettingReset"
+            @click.native="mouseclick('group-setting', $event)"
           >
             <popover
               ref="group-setting"
               style="left: 0; top: calc(100% + 10px)"
+              @popover-visible="groupSettingShow"
             >
               <tooltip
                 background-color="white"
                 border-color="whitesmoke"
-                contentStyle="
-              width: 200px; height: 250px; background-color: white;
-              border-radius: 10px;
-              box-shadow: -5px 2px 5px lightgrey; 
-              -webkit-box-shadow: -5px 2px 5px lightgrey;
-              border: 1px solid whitesmoke;
-              "
+                contentStyle="width: 200px; height: 250px; background-color: white;border-radius: 10px;box-shadow: -5px 2px 5px lightgrey; -webkit-box-shadow: -5px 2px 5px lightgrey;border: 1px solid whitesmoke"
               >
                 <div class="settings-top-align">
                   <a
@@ -181,7 +177,8 @@ import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import addTask from "@/components/addTask";
 import { mapState, mapMutations } from "vuex";
-import { mouseclick } from "@/common/utils/mouse";
+import { eventBus } from "@/common/utils/eventBus";
+import { mouseclick, hide } from "@/common/utils/mouse";
 import { getGroupLog } from "@/common/utils/log";
 import * as URL from "@/common/utils/url";
 export default {
@@ -229,6 +226,9 @@ export default {
           plain: "triangledownfill"
         }
       };
+    },
+    computedGroupSettingReset() {
+      return !this.groupSettingVisible;
     }
   },
   props: {
@@ -295,11 +295,13 @@ export default {
       collapsed: false,
       showDeleteTask: false,
       groupDeleting: false,
-      groupAdding: false
+      groupAdding: false,
+      groupSettingVisible: false
     };
   },
   methods: {
     mouseclick,
+    hide,
     ...mapMutations({
       add_log: "project/add_log",
       remove_log: "project/remove_log",
@@ -393,6 +395,9 @@ export default {
         this.groupAdding = false;
       }
     },
+    groupSettingShow(val) {
+      this.groupSettingVisible = val;
+    },
     changeGroupColor() {},
     manageTask() {
       this.showDeleteTask = true;
@@ -459,6 +464,11 @@ export default {
         });
       }
     }
+  },
+  mounted() {
+    eventBus.$on("reset-visible-component", () => {
+      this.hide("group-setting");
+    });
   }
 };
 </script>

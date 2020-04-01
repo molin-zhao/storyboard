@@ -66,10 +66,6 @@
         </div>
       </tooltip>
     </popover>
-
-    <!-- assign member modal -->
-    <create-task-members />
-    <create-project-members />
   </div>
 </template>
 
@@ -78,8 +74,6 @@ import avatar from "@/components/avatar";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import vueScroll from "vuescroll";
-import createTaskMembers from "@/components/form/createTaskMembers";
-import createProjectMembers from "@/components/form/createProjectMembers";
 import { eventBus } from "@/common/utils/eventBus";
 import { mouseclick, hide } from "@/common/utils/mouse";
 export default {
@@ -87,9 +81,7 @@ export default {
     avatar,
     popover,
     tooltip,
-    vueScroll,
-    createTaskMembers,
-    createProjectMembers
+    vueScroll
   },
   props: {
     members: {

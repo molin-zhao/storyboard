@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper" style="border-bottom: 1px gainsboro solid">
     <div class="avatar">
       <avatar
         default-img="/static/image/user_empty.png"
@@ -8,7 +8,9 @@
       />
     </div>
     <div class="username">
-      <span>{{ item.username }}</span>
+      <icon :name="computedGender" :style="computedGenderStyle" /><span>{{
+        item.username
+      }}</span>
     </div>
     <div class="operation">
       <a :class="computedOperationClass" @click.stop="operation">{{
@@ -45,6 +47,14 @@ export default {
       if (excludeList && excludeList.includes(item._id))
         return "text-danger op-link";
       return "text-primary op-link";
+    },
+    computedGender() {
+      const { item } = this;
+      return item.gender === "m" ? "male" : "female";
+    },
+    computedGenderStyle() {
+      const { item } = this;
+      return item.gender === "m" ? "color: cornflowerblue" : "color: lightpink";
     }
   },
   methods: {
@@ -74,9 +84,9 @@ export default {
   justify-content: center;
   align-items: center;
   .avatar-img {
-    height: 24px;
-    width: 24px;
-    border-radius: 12px;
+    height: 30px;
+    width: 30px;
+    border-radius: 15px;
     background-color: none;
   }
 }
@@ -89,6 +99,7 @@ export default {
   width: 65%;
   height: 100%;
   span {
+    font-size: 14px;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: left;

@@ -131,6 +131,10 @@ export default {
   ADD_PHASE_NAME: "添加阶段名称...",
   ADD_PHASE_DESCRIPTION: "添加阶段描述...",
   SEARCH_ADD: "搜索添加",
+  ADDED_MEMBER: "已添加成员：",
+  CREATE_TEAM: "创建工作组",
+  TEAM_NAME: "工作组名称",
+  ADD_TEAM_MEMBER: "添加工作组成员",
   TEAM_ADD: "从工作组添加",
   NO_TEAM_FOUND: "暂时没有可用工作组",
   NO_USER_FOUND: "没有找到相应用户",
@@ -180,6 +184,7 @@ export default {
   SEND_MESSAGE_ERROR: "无法连接至服务器",
   MAILBOX: "收信箱",
   NO_MESSAGE: "暂无信息",
+  PROJECT_MEMBER: "项目成员",
 
   // actions
   ADD_DESCRIPTION: "添加描述...",

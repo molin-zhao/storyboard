@@ -49,12 +49,6 @@ TeamSchema.statics.fetchUserTeams = function(userId) {
       }
     },
     {
-      $unwind: {
-        path: "$members",
-        preserveNullAndEmptyArrays: true
-      }
-    },
-    {
       $project: {
         _id: 1,
         name: 1,

@@ -130,7 +130,8 @@ UserSchema.statics.searchUser = function(value, limit, exclude) {
       $project: {
         _id: 1,
         avatar: 1,
-        username: 1
+        username: 1,
+        gender: 1
       }
     },
     {

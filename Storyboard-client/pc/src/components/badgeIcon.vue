@@ -3,6 +3,7 @@
     class="wrapper"
     :style="computedWrapperStyle"
     ref="icon"
+    @click="checkMouseClick"
     @mouseover="checkMouseover"
     @mouseleave="checkMouseleave"
   >
@@ -60,11 +61,7 @@ export default {
     badgeStyle: {
       type: String
     },
-    reverse: {
-      type: Boolean,
-      default: false
-    },
-    autoReset: {
+    reset: {
       type: Boolean,
       default: false
     }
@@ -97,37 +94,20 @@ export default {
       else return `${plain}`;
     }
   },
-  created() {
-    document.addEventListener("click", this.checkMouseClick);
-  },
-  beforeDestroy() {
-    document.removeEventListener("click", this.checkMouseClick);
-  },
   methods: {
-    checkMouseClick(event) {
-      const e = event || window.event;
-      let { type, target } = e;
-      if (this.$refs["icon"] && this.$refs["icon"].contains(target)) {
-        // click inside badgeicon
-        if (this.reverse) {
-          this.clicked = !this.clicked;
-        }
-        if (!this.clicked) {
-          this.clicked = true;
-        }
-      } else {
-        // click outside badgeicon
-        if (this.autoReset) {
-          this.clicked = false;
-          return;
-        }
-      }
+    checkMouseClick() {
+      this.clicked = !this.clicked;
     },
     checkMouseover() {
       if (!this.mouseover) this.mouseover = true;
     },
     checkMouseleave() {
       if (this.mouseover) this.mouseover = false;
+    }
+  },
+  watch: {
+    reset(newVal, oldVal) {
+      if (newVal) this.clicked = false;
     }
   }
 };

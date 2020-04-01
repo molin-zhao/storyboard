@@ -32,12 +32,31 @@
                   background-color="white"
                   border-color="whitesmoke"
                 >
-                  <div class="settings-top-align"></div>
+                  <div class="online-member-wrapper">
+                    <div class="online-member-header">
+                      <span>{{ $t("PROJECT_MEMBER") }}</span>
+                    </div>
+                    <div
+                      v-if="computedMemberList.length === 0"
+                      class="online-member-list"
+                    >
+                      <span>{{ $t("NO_PROJECT_MEMBER") }}</span>
+                      <a
+                        @click="createProjectMember"
+                        style="font-size: 14px; margin-top: 5px"
+                        class="text-primary"
+                        >{{ $t("ADD_PROJECT_MEMBER") }}</a
+                      >
+                    </div>
+                    <div v-else class="online-member-list">
+                      <vue-scroll> </vue-scroll>
+                    </div>
+                  </div>
                 </tooltip>
               </popover>
             </badge-icon>
             <span class="online-user-count display-only">{{
-              onlineUsers
+              computedOnlineMemberCount
             }}</span>
           </div>
           <badge-icon
@@ -178,19 +197,20 @@ import tooltip from "@/components/tooltip";
 import sidebar from "@/components/sidebar";
 import editableText from "@/components/editableText";
 import datepicker from "@/components/datepicker";
+import vueScroll from "vuescroll";
 import phase from "@/components/phase";
 import { isEdited, logCount } from "@/common/utils/log";
 import { mouseclick, mouseover, mouseleave } from "@/common/utils/mouse";
 import { group, more } from "@/common/theme/icon";
 import { mapState, mapMutations } from "vuex";
+import * as URL from "@/common/utils/url";
 export default {
   data() {
     return {
       // component style
       group,
       more,
-      // self data
-      onlineUsers: 1
+      members: []
     };
   },
   components: {
@@ -200,10 +220,12 @@ export default {
     editableText,
     tooltip,
     datepicker,
-    phase
+    phase,
+    vueScroll
   },
   computed: {
     ...mapState("project", ["projects", "activeIndex", "logs"]),
+    ...mapState("user", ["id", "token"]),
     hasProject() {
       const { projects, activeIndex } = this;
       return projects[activeIndex] ? true : false;
@@ -231,6 +253,14 @@ export default {
       if (count === 0) return "";
       if (count > 99) return "99+";
       return `${count}`;
+    },
+    computedOnlineMemberCount() {
+      const { members } = this;
+      return members.length;
+    },
+    computedMemberList() {
+      const { projects, activeIndex } = this;
+      return projects[activeIndex]["members"];
     }
   },
   methods: {
@@ -258,6 +288,18 @@ export default {
         });
       }
     },
+    async fetchOnlineUsers() {
+      try {
+        const { projects, activeIndex } = this;
+        let projectId = projects[activeIndex]._id;
+        let url = URL.GET_PROJECT_ONLINE_MEMBERS(projectId);
+        const resp = await this.$http.get(url);
+        let resMembers = resp.data.data.members;
+        this.members = resMembers.filter(member => member.online);
+      } catch (err) {
+        console.log(err);
+      }
+    },
     syncProject() {
       console.log("sync");
     },
@@ -265,12 +307,23 @@ export default {
       console.log("save");
     },
     importProject() {},
-    exportProject() {}
+    exportProject() {},
+    createProjectMember() {
+      $("#modal-create-project-member").modal("show");
+    }
   },
   mounted() {
     $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
+  },
+  watch: {
+    projects: {
+      deep: true,
+      handler: function(newValue, oldValue) {
+        if (newVal) this.fetchOnlineUsers();
+      }
+    }
   }
 };
 </script>
@@ -367,6 +420,30 @@ export default {
     justify-content: center;
     align-items: center;
     border-left: lightgrey solid 1px;
+  }
+}
+.online-member-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  .online-member-header {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .online-member-list {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
   }
 }
 .seperator {
