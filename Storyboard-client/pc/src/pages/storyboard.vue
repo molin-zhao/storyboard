@@ -202,6 +202,7 @@
     <create-task-members />
     <create-project-members />
     <create-team />
+    <create-warehouse />
 
     <!-- sidebar -->
     <sidebar
@@ -228,6 +229,7 @@ import createProjectForm from "@/components/form/createProject";
 import createTaskMembers from "@/components/form/createTaskMembers";
 import createProjectMembers from "@/components/form/createProjectMembers";
 import createTeam from "@/components/form/createTeam";
+import createWarehouse from "@/components/form/createWarehouse";
 import sidebar from "@/components/sidebar";
 import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
@@ -250,6 +252,7 @@ export default {
     createTaskMembers,
     createProjectMembers,
     createTeam,
+    createWarehouse,
     sidebar
   },
   data() {

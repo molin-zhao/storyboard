@@ -18,8 +18,8 @@
         width: 300px; 
         height: 400px; 
         border-radius: 5px; 
-        box-shadow: -5px 2px 5px lightgrey; 
-        -webkit-box-shadow: -5px 2px 5px lightgrey;
+        box-shadow: -2px 1px 2px whitesmoke; 
+        -webkit-box-shadow: -2px 1px 2px whitesmoke;
         border: 1px solid whitesmoke;
         "
         arrow-placement="top"
@@ -371,8 +371,8 @@ export default {
   -webkit-transform: translateY(-3px);
   -ms-transform: translateY(-3px);
   transform: translateY(-3px);
-  -webkit-box-shadow: -5px 2px 5px lightgrey;
-  box-shadow: -5px 2px 5px lightgrey;
+  -webkit-box-shadow: -2px 1px 2px gainsboro;
+  box-shadow: -2px 1px 2px gainsboro;
   -webkit-transition: all 0.3s ease-out;
   transition: all 0.3s ease-out;
   border-radius: 2px;

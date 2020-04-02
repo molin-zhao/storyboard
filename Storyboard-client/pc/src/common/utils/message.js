@@ -48,13 +48,15 @@ const appendMessage = (state, message) => {
   try {
     let messages = state.messages;
     const { from, to } = message;
-    if (messages[to]) {
-      messages[to]["messages"] = messages[to]["messages"].concat(message);
+    if (messages[to._id]) {
+      messages[to._id]["messages"] = messages[to._id]["messages"].concat(
+        message
+      );
     } else {
-      messages[to] = {
-        username: from.username,
-        avatar: from.avatar,
-        gender: from.gender,
+      messages[to._id] = {
+        username: to.username,
+        avatar: to.avatar,
+        gender: to.gender,
         messages: [message]
       };
     }
@@ -71,7 +73,7 @@ const createMessage = (type, content, from, to) => {
     type,
     content,
     from, // include user avatar, gender, id and username
-    to
+    to // include user avatar, gender, id and username
   };
 };
 

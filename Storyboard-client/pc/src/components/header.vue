@@ -10,11 +10,19 @@
         />
         Storyboard
       </a>
-      <div v-if="!id" class="ml-auto">
+      <div v-if="id && token" class="avatar-wrapper ml-auto">
+        <span class="avatar-label">{{ $t("WELCOME") }}</span>
+        <span class="avatar-label">{{ username }}</span>
+        <avatar
+          :src="avatar"
+          style="width: 40px; height: 40px; border-radius: 20px"
+        />
+      </div>
+      <div v-else class="ml-auto">
         <ul class="navbar-nav header-items">
           <li class="nav-item dropdown header-item">
             <a
-              class="nav-link dropdown-toggle nav-title"
+              class="nav-link nav-link-custom dropdown-toggle nav-title"
               href="#"
               id="navbarDropdownMenuLink"
               role="button"
@@ -42,32 +50,26 @@
             v-if="!isMobile"
             :class="`nav-item header-item ${computedActiveLink('register')}`"
           >
-            <router-link class="nav-link nav-title" to="/register"
+            <router-link
+              class="nav-link nav-link-custom nav-title"
+              to="/register"
               >{{ $t("REGISTER") }}
               <span class="sr-only">(current)</span></router-link
             >
           </li>
           <li v-if="!isMobile" class="nav-item header-item">
-            <a class="nav-link nav-title">|</a>
+            <a class="nav-link nav-link-custom nav-title">|</a>
           </li>
           <li
             v-if="!isMobile"
             :class="`nav-item header-item ${computedActiveLink('login')}`"
           >
-            <router-link class="nav-link nav-title" to="/login"
+            <router-link class="nav-link nav-link-custom nav-title" to="/login"
               >{{ $t("LOGIN") }}
               <span class="sr-only">(current)</span></router-link
             >
           </li>
         </ul>
-      </div>
-      <div v-else class="avatar-wrapper ml-auto">
-        <span class="avatar-label">{{ $t("WELCOME") }}</span>
-        <span class="avatar-label">{{ username }}</span>
-        <avatar
-          :src="avatar"
-          style="object-fit: cover; width: 50px; height: 50px; border-radius: 25px; background-color: whitesmoke"
-        />
       </div>
     </div>
   </div>
@@ -143,6 +145,7 @@ export default {
     align-items: center;
     flex-wrap: nowrap;
     .header-item {
+      border: none;
       margin-left: 10px;
       margin-right: 10px;
     }
@@ -169,5 +172,9 @@ a {
     color: whitesmoke;
     margin-right: 5px;
   }
+}
+
+.nav-link-custom {
+  border: none;
 }
 </style>

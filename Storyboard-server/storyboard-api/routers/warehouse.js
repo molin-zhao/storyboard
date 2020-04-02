@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const { verifyAuthorization, verifyUser } = require("../../authenticate");
 const { handleError, handleSuccess } = require("../../response");
-const Team = require("../../models/Team");
+const Warehouse = require("../../models/Warehouse");
 
 router.get("/", verifyAuthorization, verifyUser, async (req, res) => {
   try {
     let reqId = req.query.id;
-    const userTeams = await Team.fetchUserTeams(reqId);
-    return handleSuccess(res, userTeams);
+    const userWarehouse = await Warehouse.fetchUserWarehouse(reqId);
+    return handleSuccess(res, userWarehouse);
   } catch (err) {
     return handleError(res, err);
   }
@@ -19,13 +19,17 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
     let user = req.body.user;
     let name = req.body.name;
     let members = req.body.members;
-    let newTeam = new Team({
+    let description = req.body.description;
+    let fields = req.body.fields;
+    let newWarehouse = new Warehouse({
       creator: user,
       name,
-      members
+      members,
+      description,
+      fields
     });
-    let teamDoc = await newTeam.save();
-    const team = await teamDoc
+    let warehouseDoc = await newWarehouse.save();
+    const warehouse = await warehouseDoc
       .populate({
         path: "members",
         select: "_id username avatar gender",
@@ -37,7 +41,7 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
         model: "User"
       })
       .execPopulate();
-    return handleSuccess(res, team);
+    return handleSuccess(res, warehouse);
   } catch (err) {
     return handleError(res, err);
   }

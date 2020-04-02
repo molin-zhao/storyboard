@@ -23,16 +23,18 @@ router.get("/", verifyAuthorization, verifyUser, async (req, res) => {
  */
 router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
   try {
-    let reqUserId = req.body.user;
+    let user = req.body.user;
     let members = req.body.members;
     let name = req.body.name;
     let description = req.body.description;
     let color = generateRandomColor(COLORS);
+    let computedMembers =
+      members && members.length > 0 ? members.concat(user) : [user];
     let newProject = new Project({
-      creator: reqUserId,
+      creator: user,
       name,
       description,
-      members,
+      members: computedMembers,
       phases: [
         {
           name: "",

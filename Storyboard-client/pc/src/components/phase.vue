@@ -23,11 +23,12 @@
     <div class="phase-body">
       <vue-scroll :ops="ops">
         <task-group
-          v-for="item in computedSelectedGroup"
-          :key="item._id"
+          v-for="(item, index) in computedSelectedGroup"
+          :key="index"
           :phase-index="selectedPhaseIndex"
           :group-id="item._id"
           :item="item"
+          :group-index="index"
         />
       </vue-scroll>
     </div>

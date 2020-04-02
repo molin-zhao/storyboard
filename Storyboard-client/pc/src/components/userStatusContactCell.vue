@@ -1,5 +1,5 @@
 <template>
-  <div class="user-wrapper" style="border-bottom: 1px gainsboro solid">
+  <div class="wrapper" style="border-bottom: 1px gainsboro solid">
     <div class="avatar">
       <avatar
         default-img="/static/image/user_empty.png"
@@ -69,7 +69,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.user-wrapper {
+.wrapper {
   width: 100%;
   height: 100%;
   display: flex;

@@ -3,7 +3,7 @@
     class="wrapper"
     :style="computedWrapperStyle"
     ref="icon"
-    @click="checkMouseClick"
+    @click.stop="checkMouseClick"
     @mouseover="checkMouseover"
     @mouseleave="checkMouseleave"
   >
@@ -18,6 +18,7 @@
 </template>
 
 <script>
+import { eventBus } from "@/common/utils/eventBus";
 export default {
   data() {
     return {
@@ -61,9 +62,9 @@ export default {
     badgeStyle: {
       type: String
     },
-    reset: {
+    autoReset: {
       type: Boolean,
-      default: false
+      default: true
     }
   },
   computed: {
@@ -105,10 +106,10 @@ export default {
       if (this.mouseover) this.mouseover = false;
     }
   },
-  watch: {
-    reset(newVal, oldVal) {
-      if (newVal) this.clicked = false;
-    }
+  mounted() {
+    eventBus.$on("reset-visible-component", () => {
+      if (this.autoReset && this.clicked) this.clicked = false;
+    });
   }
 };
 </script>

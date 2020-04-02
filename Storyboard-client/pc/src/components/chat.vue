@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-wrapper">
+  <div class="chat-wrapper" @click.stop="resetVisibleComponents">
     <span
       v-if="!to || loading"
       class="spinner-border spinner-border-bg"
@@ -11,14 +11,14 @@
         <div class="chat-user-avatar-wrapper">
           <avatar
             class="chat-user-avatar"
-            :user-id="to"
-            :src="messages[to]['avatar']"
+            :user-id="to._id"
+            :src="to['avatar']"
           />
         </div>
         <div class="chat-user-meta">
           <div class="chat-user-label">
             <icon
-              v-if="messages[to]['gender'] === 'm'"
+              v-if="to['gender'] === 'm'"
               name="male"
               style="color: cornflowerblue"
             />
@@ -26,7 +26,7 @@
             <online-status style="margin-left: 5px" :status="onlineStatus" />
           </div>
           <div class="chat-user-name">
-            <span>{{ messages[to]["username"] }}</span>
+            <span>{{ to["username"] }}</span>
           </div>
         </div>
       </div>
@@ -53,6 +53,7 @@ import onlineStatus from "@/components/onlineStatus";
 import chatInput from "@/components/chatInput";
 import chatMessage from "@/components/chatMessage";
 import { stopPropagation, mouseclick } from "@/common/utils/mouse";
+import { eventBus } from "@/common/utils/eventBus";
 import { mapState, mapMutations } from "vuex";
 import * as URL from "@/common/utils/url";
 import { createMessage } from "@/common/utils/message";
@@ -67,8 +68,7 @@ export default {
   },
   props: {
     to: {
-      type: String,
-      default: ""
+      type: Object
     },
     font: {
       type: String,
@@ -105,7 +105,7 @@ export default {
     ...mapState("message", ["messages", "pendingMessages", "failedMessages"]),
     computedMessages() {
       const { messages, to } = this;
-      if (messages[to]) return messages[to]["messages"];
+      if (messages[to._id]) return messages[to._id]["messages"];
       return [];
     }
   },
@@ -129,6 +129,9 @@ export default {
       if (this.visible) {
         this.visible = false;
       }
+    },
+    resetVisibleComponents() {
+      return eventBus.$emit("reset-visible-component");
     },
     sendMessage(val) {
       const { socket, id, to, gender, avatar, username } = this;
@@ -166,7 +169,7 @@ export default {
       if (newVal) {
         try {
           this.loading = true;
-          let url = URL.GET_USER_ONLINE(newVal);
+          let url = URL.GET_USER_ONLINE(newVal._id);
           const resp = await this.$http.get(url);
           this.onlineStatus = resp.data.data;
         } catch (err) {

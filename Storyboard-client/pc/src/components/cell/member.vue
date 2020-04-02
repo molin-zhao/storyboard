@@ -23,11 +23,11 @@
     <popover ref="member-popover" style="top: calc(100% + 10px); z-index: 10">
       <tooltip
         content-style="
-        width: 300px; 
+        width: 250px; 
         height: 250px; 
         border-radius: 5px; 
-        box-shadow: -5px 2px 5px gainsboro; 
-        -webkit-box-shadow: -5px 2px 5px gainsboro;
+        box-shadow: -2px 1px 2px whitesmoke; 
+        -webkit-box-shadow: -2px 1px 2px whitesmoke;
         border: 1px solid whitesmoke;
         "
         arrow-placement="top"
@@ -200,8 +200,8 @@ export default {
   -webkit-transform: translateY(-3px);
   -ms-transform: translateY(-3px);
   transform: translateY(-3px);
-  -webkit-box-shadow: -5px 2px 5px lightgrey;
-  box-shadow: -5px 2px 5px lightgrey;
+  -webkit-box-shadow: -2px 1px 2px gainsboro;
+  box-shadow: -2px 1px 2px gainsboro;
   -webkit-transition: all 0.3s ease-out;
   transition: all 0.3s ease-out;
   border-radius: 2px;

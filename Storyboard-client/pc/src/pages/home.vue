@@ -24,6 +24,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-@import "../common/theme/container.css";
-</style>
+<style lang="scss" scoped></style>

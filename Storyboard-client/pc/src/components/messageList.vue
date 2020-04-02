@@ -28,18 +28,6 @@ export default {
   components: {
     message
   },
-  data() {
-    return {
-      activeIndex: -1,
-      btns: [
-        {
-          backgroundColor: "#d9534f",
-          width: "100px",
-          defaultLabel: this.$t("DELETE_MESSAGE")
-        }
-      ]
-    };
-  },
   computed: {
     ...mapState("message", ["messages"]),
     computedMessagesKeys() {
@@ -48,17 +36,18 @@ export default {
     }
   },
   methods: {
-    moveCell(index) {
-      if (this.activeIndex !== index) {
-        this.activeIndex = -1;
-      }
-    },
-    activeCell(index) {
-      this.activeIndex = index;
-    },
     selectCell(from) {
-      this.activeIndex = -1;
-      this.$emit("on-select", from);
+      const { messages } = this;
+      let avatar = messages[from]["avatar"];
+      let username = messages[from]["username"];
+      let gender = messages[from]["gender"];
+      let fromUser = {
+        _id: from,
+        avatar,
+        username,
+        gender
+      };
+      this.$emit("on-select", fromUser);
     }
   }
 };

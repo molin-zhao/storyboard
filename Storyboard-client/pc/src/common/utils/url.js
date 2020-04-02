@@ -54,6 +54,10 @@ export const POST_CREATE_TEAM = () => {
   return API_HOST + "/team/create";
 };
 
+export const POST_CREATE_WAREHOUSE = () => {
+  return API_HOST + "/warehouse/create";
+};
+
 export const POST_ADD_PROJECT_MEMBER = () => {
   return API_HOST + "/project/member/add";
 };

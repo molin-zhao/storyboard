@@ -14,7 +14,6 @@
           :wrapper-style="messageWarning.wrapperStyle"
           :icon-style="messageWarning.iconStyle"
           :icon-name="messageWarning.iconName"
-          :reverse="true"
           @click.native="mouseclick('failed-message')"
         >
           <popover
@@ -85,7 +84,8 @@ import tooltip from "@/components/tooltip";
 import badgeIcon from "@/components/badgeIcon";
 import avatar from "@/components/avatar";
 import { mapMutations, mapState } from "vuex";
-import { mouseclick } from "@/common/utils/mouse";
+import { mouseclick, hide } from "@/common/utils/mouse";
+import { eventBus } from "@/common/utils/eventBus";
 export default {
   components: {
     popover,
@@ -124,7 +124,7 @@ export default {
         },
         iconStyle: {
           plain: "width: 100%; height: 100%; color: var(--main-color-danger);",
-          active: "color: cornflowerblue;"
+          active: "color: lightgrey;"
         },
         iconName: {
           plain: "warning"
@@ -142,6 +142,7 @@ export default {
       remove_message: "message/remove/message"
     }),
     mouseclick,
+    hide,
     resendMessage(message) {
       const { socket } = this;
       if (!socket)
@@ -163,15 +164,12 @@ export default {
       this.remove_pending(message._id);
       this.remove_failed(message._id);
       this.remove_message(message._id);
-    },
-    messageWarningClickInside() {
-      console.log("inside");
-      return this.mouseclick("failed-message");
-    },
-    messageWarningClickOutside() {
-      console.log("outside");
-      return this.mouseclick("failed-message");
     }
+  },
+  mounted() {
+    eventBus.$on("reset-visible-component", () => {
+      this.hide("failed-message");
+    });
   }
 };
 </script>
@@ -232,8 +230,7 @@ export default {
   }
 }
 .message-option {
-  width: 15%;
-  min-width: 30px;
+  width: 30px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

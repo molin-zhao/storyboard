@@ -2,7 +2,7 @@
   <div class="mainboard-wrapper">
     <div v-if="hasProject" class="mainboard">
       <div class="mainboard-title">
-        <div class="project-name">
+        <div class="mainboard-title-name">
           <span class="display-only" style="font-size: 40px">
             {{ computedProjectName }}
           </span>
@@ -26,7 +26,7 @@
             >
               <popover ref="online-member" style="right: 3vw; top: 0">
                 <tooltip
-                  content-style="width: 200px; height: 200px;border-radius: 10px;box-shadow: -5px 2px 5px lightgrey; -webkit-box-shadow: -5px 2px 5px lightgrey;border: 1px solid whitesmoke;"
+                  content-style="width: 250px; height: 250px;border-radius: 10px;box-shadow: -5px 2px 5px lightgrey; -webkit-box-shadow: -5px 2px 5px lightgrey;border: 1px solid whitesmoke;"
                   arrow-placement="right"
                   arrow-position="top: 1vw"
                   background-color="white"
@@ -42,14 +42,31 @@
                     >
                       <span>{{ $t("NO_PROJECT_MEMBER") }}</span>
                       <a
-                        @click="createProjectMember"
+                        @click.stop="addProjectMember"
                         style="font-size: 14px; margin-top: 5px"
                         class="text-primary"
                         >{{ $t("ADD_PROJECT_MEMBER") }}</a
                       >
                     </div>
                     <div v-else class="online-member-list">
-                      <vue-scroll> </vue-scroll>
+                      <vue-scroll :ops="ops">
+                        <div
+                          class="online-member-cell"
+                          v-for="(item, index) in computedMemberList"
+                          :key="index"
+                        >
+                          <user-online-contact :item="item" />
+                        </div>
+                      </vue-scroll>
+                    </div>
+                    <div class="online-member-footer">
+                      <a
+                        style="font-size: 14px; margin-top: 5px"
+                        @click.stop="addProjectMember"
+                        class="text-primary"
+                      >
+                        {{ $t("ADD_PROJECT_MEMBER") }}
+                      </a>
                     </div>
                   </div>
                 </tooltip>
@@ -169,7 +186,7 @@
           @input-change="descriptionChange"
         />
       </div>
-      <div class="mainboard-phases">
+      <div class="mainboard-body">
         <phase />
       </div>
     </div>
@@ -198,6 +215,7 @@ import sidebar from "@/components/sidebar";
 import editableText from "@/components/editableText";
 import datepicker from "@/components/datepicker";
 import vueScroll from "vuescroll";
+import userOnlineContact from "@/components/userOnlineContactCell";
 import phase from "@/components/phase";
 import { isEdited, logCount } from "@/common/utils/log";
 import { mouseclick, mouseover, mouseleave } from "@/common/utils/mouse";
@@ -210,7 +228,18 @@ export default {
       // component style
       group,
       more,
-      members: []
+      members: [],
+      ops: {
+        vuescroll: {
+          mode: "native"
+        },
+        scrollPanel: {
+          scrollingX: false
+        },
+        bar: {
+          background: "lightgrey"
+        }
+      }
     };
   },
   components: {
@@ -221,7 +250,8 @@ export default {
     tooltip,
     datepicker,
     phase,
-    vueScroll
+    vueScroll,
+    userOnlineContact
   },
   computed: {
     ...mapState("project", ["projects", "activeIndex", "logs"]),
@@ -308,7 +338,7 @@ export default {
     },
     importProject() {},
     exportProject() {},
-    createProjectMember() {
+    addProjectMember() {
       $("#modal-create-project-member").modal("show");
     }
   },
@@ -386,7 +416,7 @@ export default {
   justify-content: flex-start;
   align-items: center;
 }
-.mainboard-phases {
+.mainboard-body {
   height: 82%;
   width: 100%;
   display: flex;
@@ -438,12 +468,28 @@ export default {
   }
   .online-member-list {
     width: 100%;
-    height: 80%;
+    height: 60%;
+    padding: 0px 5px 0px 5px;
     display: flex;
     flex-direction: column;
     padding: 10px;
     justify-content: center;
     align-items: center;
+    .online-member-cell {
+      width: 100%;
+      height: 50px;
+    }
+  }
+  .online-member-footer {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    a {
+      cursor: pointer;
+    }
   }
 }
 .seperator {

@@ -102,7 +102,9 @@ export default {
       let phaseId = phase._id;
       let logPhaseName = getPhaseLog(logs, projectId, phaseId, "name");
       let phaseName = logPhaseName ? logPhaseName : phase.name;
-      return phaseName ? phaseName : `${this.$t("UNTITLE_PHASE")}-${index + 1}`;
+      return phaseName
+        ? phaseName
+        : `${this.$t("UNTITLE_PHASE", { index: index + 1 })}`;
     },
     computedPhaseDescription() {
       const { logs, projects, activeIndex, phase } = this;

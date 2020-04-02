@@ -5,9 +5,14 @@
 </template>
 
 <script>
+import { mapState, mapMutations } from "vuex";
+import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
+import { decrypt } from "@/common/utils/form";
 export default {
   name: "Storyboard-App",
   mounted() {
+    // check user credential
+    this.checkCredentials();
     // check if the client requested from a mobile device
     let isMobile = navigator.userAgent.match(
       /(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i
@@ -16,6 +21,33 @@ export default {
       this.$route.path.split("/").pop() === "mobile" ? true : false;
     if (isMobile && !currentNavStackIsMobile)
       return this.$router.replace("/mobile");
+  },
+  computed: {
+    ...mapState("user", ["id", "token", "avatar", "username", "gender"])
+  },
+  methods: {
+    ...mapMutations({
+      add_credential: "user/add_credential",
+      add_userinfo: "user/add_userinfo"
+    }),
+    checkCredentials() {
+      const { id, token, avatar, username, gender } = this;
+      if (id && token) return;
+      let localId = localStorage.getItem("id");
+      let localEncryptedToken = localStorage.getItem("token");
+      if (!localId || !localEncryptedToken) return;
+      let secret = localId.substr(0, LOCAL_SECRET_LEN);
+      let localToken = decrypt(localEncryptedToken, secret);
+      let localAvatar = localStorage.getItem("avatar");
+      let localUsername = localStorage.getItem("username");
+      let localGender = localStorage.getItem("gender");
+      this.add_credential({ id: localId, token: localToken });
+      this.add_userinfo({
+        avatar: localAvatar,
+        username: localUsername,
+        gender: localGender
+      });
+    }
   }
 };
 </script>

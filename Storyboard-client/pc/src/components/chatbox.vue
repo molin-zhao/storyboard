@@ -2,7 +2,7 @@
   <transition name="fade">
     <div
       v-show="visible"
-      class="wrapper"
+      class="chatbox"
       :style="`font-family: ${font}`"
       @click="hide"
     >
@@ -10,14 +10,14 @@
         <transition name="sidebar">
           <div
             v-show="visible"
-            class="chatbox-wrapper shadow"
+            class="chatbox-wrapper shadow display-only"
             @click.stop="stopPropagation"
           >
             <div class="chatbox-header">
               <icon
                 name="close"
                 class="close"
-                @click.stop="hide"
+                @click.native.stop="hide"
                 style="color: black"
               />
             </div>
@@ -40,8 +40,7 @@ export default {
   },
   props: {
     to: {
-      type: Object,
-      default: () => null
+      type: Object
     },
     font: {
       type: String,
@@ -71,7 +70,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "../common/theme/container.css";
-.wrapper {
+.chatbox {
   position: absolute;
   top: 0;
   left: 0;

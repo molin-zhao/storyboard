@@ -17,6 +17,7 @@ const indexRouter = require("./routers/index");
 const projectRouter = require("./routers/project");
 const teamRouter = require("./routers/team");
 const userRouter = require("./routers/user");
+const warehouseRouter = require("./routers/warehouse");
 
 const app = express();
 app.use(logger("dev"));
@@ -30,6 +31,7 @@ app.use("/", indexRouter);
 app.use("/project", projectRouter);
 app.use("/team", teamRouter);
 app.use("/user", userRouter);
+app.use("/warehouse", warehouseRouter);
 
 // 2. setup error 404 and 500
 app.use((req, res) => {

@@ -15,9 +15,7 @@
             :wrapper-style="triangledownfill.wrapperStyle"
             :icon-style="triangledownfill.iconStyle"
             :icon-name="triangledownfill.iconName"
-            :reverse="true"
-            :reset="computedGroupSettingReset"
-            @click.native="mouseclick('group-setting', $event)"
+            @click.native="mouseclick('group-setting')"
           >
             <popover
               ref="group-setting"
@@ -93,7 +91,7 @@
         <div class="setting-group-label">
           <div>
             <editable-text
-              :default-value="$t('GROUP_TITLE')"
+              :default-value="$t('UNTITLE_GROUP', { index: groupIndex + 1 })"
               :value="computedGroupTitle"
               :input-style="`font-size: 18px; color: ${item.color}`"
               @input-change="groupNameChange"
@@ -226,9 +224,6 @@ export default {
           plain: "triangledownfill"
         }
       };
-    },
-    computedGroupSettingReset() {
-      return !this.groupSettingVisible;
     }
   },
   props: {
@@ -242,6 +237,10 @@ export default {
     },
     item: {
       type: Object
+    },
+    groupIndex: {
+      type: Number,
+      required: true
     }
   },
   data() {
@@ -295,8 +294,7 @@ export default {
       collapsed: false,
       showDeleteTask: false,
       groupDeleting: false,
-      groupAdding: false,
-      groupSettingVisible: false
+      groupAdding: false
     };
   },
   methods: {

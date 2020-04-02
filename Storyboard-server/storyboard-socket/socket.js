@@ -39,13 +39,13 @@ const createSocketServer = (server, app) => {
     socket.on("send-message", async (message, callback) => {
       try {
         const { to } = message; // user id;
-        const resp = await redisOps.getSocketServer(to);
+        const resp = await redisOps.getSocketServer(to._id);
         let serverName = resp.body.data;
         let unicastChannel = app.locals.unicast;
         let user_socket = app.locals.user_socket;
         if (serverName === SERVER_NAME) {
           // user is connected to this server
-          let to_socket = user_socket[to];
+          let to_socket = user_socket[to._id];
           if (to_socket && to_socket.connected)
             to_socket.emit("receive-message", message, async ack => {
               if (ack) return callback(true);

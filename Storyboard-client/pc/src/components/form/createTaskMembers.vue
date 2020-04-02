@@ -30,7 +30,7 @@
                 class="member-source"
               >
                 <search-input
-                  style="height: 30px; width: 90%; border-radius: 10px"
+                  style="height: 30px; width: 100%; border-radius: 10px"
                   :search-strategy="searchMember"
                   @input-change="searchInputChange"
                 />

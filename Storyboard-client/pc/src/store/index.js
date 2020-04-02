@@ -7,13 +7,15 @@ import user from "./modules/user";
 import project from "./modules/project";
 import team from "./modules/team";
 import message from "./modules/message";
+import warehouse from "./modules/warehouse";
 
 const store = new vuex.Store({
   modules: {
     user,
     project,
     team,
-    message
+    message,
+    warehouse
   }
 });
 

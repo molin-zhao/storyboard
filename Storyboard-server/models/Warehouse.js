@@ -6,32 +6,32 @@ const FieldSchema = new Schema({
     type: String,
     default: ""
   },
-  field_type: {
+  type: {
     type: String,
-    enum: ["boolean", "numeric", "string", "date"],
+    enum: ["boolean", "number", "string", "date"],
     default: "string"
-  },
-  field_value: {
-    type: String,
-    default: ""
   }
 });
 const ItemSchema = new Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  stock: {
-    type: Number,
-    default: 1
-  },
-  field: [FieldSchema]
+  fields: [
+    {
+      field_ref: FieldSchema,
+      value: {
+        type: String,
+        default: ""
+      }
+    }
+  ]
 });
 const WarehouseSchema = new Schema(
   {
     name: {
       type: String,
       required: true
+    },
+    description: {
+      type: String,
+      default: ""
     },
     members: {
       type: [{ type: Schema.Types.ObjectId, ref: "User" }],
@@ -42,6 +42,7 @@ const WarehouseSchema = new Schema(
       ref: "User",
       required: true
     },
+    fields: [FieldSchema],
     items: [ItemSchema]
   },
   { timestamps: true }
@@ -75,12 +76,6 @@ WarehouseSchema.statics.fetchUserWarehouse = function(userId) {
       }
     },
     {
-      $unwind: {
-        path: "$members",
-        preserveNullAndEmptyArrays: true
-      }
-    },
-    {
       $project: {
         _id: 1,
         name: 1,
@@ -95,7 +90,8 @@ WarehouseSchema.statics.fetchUserWarehouse = function(userId) {
           username: 1,
           avatar: 1,
           gender: 1
-        }
+        },
+        items: 1
       }
     }
   ]);
