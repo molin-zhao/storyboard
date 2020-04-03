@@ -198,6 +198,11 @@ export default {
   SEND_MESSAGE_ERROR: "Cannot connect to server",
   MAILBOX: "Mailbox",
   NO_MESSAGE: "No messages",
+  IMPORT_FILE: "Import File",
+  CHOOSE_FILE: "Choose File",
+  FILE_SUPPORT: "support extension of {extension}",
+  FILE_FIELD_FORMAT: "Field name should be precisely match",
+  BROWSE: "Browse",
 
   // actions
   ADD_DESCRIPTION: "Add a description...",
@@ -224,6 +229,8 @@ export default {
   NETWORK_ERROR_DESC:
     "Request error, unable to get the response from the server ",
   NETWORK_ERROR_RETRY: "Click to refresh",
+  FILE_EXTENSION_NOT_SUPPORT: "File type not supported",
+  FILE_EXCEED_MAX_SIZE: "File size exceeds the limitation of {limit}",
 
   // success
   REGISTER_SUCCESS: "Registered successfully ✓",

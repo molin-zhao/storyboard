@@ -359,6 +359,9 @@ export default {
         console.log(createRes.data);
         this.add_projects(createRes.data.data);
         this.projectCreateStatus = "done";
+        setTimeout(() => {
+          $("#modal-create-project").modal("hide");
+        }, 1000);
       } catch (err) {
         this.projectCreateStatus = "todo";
       }

@@ -200,23 +200,10 @@
     <!-- modals -->
     <create-project-form />
     <create-task-members />
+    <create-phase />
     <create-project-members />
     <create-team />
     <create-warehouse />
-
-    <!-- sidebar -->
-    <sidebar
-      ref="sidebar"
-      class="shadow"
-      sidebarStyle="
-      height: 100vh; 
-      width: 25vw; 
-      right: -5px; 
-      top: 0;
-      "
-    >
-      <div class="sidebar-content"></div>
-    </sidebar>
   </div>
 </template>
 
@@ -229,8 +216,8 @@ import createProjectForm from "@/components/form/createProject";
 import createTaskMembers from "@/components/form/createTaskMembers";
 import createProjectMembers from "@/components/form/createProjectMembers";
 import createTeam from "@/components/form/createTeam";
+import createPhase from "@/components/form/createPhase";
 import createWarehouse from "@/components/form/createWarehouse";
-import sidebar from "@/components/sidebar";
 import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
 import { bell } from "@/common/theme/icon";
@@ -253,7 +240,7 @@ export default {
     createProjectMembers,
     createTeam,
     createWarehouse,
-    sidebar
+    createPhase
   },
   data() {
     return {

@@ -6,7 +6,7 @@ const Warehouse = require("../../models/Warehouse");
 
 router.get("/", verifyAuthorization, verifyUser, async (req, res) => {
   try {
-    let reqId = req.query.id;
+    let reqId = req.query.user;
     const userWarehouse = await Warehouse.fetchUserWarehouse(reqId);
     return handleSuccess(res, userWarehouse);
   } catch (err) {

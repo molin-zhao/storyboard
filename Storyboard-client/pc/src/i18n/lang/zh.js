@@ -209,6 +209,11 @@ export default {
   ASSIGN_TASK: "去分配任务",
   CREATE_PROJECT: "创建新项目",
   CREATE_PHASE: "创建新阶段",
+  IMPORT_FILE: "导入文件",
+  CHOOSE_FILE: "选择文件",
+  FILE_SUPPORT: "文件格式支持{extension}",
+  FILE_FIELD_FORMAT: "字段名称需要精确匹配",
+  BROWSE: "浏览",
 
   // errors
   SMS_ERROR: "暂时无法获得验证码信息",
@@ -222,6 +227,8 @@ export default {
   NETWORK_ERROR_TITLE: "网络错误",
   NETWORK_ERROR_DESC: "网络请求错误，无法加载当前页面",
   NETWORK_ERROR_RETRY: "点击重试",
+  FILE_EXTENSION_NOT_SUPPORT: "文件类型不支持",
+  FILE_EXCEED_MAX_SIZE: "文件大小超过{limit}限制",
 
   // success
   REGISTER_SUCCESS: "注册成功 ✓",

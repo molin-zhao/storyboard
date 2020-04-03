@@ -247,6 +247,9 @@ export default {
         });
         this.add_project_members(res.data.data);
         this.memberAddStatus = "done";
+        setTimeout(() => {
+          $("#modal-create-project-member").modal("hide");
+        }, 1000);
       } catch (err) {
         this.memberAddStatus = "todo";
       }

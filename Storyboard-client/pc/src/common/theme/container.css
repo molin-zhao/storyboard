@@ -15,8 +15,8 @@
 }
 
 .create-btn {
-  height: 30px;
-  width: 70px;
+  height: 35px;
+  width: 75px;
   border-radius: 5px;
   display: flex;
   justify-content: center;
@@ -190,7 +190,7 @@
   -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
-.phase-nav-item {
+.nav-item {
   width: 15%;
   min-width: 150px;
   max-width: 200px;
@@ -270,6 +270,18 @@
   width: 20%;
   height: 100%;
 }
+
+.mainboard-title-right {
+  position: absolute;
+  height: 100%;
+  width: 50%;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 .mainboard-title-name > span {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -300,4 +312,31 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
+}
+
+.modal-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10049 !important;
+  background-color: #0000001a;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.a-btn {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.a-btn:active {
+  -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }

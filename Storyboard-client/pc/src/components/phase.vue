@@ -9,7 +9,7 @@
         :phase-active-index="selectedPhaseIndex"
         @on-select="selectPhase"
       />
-      <div class="phase-nav-item">
+      <div class="nav-item">
         <div
           class="nav-link"
           style="padding: 0; background-color: whitesmoke"
@@ -32,16 +32,12 @@
         />
       </vue-scroll>
     </div>
-
-    <!-- create phase modal -->
-    <create-phase-form />
   </div>
 </template>
 
 <script>
 import waveBtn from "@/components/waveBtn";
 import taskGroup from "@/components/taskGroup";
-import createPhaseForm from "@/components/form/createPhase";
 import phaseNavLink from "@/components/phaseNavLink";
 import editableText from "@/components/editableText";
 import vueScroll from "vuescroll";
@@ -52,7 +48,6 @@ export default {
   components: {
     waveBtn,
     taskGroup,
-    createPhaseForm,
     editableText,
     phaseNavLink,
     vueScroll

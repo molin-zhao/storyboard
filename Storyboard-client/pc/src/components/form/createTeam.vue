@@ -285,6 +285,9 @@ export default {
         });
         this.add_teams(createRes.data.data);
         this.teamCreateStatus = "done";
+        setTimeout(() => {
+          $("#modal-create-team").modal("hide");
+        }, 1000);
       } catch (err) {
         this.teamCreateStatus = "todo";
       }

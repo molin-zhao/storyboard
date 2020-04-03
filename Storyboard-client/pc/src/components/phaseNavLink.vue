@@ -1,5 +1,5 @@
 <template>
-  <div class="phase-nav-item">
+  <div class="nav-item">
     <div class="nav-link display-only" :style="navActiveStyle">
       <div class="nav-link-content" @click.stop="selectPhase($event)">
         <icon

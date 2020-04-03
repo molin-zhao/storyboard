@@ -362,50 +362,6 @@ export default {
 .mainboard-wrapper {
   width: 100%;
   height: 100%;
-  .mainboard {
-    padding: 10px 10px 0 10px; // padding bottom 0px
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    .mainboard-title {
-      width: 100%;
-      height: 8%;
-      display: flex;
-      flex-direction: row;
-      justify-content: flex-start;
-      align-items: center;
-      position: relative;
-      .mainboard-title-right {
-        position: absolute;
-        height: 100%;
-        width: 50%;
-        right: 0;
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        align-items: center;
-      }
-      .project-name {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        flex-wrap: nowrap;
-        width: 20%;
-        height: 100%;
-        span {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          text-align: left;
-          white-space: nowrap;
-          width: 100%;
-        }
-      }
-    }
-  }
 }
 
 .mainboard-info {

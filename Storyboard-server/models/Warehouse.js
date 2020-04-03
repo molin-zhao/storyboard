@@ -50,51 +50,18 @@ const WarehouseSchema = new Schema(
 
 WarehouseSchema.statics.fetchUserWarehouse = function(userId) {
   let id = objectId(userId);
-  return this.aggregate([
-    {
-      $match: {
-        $or: [{ members: id }, { creator: id }]
-      }
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "creator",
-        foreignField: "_id",
-        as: "creator"
-      }
-    },
-    {
-      $unwind: "$creator"
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "members",
-        foreignField: "_id",
-        as: "members"
-      }
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        members: {
-          _id: 1,
-          username: 1,
-          avatar: 1,
-          gender: 1
-        },
-        creator: {
-          _id: 1,
-          username: 1,
-          avatar: 1,
-          gender: 1
-        },
-        items: 1
-      }
-    }
-  ]);
+  return this.find({ $or: [{ members: id }, { creator: id }] })
+    .populate({
+      path: "members",
+      select: "_id username avatar gender",
+      model: "User"
+    })
+    .populate({
+      path: "creator",
+      select: "_id username avatar gender",
+      model: "User"
+    })
+    .populate("items.field.field_ref");
 };
 
 module.exports = mongoose.model("Warehouse", WarehouseSchema);

@@ -156,6 +156,9 @@ export default {
         console.log(phase);
         this.add_phase({ projectId, phase });
         this.createStatus = "done";
+        setTimeout(() => {
+          $("#modal-create-phase").modal("hide");
+        }, 1000);
       } catch (err) {
         this.createStatus = "todo";
       } finally {

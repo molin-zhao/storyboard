@@ -1,10 +1,6 @@
 <template>
   <transition name="fade">
-    <div
-      v-show="visible"
-      class="confirm-wrapper display-only"
-      @click="hideModal"
-    >
+    <div v-show="visible" class="modal-wrapper display-only" @click="hideModal">
       <div
         @click.stop="clickModal"
         class="modal-dialog modal-dialog-centered my-modal"
@@ -116,19 +112,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.confirm-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10049 !important;
-  background-color: #0000001a;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
 .my-modal {
   min-width: 500px;
   min-height: 300px;

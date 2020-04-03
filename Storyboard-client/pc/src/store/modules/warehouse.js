@@ -8,7 +8,7 @@ const mutations = {
   add_warehouse(state, payload) {
     state.warehouse = state.warehouse.concat(payload);
   },
-  reload_warehosue(state, payload) {
+  reload_warehouse(state, payload) {
     state.warehouse = payload;
   }
 };

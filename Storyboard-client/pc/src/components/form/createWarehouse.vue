@@ -511,6 +511,9 @@ export default {
         console.log(createRes.data);
         this.add_warehouse(createRes.data.data);
         this.createStatus = "done";
+        setTimeout(() => {
+          $("#modal-create-warehouse").modal("hide");
+        }, 1000);
       } catch (err) {
         this.createStatus = "todo";
       }
