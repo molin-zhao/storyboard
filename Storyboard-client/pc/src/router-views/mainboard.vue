@@ -3,7 +3,7 @@
     <div v-if="hasProject" class="mainboard">
       <div class="mainboard-title">
         <div class="mainboard-title-name">
-          <span class="display-only" style="font-size: 40px">
+          <span class="display-only" style="font-size: 40px;">
             {{ computedProjectName }}
           </span>
         </div>
@@ -24,7 +24,7 @@
               @mouseover.native="mouseover('online-member')"
               @mouseleave.native="mouseleave('online-member')"
             >
-              <popover ref="online-member" style="right: 3vw; top: 0">
+              <popover ref="online-member" style="right: 3vw; top: 0;">
                 <tooltip
                   content-style="width: 250px; height: 250px;border-radius: 10px;box-shadow: -5px 2px 5px lightgrey; -webkit-box-shadow: -5px 2px 5px lightgrey;border: 1px solid whitesmoke;"
                   arrow-placement="right"
@@ -43,7 +43,7 @@
                       <span>{{ $t("NO_PROJECT_MEMBER") }}</span>
                       <a
                         @click.stop="addProjectMember"
-                        style="font-size: 14px; margin-top: 5px"
+                        style="font-size: 14px; margin-top: 5px;"
                         class="text-primary"
                         >{{ $t("ADD_PROJECT_MEMBER") }}</a
                       >
@@ -61,7 +61,7 @@
                     </div>
                     <div class="online-member-footer">
                       <a
-                        style="font-size: 14px; margin-top: 5px"
+                        style="font-size: 14px; margin-top: 5px;"
                         @click.stop="addProjectMember"
                         class="text-primary"
                       >
@@ -83,7 +83,7 @@
             @mouseover.native="mouseover('more')"
             @mouseleave.native="mouseleave('more')"
           >
-            <popover ref="more" style="right: 2.5vw; top: -20px">
+            <popover ref="more" style="right: 2.5vw; top: -20px;">
               <tooltip
                 content-style="
                 width: 200px;
@@ -102,48 +102,50 @@
                   <a
                     @click.stop="syncProject"
                     style="
-                    border-top: none;
-                    border-top-left-radius: 10px;
-                    border-top-right-radius: 10px
-                  "
+                      border-top: none;
+                      border-top-left-radius: 10px;
+                      border-top-right-radius: 10px;
+                    "
                   >
                     <icon
                       class="setting-icon"
                       name="refresh"
-                      style="color: grey"
+                      style="color: grey;"
                     />
-                    <span style="color: grey">{{ $t("SYNC_PROJECT") }}</span>
+                    <span style="color: grey;">{{ $t("SYNC_PROJECT") }}</span>
                   </a>
                   <a
-                    :style="
-                      `pointer-events: ${computedLogNumber ? 'auto' : 'none'};`
-                    "
+                    :style="`pointer-events: ${
+                      computedLogNumber ? 'auto' : 'none'
+                    };`"
                     @click.stop="saveProject"
                   >
                     <icon
                       class="setting-icon"
                       name="save"
-                      :style="
-                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
-                      "
+                      :style="`color: ${
+                        computedLogNumber ? 'grey' : 'lightgray'
+                      }`"
                     />
                     <span
                       v-show="computedLogNumber"
                       class="badge badge-danger badge-pill"
                       style="
-                      position: absolute; 
-                      left: 35px; width: 28px; 
-                      height: 18px;font-size: 10px;
-                      display: flex;
-                      justify-content: center;
-                      align-items: center
+                        position: absolute;
+                        left: 35px;
+                        width: 28px;
+                        height: 18px;
+                        font-size: 10px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
                       "
                       >{{ computedLogNumber }}</span
                     >
                     <span
-                      :style="
-                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
-                      "
+                      :style="`color: ${
+                        computedLogNumber ? 'grey' : 'lightgray'
+                      }`"
                       >{{ $t("SAVE_PROJECT") }}</span
                     >
                   </a>
@@ -151,24 +153,24 @@
                     <icon
                       class="setting-icon"
                       name="import"
-                      style="color: grey"
+                      style="color: grey;"
                     />
-                    <span style="color: grey">{{ $t("IMPORT_PROJECT") }}</span>
+                    <span style="color: grey;">{{ $t("IMPORT_PROJECT") }}</span>
                   </a>
                   <a
                     @click.stop="exportProject"
                     style="
-                    border-bottom: none;
-                    border-bottom-left-radius: 10px;
-                    border-bottom-right-radius: 10px
-                  "
+                      border-bottom: none;
+                      border-bottom-left-radius: 10px;
+                      border-bottom-right-radius: 10px;
+                    "
                   >
                     <icon
                       class="setting-icon"
                       name="export"
-                      style="color: grey"
+                      style="color: grey;"
                     />
-                    <span style="color: grey">{{ $t("EXPORT_PROJECT") }}</span>
+                    <span style="color: grey;">{{ $t("EXPORT_PROJECT") }}</span>
                   </a>
                 </div>
               </tooltip>
@@ -178,7 +180,7 @@
       </div>
       <div class="mainboard-info">
         <editable-text
-          style="width: 40%; height: 100%; padding: 1px"
+          style="width: 40%; height: 100%; padding: 1px;"
           default-value="ADD_DESCRIPTION"
           :value="computedProjectDescription"
           input-style="font-size: 25px;"
@@ -195,7 +197,7 @@
         <h1>{{ $t("MAIN_WELCOME") }} Storyboard</h1>
       </div>
       <div class="seperator"></div>
-      <div class="mainboard-info" style="height: 100px">
+      <div class="mainboard-info" style="height: 100px;">
         <h3>{{ $t("MAIN_FEATURE_INTRO") }}</h3>
       </div>
       <div class="mainboard-left">
@@ -204,6 +206,14 @@
         <a class="link text-primary">{{ $t("MAIN_EDIT_INFO") }}</a>
       </div>
     </div>
+
+    <!-- modals -->
+    <create-project-form />
+    <create-task-members />
+    <create-phase />
+    <create-project-members />
+    <create-team />
+    <create-warehouse />
   </div>
 </template>
 
@@ -217,6 +227,12 @@ import datepicker from "@/components/datepicker";
 import vueScroll from "vuescroll";
 import userOnlineContact from "@/components/userOnlineContactCell";
 import phase from "@/components/phase";
+import createProjectForm from "@/components/form/createProject";
+import createTaskMembers from "@/components/form/createTaskMembers";
+import createProjectMembers from "@/components/form/createProjectMembers";
+import createTeam from "@/components/form/createTeam";
+import createPhase from "@/components/form/createPhase";
+import createWarehouse from "@/components/form/createWarehouse";
 import { isEdited, logCount } from "@/common/utils/log";
 import { mouseclick, mouseover, mouseleave } from "@/common/utils/mouse";
 import { group, more } from "@/common/theme/icon";
@@ -231,15 +247,15 @@ export default {
       members: [],
       ops: {
         vuescroll: {
-          mode: "native"
+          mode: "native",
         },
         scrollPanel: {
-          scrollingX: false
+          scrollingX: false,
         },
         bar: {
-          background: "lightgrey"
-        }
-      }
+          background: "lightgrey",
+        },
+      },
     };
   },
   components: {
@@ -251,7 +267,13 @@ export default {
     datepicker,
     phase,
     vueScroll,
-    userOnlineContact
+    userOnlineContact,
+    createProjectForm,
+    createTaskMembers,
+    createProjectMembers,
+    createTeam,
+    createWarehouse,
+    createPhase,
   },
   computed: {
     ...mapState("project", ["projects", "activeIndex", "logs"]),
@@ -291,7 +313,7 @@ export default {
     computedMemberList() {
       const { projects, activeIndex } = this;
       return projects[activeIndex]["members"];
-    }
+    },
   },
   methods: {
     mouseclick,
@@ -300,7 +322,7 @@ export default {
     isEdited,
     ...mapMutations({
       add_log: "project/add_log",
-      remove_log: "project/remove_log"
+      remove_log: "project/remove_log",
     }),
     descriptionChange(val) {
       const { projects, activeIndex } = this;
@@ -309,12 +331,12 @@ export default {
         this.add_log({
           projectId: projects[activeIndex]._id,
           field: "description",
-          value: val
+          value: val,
         });
       } else {
         this.remove_log({
           projectId: projects[activeIndex]._id,
-          field: "description"
+          field: "description",
         });
       }
     },
@@ -325,7 +347,7 @@ export default {
         let url = URL.GET_PROJECT_ONLINE_MEMBERS(projectId);
         const resp = await this.$http.get(url);
         let resMembers = resp.data.data.members;
-        this.members = resMembers.filter(member => member.online);
+        this.members = resMembers.filter((member) => member.online);
       } catch (err) {
         console.log(err);
       }
@@ -340,21 +362,21 @@ export default {
     exportProject() {},
     addProjectMember() {
       $("#modal-create-project-member").modal("show");
-    }
+    },
   },
   mounted() {
-    $(document).ready(function() {
+    $(document).ready(function () {
       $('[data-toggle="tooltip"]').tooltip();
     });
   },
   watch: {
     projects: {
       deep: true,
-      handler: function(newValue, oldValue) {
+      handler: function (newValue, oldValue) {
         if (newVal) this.fetchOnlineUsers();
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>
 

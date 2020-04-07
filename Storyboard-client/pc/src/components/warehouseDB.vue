@@ -17,15 +17,18 @@
               <span>{{ item }}</span>
             </div>
           </div>
-          <select @change="selectField($event)">
+          <!-- <select @change="selectField($event)">
             <option
               v-for="(field, index) in warehouse[selectIndex]['fields']"
               :key="index"
               >{{ field.name }}</option
             >
-          </select>
+          </select> -->
         </div>
-        <div class="warehouse-data-list" v-else>
+        <div
+          class="warehouse-data-list"
+          v-else-if="warehouse[selectIndex]['items'].length > 0"
+        >
           <div
             class="warehouse-data-row"
             v-for="(field, index) in warehouse[selectIndex]['items']"
@@ -39,6 +42,9 @@
               <span>{{ computedItemValue(field, item) }}</span>
             </div>
           </div>
+        </div>
+        <div class="warehouse-data-list" v-else>
+          <span style="margin-top: 20px;">{{ $t("NO_MESSAGE") }}</span>
         </div>
       </vue-scroll>
     </div>

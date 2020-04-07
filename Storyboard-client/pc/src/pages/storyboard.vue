@@ -9,7 +9,7 @@
     <div v-else class="storyboard color-primary">
       <!-- left menu -->
       <div class="menubar">
-        <img src="/static/logo.png" style="width: 4vw; height: 4vw" />
+        <img src="/static/logo.png" style="width: 4vw; height: 4vw;" />
         <div class="menubar-empty"></div>
         <div class="menubar-setting-wrapper">
           <badge-icon
@@ -20,7 +20,7 @@
             :number="computedUnreadMessageCount"
             @click.native.stop="showMailbox"
           >
-            <popover ref="bell" style="left: 6vw; bottom: 0">
+            <popover ref="bell" style="left: 6vw; bottom: 0;">
               <tooltip
                 content-style="width: 200px; height: 200px"
                 arrow-placement="left"
@@ -37,7 +37,7 @@
             @mouseover.native="mouseover('avatar')"
             @mouseleave.native="mouseleave('avatar')"
           >
-            <popover ref="avatar" style="left: 6vw; bottom: 0">
+            <popover ref="avatar" style="left: 6vw; bottom: 0;">
               <tooltip
                 content-style="
                 width: 300px;
@@ -56,64 +56,64 @@
                   <a
                     @click="goTo('mainboard')"
                     style="
-                    border-top: none;
-                    border-top-left-radius: 10px;
-                    border-top-right-radius: 10px
-                  "
+                      border-top: none;
+                      border-top-left-radius: 10px;
+                      border-top-right-radius: 10px;
+                    "
                   >
                     <icon
                       class="setting-icon"
                       name="tasks"
-                      style="color: black"
+                      style="color: black;"
                     />
-                    <span style="color: black">{{ $t("MAINBOARD") }}</span>
+                    <span style="color: black;">{{ $t("MAINBOARD") }}</span>
                   </a>
                   <a @click="goTo('team')">
                     <icon
                       class="setting-icon"
                       name="team"
-                      style="color: black"
+                      style="color: black;"
                     />
-                    <span style="color: black">{{ $t("TEAM") }}</span>
+                    <span style="color: black;">{{ $t("TEAM") }}</span>
                   </a>
                   <a @click="goTo('warehouse')">
                     <icon
                       class="setting-icon"
                       name="warehouse"
-                      style="color: black"
+                      style="color: black;"
                     />
-                    <span style="color: black">{{ $t("WAREHOUSE") }}</span>
+                    <span style="color: black;">{{ $t("WAREHOUSE") }}</span>
                   </a>
                   <a @click="goTo('settings')">
                     <icon
                       class="setting-icon"
                       name="setting"
-                      style="color: black"
+                      style="color: black;"
                     />
-                    <span style="color: black">{{ $t("SETTINGS") }}</span>
+                    <span style="color: black;">{{ $t("SETTINGS") }}</span>
                   </a>
                   <a @click="goTo('account')">
                     <icon
                       class="setting-icon"
                       name="account"
-                      style="color: black"
+                      style="color: black;"
                     />
-                    <span style="color: black">{{ $t("PROFILE") }}</span>
+                    <span style="color: black;">{{ $t("PROFILE") }}</span>
                   </a>
                   <a
                     @click="logout"
                     style="
-                  border-bottom: none;
-                    border-bottom-left-radius: 10px;
-                    border-bottom-right-radius: 10px
-                  "
+                      border-bottom: none;
+                      border-bottom-left-radius: 10px;
+                      border-bottom-right-radius: 10px;
+                    "
                   >
                     <icon
                       class="setting-icon"
                       name="exit"
-                      style="color: var(--main-color-danger)"
+                      style="color: var(--main-color-danger);"
                     />
-                    <span style="color: var(--main-color-danger)">{{
+                    <span style="color: var(--main-color-danger);">{{
                       $t("LOGOUT")
                     }}</span>
                   </a>
@@ -134,7 +134,12 @@
             <span class="display-only">{{ $t("PROJECTS") }}</span>
             <div class="list-group list-group-flush project-list display-only">
               <a
-                style="border: none; border-radius: 5px; padding: 5px"
+                style="
+                  border: none;
+                  border-radius: 5px;
+                  padding: 5px;
+                  cursor: pointer;
+                "
                 @click="projectLabelClick(index)"
                 v-for="(item, index) in projects"
                 :key="index"
@@ -151,13 +156,13 @@
               id="create-project-btn"
               class="list-group-item display-only"
               style="
-              width: 100%; 
-              margin-top: 5px; 
-              border-radius: 5px; 
-              padding: 5px; 
-              text-align: left; 
-              background-color: gainsboro;
-              cursor: pointer
+                width: 100%;
+                margin-top: 5px;
+                border-radius: 5px;
+                padding: 5px;
+                text-align: left;
+                background-color: gainsboro;
+                cursor: pointer;
               "
               data-toggle="modal"
               data-target="#modal-create-project"
@@ -188,7 +193,7 @@
             <a
               v-else
               class="text-primary display-only"
-              style="cursor: pointer"
+              style="cursor: pointer;"
               @click.stop="reload"
               >{{ $t("NETWORK_ERROR_RETRY") }}</a
             >
@@ -196,14 +201,6 @@
         </div>
       </div>
     </div>
-
-    <!-- modals -->
-    <create-project-form />
-    <create-task-members />
-    <create-phase />
-    <create-project-members />
-    <create-team />
-    <create-warehouse />
   </div>
 </template>
 
@@ -212,12 +209,6 @@ import badgeIcon from "@/components/badgeIcon";
 import imageBtn from "@/components/imageBtn";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
-import createProjectForm from "@/components/form/createProject";
-import createTaskMembers from "@/components/form/createTaskMembers";
-import createProjectMembers from "@/components/form/createProjectMembers";
-import createTeam from "@/components/form/createTeam";
-import createPhase from "@/components/form/createPhase";
-import createWarehouse from "@/components/form/createWarehouse";
 import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
 import { bell } from "@/common/theme/icon";
@@ -225,7 +216,7 @@ import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
 import {
   createSocketConnection,
-  getNotifyMembers
+  getNotifyMembers,
 } from "@/common/utils/socket";
 import { isEdited, generateLookup } from "@/common/utils/log";
 import { getUnreadCount } from "@/common/utils/message";
@@ -235,19 +226,13 @@ export default {
     imageBtn,
     popover,
     tooltip,
-    createProjectForm,
-    createTaskMembers,
-    createProjectMembers,
-    createTeam,
-    createWarehouse,
-    createPhase
   },
   data() {
     return {
       storyboardLoading: false,
       reloading: false,
       bell,
-      errorCode: -1
+      errorCode: -1,
     };
   },
   computed: {
@@ -258,13 +243,13 @@ export default {
       "username",
       "gender",
       "phone",
-      "email"
+      "email",
     ]),
     ...mapState("project", ["projects", "activeIndex", "logs"]),
     ...mapState("team", ["teams"]),
     ...mapState("message", ["messages"]),
     projectLabel() {
-      return function(index) {
+      return function (index) {
         if (index === this.activeIndex) {
           return "list-group-item list-group-item-primary";
         }
@@ -272,7 +257,7 @@ export default {
       };
     },
     computedProjectEditedStyle() {
-      return function(index) {
+      return function (index) {
         const { activeIndex } = this;
         if (index === activeIndex) return "background-color: #6495ed";
         return "background-color: lightgrey";
@@ -281,7 +266,7 @@ export default {
     computedUnreadMessageCount() {
       const { messages } = this;
       return getUnreadCount(messages);
-    }
+    },
   },
   async mounted() {
     try {
@@ -297,7 +282,7 @@ export default {
         createSocketConnection({
           id,
           token,
-          nList: getNotifyMembers(info.projects)
+          nList: getNotifyMembers(info.projects),
         })
       );
     } catch (err) {
@@ -311,7 +296,7 @@ export default {
       save_userinfo: "user/save_userinfo",
       remove_credential: "/user/remove_credential",
       remove_userinfo: "user/remove_userinfo",
-      restore_message: "message/restore_message"
+      restore_message: "message/restore_message",
     }),
     ...mapMutations({
       reload_projects: "project/reload_projects",
@@ -319,7 +304,7 @@ export default {
       add_lookup: "project/add_lookup",
       reload_teams: "team/reload_teams",
       add_userinfo: "user/add_userinfo",
-      add_socket: "user/add_socket"
+      add_socket: "user/add_socket",
     }),
     mouseover,
     mouseleave,
@@ -381,7 +366,7 @@ export default {
           }
         },
         confirmLabel: this.$t("CONFIRM"),
-        cancelLabel: this.$t("CANCEL")
+        cancelLabel: this.$t("CANCEL"),
       });
     },
     goTo(route) {
@@ -390,22 +375,22 @@ export default {
     showMailbox() {
       const { id, avatar, username, gender } = this;
       this.$mailbox.show();
-    }
+    },
   },
   watch: {
     projects: {
       deep: true,
-      handler: function(newValue, oldValue) {
+      handler: function (newValue, oldValue) {
         console.log("project changed");
-        let oldProjectKeys = oldValue.map(pro => pro._id);
-        let newProjectKeys = newValue.map(pro => pro._id);
+        let oldProjectKeys = oldValue.map((pro) => pro._id);
+        let newProjectKeys = newValue.map((pro) => pro._id);
         if (newProjectKeys.toString() !== oldProjectKeys.toString()) {
           const lookups = generateLookup(newValue);
           this.add_lookup(lookups);
         }
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>
 

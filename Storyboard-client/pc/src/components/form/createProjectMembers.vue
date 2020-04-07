@@ -12,7 +12,7 @@
             {{ $t("PROJECT_MEMBERS") }}
           </h5>
           <a
-            style="font-size: 20px; cursor: pointer"
+            style="font-size: 20px; cursor: pointer;"
             class="display-only"
             aria-hidden="true"
             aria-label="Close"
@@ -27,7 +27,7 @@
               <div class="select">
                 <select
                   class="custom-select"
-                  style="width: 100%; height: 50px"
+                  style="width: 100%; height: 50px;"
                   @change.stop="teamSelect($event)"
                 >
                   <option v-if="teams.length === 0" selected>{{
@@ -42,13 +42,13 @@
                 <div v-if="computedShowTeamMembers" class="source-display">
                   <vue-scroll>
                     <div
-                      style="width: 100%; height: 50px"
+                      style="width: 100%; height: 50px;"
                       v-for="(item, index) in teams[teamSelectIndex]['members']"
                       :key="index"
                     >
                       <user-add-delete-cell
                         :item="item"
-                        :exclude-list="computedMembers"
+                        :exclude-list="computedMemberIds"
                         @remove-user="removeUser"
                         @add-user="addUser"
                       />
@@ -72,7 +72,7 @@
                     :title="computedTooltipTitle(item)"
                   >
                     <avatar
-                      style="width: 40px; height: 40px; border-radius: 20px"
+                      style="width: 40px; height: 40px; border-radius: 20px;"
                       :src="item.avatar"
                       default-img="/static/image/user_empty.png"
                     />
@@ -85,7 +85,7 @@
         </div>
         <div class="modal-footer">
           <a
-            style="cursor: pointer"
+            style="cursor: pointer;"
             class="text-primary"
             @click="showCreateTeam"
             >{{ $t("CREATE_TEAM") }}</a
@@ -126,7 +126,7 @@ import userAddDeleteCell from "@/components/userAddDeleteCell";
 import avatar from "@/components/avatar";
 import vueScroll from "vuescroll";
 import { mapState, mapMutations } from "vuex";
-import { parser } from "@/common/utils/array";
+import { parser, arrayEqual } from "@/common/utils/array";
 import { sliceFromLeft } from "@/common/utils/string";
 import { stopPropagation } from "@/common/utils/mouse";
 import * as URL from "@/common/utils/url";
@@ -134,7 +134,7 @@ export default {
   components: {
     userAddDeleteCell,
     vueScroll,
-    avatar
+    avatar,
   },
   data() {
     return {
@@ -143,20 +143,23 @@ export default {
       teamSelectIndex: 0,
       ops: {
         vuescroll: {
-          mode: "native"
+          mode: "native",
         },
         scrollPanel: {
-          scrollingX: false
+          scrollingX: false,
         },
         bar: {
-          background: "lightgrey"
-        }
-      }
+          background: "lightgrey",
+        },
+      },
     };
   },
   mounted() {
     $("#modal-create-project-member").on("hidden.bs.modal", () => {
       this.resetForm();
+    });
+    $("#modal-create-project-member").on("show.bs.modal", () => {
+      this.combineMembers();
     });
   },
   computed: {
@@ -170,9 +173,23 @@ export default {
       );
     },
     computedBtnDisabled() {
-      const { memberAddStatus, members } = this;
-      if (memberAddStatus === "todo" && members.length > 0) return false;
-      return true;
+      const {
+        memberAddStatus,
+        computedMemberIds,
+        projects,
+        activeIndex,
+      } = this;
+      let project = projects[activeIndex];
+      if (!project) {
+        let disabled =
+          memberAddStatus !== "todo" || arrayEqual([], computedMemberIds);
+        return disabled;
+      }
+      let projectMemberIds = project["members"].map((val) => val["_id"]);
+      let disabled =
+        memberAddStatus !== "todo" ||
+        arrayEqual(projectMemberIds, computedMemberIds);
+      return disabled;
     },
     computedShowTeamResult() {
       const { teamSelectIndex, teams } = this;
@@ -183,7 +200,7 @@ export default {
       return teams.length > 0 && teams[teamSelectIndex]["members"].length === 0;
     },
     computedTooltipTitle() {
-      return function(item) {
+      return function (item) {
         // max length 10
         return sliceFromLeft(item.username, 10);
       };
@@ -194,28 +211,34 @@ export default {
         memberAddStatus === "done" ? "success" : "primary"
       } create-btn`;
     },
-    computedMembers() {
+    computedMemberIds() {
       const { members } = this;
       return parser(members, "_id");
-    }
+    },
   },
   methods: {
     stopPropagation,
     ...mapMutations({
-      add_project_members: "project/add_project_members"
+      add_project_members: "project/add_project_members",
     }),
     formData() {
       const { members, id, projects, activeIndex } = this;
       return {
         members: parser(members, "_id"),
         user: id,
-        projectId: projects[activeIndex]["_id"]
+        projectId: projects[activeIndex]["_id"],
       };
     },
     resetForm() {
       this.members = [];
       this.teamSelectIndex = 0;
       this.memberAddStatus = "todo";
+    },
+    combineMembers() {
+      const { projects, activeIndex, members } = this;
+      let project = projects[activeIndex];
+      if (!project) return;
+      this.members = project["members"];
     },
     formCheck() {
       const { members } = this;
@@ -228,13 +251,15 @@ export default {
       console.log(err);
     },
     removeUser(user) {
-      this.members = this.members.filter(u => u._id !== user._id);
+      const { members } = this;
+      this.members = members.filter((u) => u._id !== user._id);
     },
     addUser(user) {
-      let containUser = this.members.some(u => {
+      const { members } = this;
+      let containUser = members.some((u) => {
         if (u._id === user._id) return true;
       });
-      if (!containUser) this.members = this.members.concat(user);
+      if (!containUser) this.members = members.concat(user);
     },
     async addProjectMember() {
       try {
@@ -243,7 +268,7 @@ export default {
         let formData = this.formData();
         let url = URL.POST_ADD_PROJECT_MEMBER();
         const res = await this.$http.post(url, formData, {
-          emulateJSON: true
+          emulateJSON: true,
         });
         this.add_project_members(res.data.data);
         this.memberAddStatus = "done";
@@ -259,8 +284,8 @@ export default {
       setTimeout(() => {
         $("#modal-create-team").modal("show");
       }, 350);
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -227,7 +227,7 @@ export default {
       selectIndex: 0,
       file: null,
       uploadedBOM: [],
-      showUploadedFeedback: true,
+      showUploadedFeedback: false,
     };
   },
 
