@@ -1,12 +1,11 @@
 <template>
-  <div class="priority-wrapper">
+  <div class="priority-wrapper" @click="mouseclick('priority', $event)">
     <wave-btn
       class="priority-btn"
       :btn-color="`${computedColor(computedPriority)}e6`"
       :wave-color="`${computedColor(computedPriority)}ff`"
       :title="$t(computedTitle(computedPriority))"
       btn-style="width: 100%; height: 100%; color: white;"
-      @click.native.stop="mouseclick('priority', $event)"
     />
     <popover ref="priority" style="top: calc(100% + 10px);">
       <tooltip
@@ -29,7 +28,7 @@
             v-for="item in options"
             :key="item"
             :style="computedOptionStyle(item)"
-            @click.stop="selectPriority(item)"
+            @click="selectPriority(item)"
           >
             <wave-btn
               class="option-btn"

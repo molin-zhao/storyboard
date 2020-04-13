@@ -88,7 +88,7 @@ export default {
         success: async () => {
           try {
             const { groupId } = this;
-            let url = URL.DELETE_TASK(taskId);
+            let url = URL.DELETE_TASK(groupId, taskId);
             this.taskDeleting = true;
             const resp = await this.$http.delete(url);
             if (resp.data.data === "ok") {

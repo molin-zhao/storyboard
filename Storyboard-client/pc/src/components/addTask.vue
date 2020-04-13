@@ -238,7 +238,7 @@ export default {
         let task = resp.data.data;
         if (task) {
           this.add_task({ groupId, task });
-          return this.init();
+          this.init();
         } else {
           this.$alert.show({
             type: "warning",

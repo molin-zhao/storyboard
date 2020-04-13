@@ -293,7 +293,7 @@ export default {
   },
   methods: {
     ...mapMutations({
-      add_projects: "project/add_projects"
+      add_project: "project/add_project"
     }),
     formCheck() {
       if (!this.projectName) {
@@ -356,8 +356,7 @@ export default {
         const createRes = await this.$http.post(url, formData, {
           emulateJSON: true
         });
-        console.log(createRes.data);
-        this.add_projects(createRes.data.data);
+        this.add_project(createRes.data.data);
         this.projectCreateStatus = "done";
         setTimeout(() => {
           $("#modal-create-project").modal("hide");

@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const { verifyAuthorization, verifyUser } = require("../../authenticate");
 const { handleError, handleSuccess } = require("../../response");
-const { COLORS } = require("../../config/project.config");
-const { generateRandomColor } = require("../../utils");
 const Project = require("../../models/Project");
 
 /**
@@ -27,38 +26,57 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
     let members = req.body.members;
     let name = req.body.name;
     let description = req.body.description;
-    let color = generateRandomColor(COLORS);
-    let computedMembers =
-      members && members.length > 0 ? members.concat(user) : [user];
-    let newProject = new Project({
+    let computedMembers = [];
+    if (members && members.length > 0) {
+      computedMembers = members.concat(user);
+    } else {
+      computedMembers.push(user);
+    }
+    let newProject = {
       creator: user,
       name,
       description,
       members: computedMembers,
-      phases: [
-        {
-          name: "",
-          description: "",
-          groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }],
-        },
-      ],
-    });
-    let project = await newProject.save();
-    return handleSuccess(res, project);
+    };
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const resp = await Project.createProject(newProject, session);
+      await session.commitTransaction();
+      return handleSuccess(res, resp);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
 });
 
-router.delete("/delete", verifyAuthorization, verifyUser, async (req, res) => {
-  try {
-    let projectId = req.query.id;
-    const deleteProjectRes = await Project.deleteOne({ _id: projectId });
-    return handleSuccess(res, deleteProjectRes);
-  } catch (err) {
-    return handleError(res, err);
+router.delete(
+  "/delete",
+  /**verifyAuthorization, verifyUser,*/ async (req, res) => {
+    try {
+      let projectId = req.query.id;
+      const session = await mongoose.startSession();
+      await session.startTransaction();
+      try {
+        const resp = await Project.deleteProject(projectId, session);
+        await session.commitTransaction();
+        return handleSuccess(res, resp);
+      } catch (e) {
+        await session.abortTransaction();
+        throw e;
+      } finally {
+        await session.endSession();
+      }
+    } catch (err) {
+      return handleError(res, err);
+    }
   }
-});
+);
 /**
  * create a phase
  */
@@ -67,14 +85,22 @@ router.post("/phase/create", verifyAuthorization, async (req, res) => {
     let name = req.body.name;
     let description = req.body.description;
     let projectId = req.body.projectId;
-    let color = generateRandomColor(COLORS);
     let newPhase = {
       name,
       description,
-      groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }],
     };
-    const createRes = await Project.createPhase(projectId, newPhase);
-    return handleSuccess(res, createRes);
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const createRes = await Project.createPhase(projectId, newPhase, session);
+      await session.commitTransaction();
+      return handleSuccess(res, createRes);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
@@ -87,14 +113,21 @@ router.post("/phase/create", verifyAuthorization, async (req, res) => {
 router.post("/group/create", verifyAuthorization, async (req, res) => {
   try {
     let phaseId = req.body.phaseId;
-    let color = generateRandomColor(COLORS);
     let newGroup = {
       name: "",
-      color,
-      tasks: [{ name: "", members: [] }],
     };
-    const resp = await Project.createGroup(phaseId, newGroup);
-    return handleSuccess(res, resp);
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const resp = await Project.createGroup(phaseId, newGroup, session);
+      await session.commitTransaction();
+      return handleSuccess(res, resp);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
@@ -122,8 +155,18 @@ router.post("/task/create", verifyAuthorization, async (req, res) => {
       status,
       priority,
     };
-    const createRes = await Project.createTask(groupId, newTask);
-    return handleSuccess(res, createRes);
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const createRes = await Project.createTask(groupId, newTask, session);
+      await session.commitTransaction();
+      return handleSuccess(res, createRes);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
@@ -132,8 +175,19 @@ router.post("/task/create", verifyAuthorization, async (req, res) => {
 router.delete("/task/delete", verifyAuthorization, async (req, res) => {
   try {
     let taskId = req.query.id;
-    const resp = await Project.deleteTask(taskId);
-    return handleSuccess(res, resp);
+    let groupId = req.query.group;
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const resp = await Project.deleteTask(groupId, taskId, session);
+      await session.commitTransaction();
+      return handleSuccess(res, resp);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
@@ -142,8 +196,19 @@ router.delete("/task/delete", verifyAuthorization, async (req, res) => {
 router.delete("/group/delete", verifyAuthorization, async (req, res) => {
   try {
     let groupId = req.query.id;
-    const resp = await Project.deleteGroup(groupId);
-    return handleSuccess(res, resp);
+    let phaseId = req.query.phase;
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const resp = await Project.deleteGroup(phaseId, groupId, session);
+      await session.commitTransaction();
+      return handleSuccess(res, resp);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
@@ -152,8 +217,19 @@ router.delete("/group/delete", verifyAuthorization, async (req, res) => {
 router.delete("/phase/delete", verifyAuthorization, async (req, res) => {
   try {
     let phaseId = req.query.id;
-    const resp = await Project.deletePhase(phaseId);
-    return handleSuccess(res, resp);
+    let projectId = req.query.project;
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const resp = await Project.deletePhase(projectId, phaseId, session);
+      await session.commitTransaction();
+      return handleSuccess(res, resp);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
@@ -226,4 +302,5 @@ router.post("/save", verifyAuthorization, verifyUser, async (req, res) => {
     return handleError(res, err);
   }
 });
+
 module.exports = router;

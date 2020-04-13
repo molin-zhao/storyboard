@@ -103,16 +103,20 @@ export const GET_ONLINE_USER = projectId => {
   return API_HOST + `/user/online?project=${projectId}`;
 };
 
-export const DELETE_TASK = taskId => {
-  return API_HOST + `/project/task/delete?id=${taskId}`;
+export const DELETE_TASK = (groupId, taskId) => {
+  return API_HOST + `/project/task/delete?id=${taskId}&&group=${groupId}`;
 };
 
-export const DELETE_GROUP = groupId => {
-  return API_HOST + `/project/group/delete?id=${groupId}`;
+export const DELETE_GROUP = (phaseId, groupId) => {
+  return API_HOST + `/project/group/delete?id=${groupId}&&phase=${phaseId}`;
 };
 
-export const DELETE_PHASE = phaseId => {
-  return API_HOST + `/project/phase/delete?id=${phaseId}`;
+export const DELETE_PHASE = (projectId, phaseId) => {
+  return API_HOST + `/project/phase/delete?id=${phaseId}&&project=${projectId}`;
+};
+
+export const DELETE_PROJECT = projectId => {
+  return API_HOST + `/project/delete?id=${projectId}`;
 };
 
 export const GET_USER_AVATAR = userId => {

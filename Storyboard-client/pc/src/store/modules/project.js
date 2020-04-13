@@ -4,6 +4,7 @@ import {
   addTask,
   addGroup,
   addPhase,
+  addProject,
   deleteTask,
   deleteGroup,
   deletePhase,
@@ -15,6 +16,7 @@ const state = {
   projects: [],
   activeIndex: 0,
   logs: {}, // tree
+  taskLookup: {}, // reverse index for task
   groupLookup: {}, // reverse index for group
   phaseLookup: {}, // reverse index for phase
   projectLookup: {} // reverse index for project
@@ -23,7 +25,8 @@ const state = {
 const getters = {};
 const actions = {};
 const mutations = {
-  add_projects(state, payload) {
+  add_project(state, payload) {
+    addProject(state, payload);
     state.projects = state.projects.concat(payload);
   },
   reload_projects(state, payload) {
@@ -63,6 +66,7 @@ const mutations = {
     state.groupLookup = payload.groupLookup;
     state.phaseLookup = payload.phaseLookup;
     state.projectLookup = payload.projectLookup;
+    state.taskLookup = payload.taskLookup;
   },
   add_project_members(state, payload) {
     const { _id, members } = payload;

@@ -1,81 +1,10 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const { objectId } = require("../utils");
-const TaskSchema = new Schema({
-  name: {
-    type: String,
-    default: "",
-  },
-  description: {
-    type: String,
-    default: "",
-  },
-  start_date: {
-    type: Date,
-  },
-  due_date: {
-    type: Date,
-  },
-  priority: {
-    type: String,
-    enum: ["low", "medium", "high"],
-    default: "medium",
-  },
-  status: {
-    type: String,
-    enum: ["working", "planned", "stuck", "done", "defer"],
-    default: "planned",
-  },
-  members: {
-    type: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    default: [],
-  },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-const GroupSchema = new Schema({
-  name: {
-    type: String,
-    default: "",
-  },
-  color: {
-    type: String,
-    default: "lightgrey",
-  },
-  tasks: [TaskSchema],
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-const PhaseSchema = new Schema({
-  name: {
-    type: String,
-    default: "",
-  },
-  description: {
-    type: String,
-    default: "",
-  },
-  groups: [GroupSchema],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-const Task = mongoose.model("Task", TaskSchema);
-const Group = mongoose.model("Group", GroupSchema);
-const Phase = mongoose.model("Phase", PhaseSchema);
+const { objectId, generateRandomColor } = require("../utils");
+const { COLORS } = require("../config/project.config");
+const Phase = require("./Phase");
+const Group = require("./Group");
+const Task = require("./Task");
 
 const ProjectSchema = new Schema(
   {
@@ -86,6 +15,7 @@ const ProjectSchema = new Schema(
     creator: {
       type: Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
     description: {
       type: String,
@@ -100,11 +30,12 @@ const ProjectSchema = new Schema(
       ],
       default: [],
     },
-    phases: [PhaseSchema],
+    phases: {
+      type: [{ type: Schema.Types.ObjectId, ref: "Phase" }],
+      default: [],
+    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 ProjectSchema.statics.fetchUserProjects = function (userId) {
@@ -123,25 +54,124 @@ ProjectSchema.statics.fetchUserProjects = function (userId) {
       model: "User",
     })
     .populate({
-      path: "phases.groups.tasks.members",
-      select: "_id username avatar gender",
-      model: "User",
+      path: "phases",
+      populate: {
+        path: "groups",
+        populate: {
+          path: "tasks",
+          populate: {
+            path: "members.member",
+            model: "User",
+            select: "_id username avatar gender",
+          },
+        },
+      },
     });
 };
 
-ProjectSchema.statics.createPhase = function (projectId, newPhase) {
+ProjectSchema.statics.createProject = function (projectDef, session) {
   return new Promise(async (resolve, reject) => {
     try {
-      let id = objectId(projectId);
-      let phase = new Phase(newPhase);
-      const resp = await this.updateOne(
+      const { name, creator, members, description } = projectDef;
+      await Task.createCollection();
+      await Group.createCollection();
+      await Phase.createCollection();
+      await Project.createCollection();
+      const newTask = new Task();
+      const task = await newTask.save({ session });
+      const newGroup = new Group({
+        color: generateRandomColor(COLORS),
+        tasks: [task._id],
+      });
+      const group = await newGroup.save({ session });
+      const newPhase = new Phase({ groups: [group._id] });
+      const phase = await newPhase.save({ session });
+      const newProject = new Project({
+        name,
+        description,
+        creator,
+        members,
+        phases: [phase._id],
+      });
+      const project = await newProject.save({ session });
+      const populatedProject = project
+        .populate({
+          path: "creator",
+          select: "_id username avatar gender",
+          model: "User",
+        })
+        .populate({
+          path: "members",
+          select: "_id username avatar gender",
+          model: "User",
+        })
+        .populate({
+          path: "phases",
+          populate: {
+            path: "groups",
+            populate: {
+              path: "tasks",
+              populate: {
+                path: "members",
+                populate: {
+                  path: "member",
+                  model: "User",
+                  select: "_id username avatar gender",
+                },
+              },
+            },
+          },
+        })
+        .execPopulate();
+      return resolve(populatedProject);
+    } catch (e) {
+      return reject(e);
+    }
+  });
+};
+
+ProjectSchema.statics.createPhase = function (projectId, phaseDef, session) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const id = objectId(projectId);
+      const { name, description } = phaseDef;
+      await Task.createCollection();
+      await Group.createCollection();
+      await Phase.createCollection();
+      const newTask = new Task();
+      const task = await newTask.save({ session });
+      const newGroup = new Group({
+        color: generateRandomColor(COLORS),
+        tasks: [task._id],
+      });
+      const group = await newGroup.save({ session });
+      const newPhase = new Phase({
+        name,
+        description,
+        groups: [group._id],
+      });
+      const phase = await newPhase.save({ session });
+      const resp = await Project.updateOne(
         { _id: id },
-        { $addToSet: { phases: phase } }
-      );
+        { $addToSet: { phases: phase } },
+        { session }
+      ).session(session);
       if (resp.ok === 1 && resp.nModified === 1) {
-        return resolve(phase);
+        const populatedPhase = phase
+          .populate({
+            path: "groups",
+            populate: {
+              path: "tasks",
+              populate: {
+                path: "members.member",
+                model: "User",
+              },
+            },
+          })
+          .execPopulate();
+        return resolve(populatedPhase);
       } else {
-        return resolve(null);
+        return reject();
       }
     } catch (err) {
       return reject(err);
@@ -149,19 +179,39 @@ ProjectSchema.statics.createPhase = function (projectId, newPhase) {
   });
 };
 
-ProjectSchema.statics.createGroup = function (phaseId, newGroup) {
+ProjectSchema.statics.createGroup = function (phaseId, groupDef, session) {
   return new Promise(async (resolve, reject) => {
     try {
-      let id = objectId(phaseId);
-      let group = new Group(newGroup);
-      const resp = await this.updateOne(
-        { "phases._id": id },
-        { $addToSet: { "phases.$.groups": group } }
+      const id = objectId(phaseId);
+      const { name } = groupDef;
+      await Task.createCollection();
+      await Group.createCollection();
+      const newTask = new Task();
+      const task = await newTask.save({ session });
+      const newGroup = new Group({
+        name,
+        color: generateRandomColor(COLORS),
+        tasks: [task._id],
+      });
+      const group = await newGroup.save({ session });
+      const resp = await Phase.updateOne(
+        { _id: id },
+        { $addToSet: { groups: group } },
+        { session }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
-        return resolve(group);
+        const populatedGroup = group
+          .populate({
+            path: "tasks",
+            populate: {
+              path: "members.member",
+              model: "User",
+            },
+          })
+          .execPopulate();
+        return resolve(populatedGroup);
       } else {
-        return resolve(null);
+        return reject();
       }
     } catch (err) {
       return reject(err);
@@ -169,19 +219,28 @@ ProjectSchema.statics.createGroup = function (phaseId, newGroup) {
   });
 };
 
-ProjectSchema.statics.createTask = function (groupId, newTask) {
+ProjectSchema.statics.createTask = function (groupId, taskDef, session) {
   return new Promise(async (resolve, reject) => {
     try {
-      let id = objectId(groupId);
-      let task = new Task(newTask);
-      const resp = await this.updateOne(
-        { "phases.groups._id": id },
-        { $addToSet: { "phases.$.groups.0.tasks": task } }
+      const id = objectId(groupId);
+      await Task.createCollection();
+      const newTask = new Task(taskDef);
+      const task = await newTask.save({ session });
+      const resp = await Group.updateOne(
+        { _id: id },
+        { $addToSet: { tasks: task } },
+        { session }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
-        return resolve(task);
+        const popluatedTask = task
+          .populate({
+            path: "members.member",
+            model: "User",
+          })
+          .execPopulate();
+        return resolve(popluatedTask);
       } else {
-        return resolve(null);
+        return reject();
       }
     } catch (err) {
       return reject(err);
@@ -189,22 +248,26 @@ ProjectSchema.statics.createTask = function (groupId, newTask) {
   });
 };
 
-ProjectSchema.statics.deleteTask = function (taskId) {
+ProjectSchema.statics.deleteTask = function (groupId, taskId, session) {
   return new Promise(async (resolve, reject) => {
     try {
-      let id = objectId(taskId);
-      const resp = await this.updateOne(
-        { "phases.groups.tasks._id": id },
+      const id = objectId(taskId);
+      const parentId = objectId(groupId);
+      const resp = await Group.updateOne(
+        { _id: parentId },
         {
           $pull: {
-            "phases.$.groups.0.tasks": { _id: id },
+            tasks: { _id: id },
           },
-        }
+        },
+        { session }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
-        return resolve("ok");
+        const del_task = await Task.deleteOne({ _id: id }, { session });
+        if (del_task.n === 1 && del_task.ok === 1) return resolve("ok");
+        else return reject();
       } else {
-        return resolve(null);
+        return reject(null);
       }
     } catch (err) {
       return reject(err);
@@ -212,18 +275,30 @@ ProjectSchema.statics.deleteTask = function (taskId) {
   });
 };
 
-ProjectSchema.statics.deleteGroup = function (groupId) {
+ProjectSchema.statics.deleteGroup = function (phaseId, groupId, session) {
   return new Promise(async (resolve, reject) => {
     try {
-      let id = objectId(groupId);
-      const resp = await this.updateOne(
-        { "phases.groups._id": id },
-        { $pull: { "phases.$.groups": { _id: id } } }
+      const id = objectId(groupId);
+      const parentId = objectId(phaseId);
+      const resp = await Phase.updateOne(
+        { _id: parentId },
+        { $pull: { groups: { _id: id } } },
+        { session }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
-        return resolve("ok");
+        const group = await Group.findByIdAndDelete(
+          { _id: id },
+          { session, select: "tasks" }
+        );
+        const tasks = group["tasks"];
+        const del_tasks = await Task.deleteMany(
+          { _id: { $in: tasks } },
+          { session }
+        );
+        if (del_tasks.ok === 1) return resolve("ok");
+        else return reject();
       } else {
-        return resolve(null);
+        return reject();
       }
     } catch (err) {
       return reject(err);
@@ -231,19 +306,84 @@ ProjectSchema.statics.deleteGroup = function (groupId) {
   });
 };
 
-ProjectSchema.statics.deletePhase = function (phaseId) {
+ProjectSchema.statics.deletePhase = function (projectId, phaseId, session) {
   return new Promise(async (resolve, reject) => {
     try {
-      let id = objectId(phaseId);
-      const resp = await this.updateOne(
-        { "phases._id": id },
+      const id = objectId(phaseId);
+      const parentId = objectId(projectId);
+      const resp = await Project.updateOne(
+        { _id: parentId },
         { $pull: { phases: { _id: id } } }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
-        return resolve("ok");
+        const phase = await Phase.findByIdAndDelete(
+          { _id: id },
+          { session }
+        ).populate({
+          path: "groups",
+        });
+        let groupIds = [];
+        let taskIds = [];
+        for (let group of phase["groups"]) {
+          groupIds.push(group["_id"]);
+          taskIds = taskIds.concat(group["tasks"]);
+        }
+        const del_groups = await Group.deleteMany(
+          { _id: { $in: groupIds } },
+          { session }
+        );
+        const del_tasks = await Task.deleteMany(
+          { _id: { $in: taskIds } },
+          { session }
+        );
+        if (del_groups.ok && del_tasks.ok) return resolve("ok");
+        else return reject();
       } else {
-        return resolve(null);
+        return reject();
       }
+    } catch (err) {
+      return reject(err);
+    }
+  });
+};
+
+ProjectSchema.statics.deleteProject = function (projectId, session) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let id = objectId(projectId);
+      const project = await Project.findByIdAndDelete(
+        { _id: id },
+        { session }
+      ).populate({
+        path: "phases",
+        populate: {
+          path: "groups",
+        },
+      });
+      let phaseIds = [];
+      let groupIds = [];
+      let taskIds = [];
+      for (let phase of project["phases"]) {
+        phaseIds.push(phase["_id"]);
+        for (let group of phase["groups"]) {
+          groupIds.push(group["_id"]);
+          taskIds = taskIds.concat(group["tasks"]);
+        }
+      }
+      const del_phases = await Phase.deleteMany(
+        { _id: { $in: phaseIds } },
+        { session }
+      );
+      const del_groups = await Group.deleteMany(
+        { _id: { $in: groupIds } },
+        { session }
+      );
+      const del_tasks = await Task.deleteMany(
+        { _id: { $in: taskIds } },
+        { session }
+      );
+      if (del_phases.ok && del_groups.ok && del_tasks.ok) return resolve("ok");
+      else return reject();
     } catch (err) {
       return reject(err);
     }
@@ -322,10 +462,7 @@ ProjectSchema.statics.editTaskMembers = function (taskId, members) {
   let id = objectId(taskId);
   return new Promise(async (resolve, reject) => {
     try {
-      const resp = await this.updateOne(
-        { "phases.groups.tasks._id": id },
-        { "phases.$.groups.0.tasks.0.members": members }
-      );
+      const resp = await Task.updateOne({ _id: id }, { members: members });
       if (resp.ok === 1 && resp.nModified === 1) {
         return resolve("ok");
       } else {
@@ -345,7 +482,7 @@ ProjectSchema.statics.saveProjectLogs = function (logs, session) {
       if (keys.length === 0) return resolve([]);
       let projectIds = [];
       for (const key of keys) {
-        const resp = await this.updateOne(
+        const resp = await Project.updateOne(
           { _id: objectId(key) },
           logs[key]
         ).session(session);
@@ -367,8 +504,8 @@ ProjectSchema.statics.savePhaseLogs = function (logs, session) {
       if (keys.length === 0) return resolve([]);
       let phaseIds = [];
       for (const key of keys) {
-        const resp = await this.updateOne(
-          { "phases._id": objectId(key) },
+        const resp = await Phase.updateOne(
+          { _id: objectId(key) },
           logs[key]
         ).session(session);
         if (resp.ok === 1 && resp.nModified === 1) phaseIds.push(key);
@@ -389,8 +526,8 @@ ProjectSchema.statics.saveGroupLogs = function (logs, session) {
       if (keys.length === 0) return resolve([]);
       let groupIds = [];
       for (const key of keys) {
-        const resp = await this.updateOne(
-          { "phases.groups._id": objectId(key) },
+        const resp = await Group.updateOne(
+          { _id: objectId(key) },
           logs[key]
         ).session(session);
         if (resp.ok === 1 && resp.nModified === 1) groupIds.push(key);
@@ -411,8 +548,8 @@ ProjectSchema.statics.saveTaskLogs = function (logs, session) {
       if (keys.length === 0) return resolve([]);
       let taskIds = [];
       for (const key of keys) {
-        const resp = await this.updateOne(
-          { "phases.groups.tasks._id": objectId(key) },
+        const resp = await Task.updateOne(
+          { _id: objectId(key) },
           logs[key]
         ).session(session);
         if (resp.ok === 1 && resp.nModified === 1) taskIds.push(key);
@@ -424,4 +561,6 @@ ProjectSchema.statics.saveTaskLogs = function (logs, session) {
     }
   });
 };
-module.exports = mongoose.model("Project", ProjectSchema);
+
+const Project = mongoose.model("Project", ProjectSchema);
+module.exports = Project;

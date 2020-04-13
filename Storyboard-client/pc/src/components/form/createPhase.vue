@@ -161,8 +161,6 @@ export default {
         }, 1000);
       } catch (err) {
         this.createStatus = "todo";
-      } finally {
-        $("#modal-create-phase").modal("hide");
       }
     },
     nameOnInput(e) {

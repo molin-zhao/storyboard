@@ -3,11 +3,11 @@
     <div v-if="hasProject" class="mainboard">
       <div class="mainboard-title">
         <div class="mainboard-title-name">
-          <span class="display-only" style="font-size: 40px;">
+          <span class="display-only" style="font-size: 40px">
             {{ computedProjectName }}
           </span>
         </div>
-        <h5 v-if="isEdited(logs[projects[activeIndex]._id])">
+        <h5 v-if="isEdited(logs[projects[activeIndex]['_id']])">
           <span class="badge badge-pill badge-warning">{{ $t("EDITED") }}</span>
         </h5>
         <div class="mainboard-title-right">
@@ -201,9 +201,15 @@
         <h3>{{ $t("MAIN_FEATURE_INTRO") }}</h3>
       </div>
       <div class="mainboard-left">
-        <a class="link text-primary">{{ $t("MAIN_CREATE_PROJECT") }}</a>
-        <a class="link text-primary">{{ $t("MAIN_CREATE_GROUP") }}</a>
-        <a class="link text-primary">{{ $t("MAIN_EDIT_INFO") }}</a>
+        <a class="link text-primary" @click="gotoCreateProject">{{
+          $t("MAIN_CREATE_PROJECT")
+        }}</a>
+        <a class="link text-primary" @click="gotoCreateTeam">{{
+          $t("MAIN_CREATE_GROUP")
+        }}</a>
+        <a class="link text-primary" @click="gotoEditProfile">{{
+          $t("MAIN_EDIT_INFO")
+        }}</a>
       </div>
     </div>
 
@@ -281,19 +287,19 @@ export default {
     },
     computedProjectName() {
       const { projects, activeIndex, logs } = this;
-      let projectId = projects[activeIndex]._id;
+      let projectId = projects[activeIndex]["_id"];
       if (logs[projectId] && logs[projectId]["name"]) {
         return logs[projectId]["name"];
       }
-      return projects[activeIndex].name;
+      return projects[activeIndex]["name"];
     },
     computedProjectDescription() {
       const { projects, activeIndex, logs } = this;
-      let projectId = projects[activeIndex]._id;
+      let projectId = projects[activeIndex]["_id"];
       if (logs[projectId] && logs[projectId]["description"]) {
         return logs[projectId]["description"];
       }
-      return projects[activeIndex].description;
+      return projects[activeIndex]["description"];
     },
     computedLogNumber() {
       const { projects, activeIndex, logs } = this;
@@ -366,12 +372,22 @@ export default {
     exportProject() {},
     addProjectMember() {
       $("#modal-create-project-member").modal("show");
+    },
+    gotoCreateProject() {
+      $("#modal-create-project").modal("show");
+    },
+    gotoCreateTeam() {
+      $("#modal-create-team").modal("show");
+    },
+    gotoEditProfile() {
+      this.$router.push({ name: "account" });
     }
   },
   mounted() {
     $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
+    
   },
   watch: {
     projects: {

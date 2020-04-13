@@ -160,6 +160,11 @@ export default {
     clear() {
       this.inputValue = "";
     }
+  },
+  watch: {
+    value(newVal, oldVal) {
+      this.inputValue = newVal;
+    }
   }
 };
 </script>

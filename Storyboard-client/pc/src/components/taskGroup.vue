@@ -419,7 +419,7 @@ export default {
           try {
             let projectId = projects[activeIndex]._id;
             let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
-            let url = URL.DELETE_GROUP(groupId);
+            let url = URL.DELETE_GROUP(phaseId, groupId);
             this.groupDeleting = true;
             const resp = await this.$http.delete(url);
             if (resp.data.data === "ok") {

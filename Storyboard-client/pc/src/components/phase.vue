@@ -6,7 +6,7 @@
         :key="index"
         :index="index"
         :phase="item"
-        :phase-active-index="selectedPhaseIndex"
+        :phase-active-index="computedSelectedPhaseIndex"
         @on-select="selectPhase"
       />
       <div class="nav-item">
@@ -25,7 +25,7 @@
         <task-group
           v-for="(item, index) in computedSelectedGroup"
           :key="index"
-          :phase-index="selectedPhaseIndex"
+          :phase-index="computedSelectedPhaseIndex"
           :group-id="item._id"
           :item="item"
           :group-index="index"
@@ -86,6 +86,13 @@ export default {
         return projects[activeIndex]["phases"][selectedPhaseIndex]["groups"];
       }
       return projects[activeIndex]["phases"][phaseLength - 1]["groups"];
+    },
+    computedSelectedPhaseIndex() {
+      const { selectedPhaseIndex, projects, activeIndex } = this;
+      let phaseLen = projects[activeIndex]["phases"].length;
+      if (selectedPhaseIndex < phaseLen) return selectedPhaseIndex;
+      this.selectedPhaseIndex = 0;
+      return 0;
     }
   },
   methods: {
@@ -111,6 +118,13 @@ export default {
         }
       }
     }
+    // activeIndex(newVal, oldVal) {
+    //   const { projects, selectedPhaseIndex } = this;
+    //   const phaseLen = projects[newVal]["phases"].length;
+    //   if (selectedPhaseIndex >= phaseLen) {
+    //     this.selectedPhaseIndex = phaseLen - 1;
+    //   }
+    // }
   }
 };
 </script>

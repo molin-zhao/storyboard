@@ -1,7 +1,7 @@
 <template>
   <div class="nav-item">
     <div class="nav-link display-only" :style="navActiveStyle">
-      <div class="nav-link-content" @click.stop="selectPhase($event)">
+      <div class="nav-link-content" @click="selectPhase($event)">
         <icon
           class="attention"
           v-show="phaseActiveIndex === index"
@@ -182,7 +182,7 @@ export default {
           try {
             let projectId = projects[activeIndex]._id;
             let phaseId = phase._id;
-            let url = URL.DELETE_PHASE(phaseId);
+            let url = URL.DELETE_PHASE(projectId, phaseId);
             this.phaseDeleting = true;
             const resp = await this.$http.delete(url);
             if (resp.data.data === "ok") {
