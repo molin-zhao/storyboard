@@ -140,7 +140,7 @@ export default {
   PHASE_DESCRIPTION: "阶段描述：",
   PROJECT_MEMBERS: "项目成员：",
   NO_PROJECT_MEMBER: "暂无项目成员",
-  ADD_PROJECT_MEMBER: "去添加项目成员",
+  ADD_PROJECT_MEMBER: "添加项目成员",
   ADD_PHASE_NAME: "添加阶段名称...",
   ADD_PHASE_DESCRIPTION: "添加阶段描述...",
   SEARCH_ADD: "搜索添加",
@@ -204,9 +204,10 @@ export default {
   ADD_TASK: "添加任务...",
   ADD_TASK_NAME: "添加任务名称...",
   ADD_TASK_ERROR: "暂时无法添加新任务",
+  EDIT_TASK_MEMBER: "编辑任务人员",
   TASK_MEMBERS: "任务人员列表",
   NO_TASK_MEMBER_ALLOC: "暂时没有任务负责人",
-  ASSIGN_TASK: "去分配任务",
+  ASSIGN_TASK: "任务分配",
   CREATE_PROJECT: "创建新项目",
   CREATE_PHASE: "创建新阶段",
   IMPORT_FILE: "导入文件",
@@ -214,6 +215,7 @@ export default {
   FILE_SUPPORT: "文件格式支持{extension}",
   FILE_FIELD_FORMAT: "字段名称需要精确匹配",
   BROWSE: "浏览",
+  CREATOR: "创建者",
 
   // errors
   SMS_ERROR: "暂时无法获得验证码信息",

@@ -236,8 +236,10 @@ export default {
     },
     formData() {
       const { members, id, teamName } = this;
+      let memberIds = parser(members, "_id");
+      let combinedMemberIds = memberIds.concat(id);
       return {
-        members: parser(members, "_id"),
+        members: combinedMemberIds,
         user: id,
         name: teamName.trim()
       };

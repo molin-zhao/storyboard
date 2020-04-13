@@ -4,73 +4,73 @@ const { objectId } = require("../utils");
 const TaskSchema = new Schema({
   name: {
     type: String,
-    default: ""
+    default: "",
   },
   description: {
     type: String,
-    default: ""
+    default: "",
   },
   start_date: {
-    type: Date
+    type: Date,
   },
   due_date: {
-    type: Date
+    type: Date,
   },
   priority: {
     type: String,
     enum: ["low", "medium", "high"],
-    default: "medium"
+    default: "medium",
   },
   status: {
     type: String,
     enum: ["working", "planned", "stuck", "done", "defer"],
-    default: "planned"
+    default: "planned",
   },
   members: {
     type: [
       {
         type: Schema.Types.ObjectId,
-        ref: "User"
-      }
+        ref: "User",
+      },
     ],
-    default: []
+    default: [],
   },
   created_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 const GroupSchema = new Schema({
   name: {
     type: String,
-    default: ""
+    default: "",
   },
   color: {
     type: String,
-    default: "lightgrey"
+    default: "lightgrey",
   },
   tasks: [TaskSchema],
   created_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 const PhaseSchema = new Schema({
   name: {
     type: String,
-    default: ""
+    default: "",
   },
   description: {
     type: String,
-    default: ""
+    default: "",
   },
   groups: [GroupSchema],
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 const Task = mongoose.model("Task", TaskSchema);
@@ -81,55 +81,55 @@ const ProjectSchema = new Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     creator: {
       type: Schema.Types.ObjectId,
-      required: true
+      required: true,
     },
     description: {
       type: String,
-      default: ""
+      default: "",
     },
     members: {
       type: [
         {
           type: Schema.Types.ObjectId,
-          ref: "User"
-        }
+          ref: "User",
+        },
       ],
-      default: []
+      default: [],
     },
-    phases: [PhaseSchema]
+    phases: [PhaseSchema],
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-ProjectSchema.statics.fetchUserProjects = function(userId) {
+ProjectSchema.statics.fetchUserProjects = function (userId) {
   let id = objectId(userId);
   return this.find({
-    $or: [{ members: id }, { creator: id }]
+    $or: [{ members: id }, { creator: id }],
   })
     .populate({
       path: "creator",
-      select: "_id username avatar",
-      model: "User"
+      select: "_id username avatar gender",
+      model: "User",
     })
     .populate({
       path: "members",
-      select: "_id username avatar",
-      model: "User"
+      select: "_id username avatar gender",
+      model: "User",
     })
     .populate({
       path: "phases.groups.tasks.members",
-      select: "_id username avatar",
-      model: "User"
+      select: "_id username avatar gender",
+      model: "User",
     });
 };
 
-ProjectSchema.statics.createPhase = function(projectId, newPhase) {
+ProjectSchema.statics.createPhase = function (projectId, newPhase) {
   return new Promise(async (resolve, reject) => {
     try {
       let id = objectId(projectId);
@@ -149,7 +149,7 @@ ProjectSchema.statics.createPhase = function(projectId, newPhase) {
   });
 };
 
-ProjectSchema.statics.createGroup = function(phaseId, newGroup) {
+ProjectSchema.statics.createGroup = function (phaseId, newGroup) {
   return new Promise(async (resolve, reject) => {
     try {
       let id = objectId(phaseId);
@@ -169,7 +169,7 @@ ProjectSchema.statics.createGroup = function(phaseId, newGroup) {
   });
 };
 
-ProjectSchema.statics.createTask = function(groupId, newTask) {
+ProjectSchema.statics.createTask = function (groupId, newTask) {
   return new Promise(async (resolve, reject) => {
     try {
       let id = objectId(groupId);
@@ -189,7 +189,7 @@ ProjectSchema.statics.createTask = function(groupId, newTask) {
   });
 };
 
-ProjectSchema.statics.deleteTask = function(taskId) {
+ProjectSchema.statics.deleteTask = function (taskId) {
   return new Promise(async (resolve, reject) => {
     try {
       let id = objectId(taskId);
@@ -197,8 +197,8 @@ ProjectSchema.statics.deleteTask = function(taskId) {
         { "phases.groups.tasks._id": id },
         {
           $pull: {
-            "phases.$.groups.0.tasks": { _id: id }
-          }
+            "phases.$.groups.0.tasks": { _id: id },
+          },
         }
       );
       if (resp.ok === 1 && resp.nModified === 1) {
@@ -212,7 +212,7 @@ ProjectSchema.statics.deleteTask = function(taskId) {
   });
 };
 
-ProjectSchema.statics.deleteGroup = function(groupId) {
+ProjectSchema.statics.deleteGroup = function (groupId) {
   return new Promise(async (resolve, reject) => {
     try {
       let id = objectId(groupId);
@@ -231,7 +231,7 @@ ProjectSchema.statics.deleteGroup = function(groupId) {
   });
 };
 
-ProjectSchema.statics.deletePhase = function(phaseId) {
+ProjectSchema.statics.deletePhase = function (phaseId) {
   return new Promise(async (resolve, reject) => {
     try {
       let id = objectId(phaseId);
@@ -250,27 +250,27 @@ ProjectSchema.statics.deletePhase = function(phaseId) {
   });
 };
 
-ProjectSchema.statics.fetchOnlineMembers = function(projectId) {
+ProjectSchema.statics.fetchOnlineMembers = function (projectId) {
   let id = objectId(projectId);
   return this.aggregate([
     {
       $match: {
-        _id: id
-      }
+        _id: id,
+      },
     },
     {
       $lookup: {
         from: "users",
         localField: "members",
         foreignField: "_id",
-        as: "members"
-      }
+        as: "members",
+      },
     },
     {
       $unwind: {
         path: "$location",
-        preserveNullAndEmptyArrays: true
-      }
+        preserveNullAndEmptyArrays: true,
+      },
     },
     {
       $project: {
@@ -280,24 +280,24 @@ ProjectSchema.statics.fetchOnlineMembers = function(projectId) {
           username: 1,
           avatar: 1,
           gender: 1,
-          online: 1
-        }
-      }
+          online: 1,
+        },
+      },
     },
     {
       $sort: {
-        "members.online": 1
-      }
-    }
+        "members.online": 1,
+      },
+    },
   ]);
 };
 
-ProjectSchema.statics.addProjectMembers = function(projectId, members) {
+ProjectSchema.statics.addProjectMembers = function (projectId, members) {
   return new Promise((resolve, reject) => {
     return this.findByIdAndUpdate(
       projectId,
       {
-        $addToSet: { members }
+        $addToSet: { members },
       },
       { fields: { _id: 1, members: 1 }, new: true }
     ).exec(async (err, doc) => {
@@ -307,7 +307,7 @@ ProjectSchema.statics.addProjectMembers = function(projectId, members) {
           .populate({
             path: "members",
             select: "_id username avatar gender",
-            model: "User"
+            model: "User",
           })
           .execPopulate();
         return resolve(result);
@@ -315,6 +315,113 @@ ProjectSchema.statics.addProjectMembers = function(projectId, members) {
         return reject(e);
       }
     });
+  });
+};
+
+ProjectSchema.statics.editTaskMembers = function (taskId, members) {
+  let id = objectId(taskId);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const resp = await this.updateOne(
+        { "phases.groups.tasks._id": id },
+        { "phases.$.groups.0.tasks.0.members": members }
+      );
+      if (resp.ok === 1 && resp.nModified === 1) {
+        return resolve("ok");
+      } else {
+        return resolve("accept");
+      }
+    } catch (err) {
+      return reject(err);
+    }
+  });
+};
+
+ProjectSchema.statics.saveProjectLogs = function (logs, session) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!logs || logs.constructor !== Object) return resolve([]);
+      let keys = Object.keys(logs);
+      if (keys.length === 0) return resolve([]);
+      let projectIds = [];
+      for (const key of keys) {
+        const resp = await this.updateOne(
+          { _id: objectId(key) },
+          logs[key]
+        ).session(session);
+        if (resp.ok === 1 && resp.nModified === 1) projectIds.push(key);
+        else continue;
+      }
+      return resolve(projectIds);
+    } catch (err) {
+      return reject(err);
+    }
+  });
+};
+
+ProjectSchema.statics.savePhaseLogs = function (logs, session) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!logs || logs.constructor !== Object) return resolve([]);
+      let keys = Object.keys(logs);
+      if (keys.length === 0) return resolve([]);
+      let phaseIds = [];
+      for (const key of keys) {
+        const resp = await this.updateOne(
+          { "phases._id": objectId(key) },
+          logs[key]
+        ).session(session);
+        if (resp.ok === 1 && resp.nModified === 1) phaseIds.push(key);
+        else continue;
+      }
+      return resolve(phaseIds);
+    } catch (err) {
+      return reject(err);
+    }
+  });
+};
+
+ProjectSchema.statics.saveGroupLogs = function (logs, session) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!logs || logs.constructor !== Object) return resolve([]);
+      let keys = Object.keys(logs);
+      if (keys.length === 0) return resolve([]);
+      let groupIds = [];
+      for (const key of keys) {
+        const resp = await this.updateOne(
+          { "phases.groups._id": objectId(key) },
+          logs[key]
+        ).session(session);
+        if (resp.ok === 1 && resp.nModified === 1) groupIds.push(key);
+        else continue;
+      }
+      return resolve(groupIds);
+    } catch (err) {
+      return reject(err);
+    }
+  });
+};
+
+ProjectSchema.statics.saveTaskLogs = function (logs, session) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!logs || logs.constructor !== Object) return resolve([]);
+      let keys = Object.keys(logs);
+      if (keys.length === 0) return resolve([]);
+      let taskIds = [];
+      for (const key of keys) {
+        const resp = await this.updateOne(
+          { "phases.groups.tasks._id": objectId(key) },
+          logs[key]
+        ).session(session);
+        if (resp.ok === 1 && resp.nModified === 1) taskIds.push(key);
+        else continue;
+      }
+      return resolve(taskIds);
+    } catch (err) {
+      return reject(err);
+    }
   });
 };
 module.exports = mongoose.model("Project", ProjectSchema);

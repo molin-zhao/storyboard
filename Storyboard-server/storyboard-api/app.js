@@ -38,14 +38,14 @@ app.use((req, res) => {
   console.log(req.url);
   return res.status(404).json({
     message: ERROR.NOT_FOUND,
-    data: req.url
+    data: req.url,
   });
 });
 
 app.use((err, req, res, next) => {
   return res.status(500).json({
     message: err.message ? err.message : ERROR.SERVER_ERROR,
-    data: req.url
+    data: req.url,
   });
 });
 
@@ -57,10 +57,10 @@ mongoose
     useUnifiedTopology: true,
     useCreateIndex: true,
     authSource: MONGO_CLUSTER.AUTH_DB,
-    auth: MONGO_CLUSTER.AUTH
+    auth: MONGO_CLUSTER.AUTH,
   })
   .then(() => console.log("connected to mongodb"))
-  .catch(err => console.log(`connect to mongodb error: ${err}`));
+  .catch((err) => console.log(`connect to mongodb error: ${err.message}`));
 mongoose.set("useFindAndModify", false);
 app.locals.mongoose = mongoose;
 
@@ -74,19 +74,19 @@ const rabbitmqConn = amqp.connect(rabbitHost);
 rabbitmqConn.on("connect", () => {
   console.log("rabbitmq cluster connected");
 });
-rabbitmqConn.on("disconnect", err => {
+rabbitmqConn.on("disconnect", (err) => {
   console.log(`rabbitmq cluster disconnected with err: ${err.message}`);
 });
 const broadcastChannel = rabbitmqConn.createChannel({
   json: true,
-  setup: channel =>
+  setup: (channel) =>
     Promise.all([
       channel.assertExchange(
         RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.NAME,
         RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.TYPE,
         { durable: true }
-      )
-    ])
+      ),
+    ]),
 });
 app.locals.broadcastChannel = broadcastChannel;
 

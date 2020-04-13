@@ -48,6 +48,7 @@
                     >
                       <user-add-delete-cell
                         :item="item"
+                        :creator="computedProjectCreator"
                         :exclude-list="computedMemberIds"
                         @remove-user="removeUser"
                         @add-user="addUser"
@@ -134,7 +135,7 @@ export default {
   components: {
     userAddDeleteCell,
     vueScroll,
-    avatar,
+    avatar
   },
   data() {
     return {
@@ -143,15 +144,15 @@ export default {
       teamSelectIndex: 0,
       ops: {
         vuescroll: {
-          mode: "native",
+          mode: "native"
         },
         scrollPanel: {
-          scrollingX: false,
+          scrollingX: false
         },
         bar: {
-          background: "lightgrey",
-        },
-      },
+          background: "lightgrey"
+        }
+      }
     };
   },
   mounted() {
@@ -172,12 +173,18 @@ export default {
         teams[teamSelectIndex] && teams[teamSelectIndex]["members"].length > 0
       );
     },
+    computedProjectCreator() {
+      const { projects, activeIndex } = this;
+      const project = projects[activeIndex];
+      if (project) return project["creator"];
+      return {};
+    },
     computedBtnDisabled() {
       const {
         memberAddStatus,
         computedMemberIds,
         projects,
-        activeIndex,
+        activeIndex
       } = this;
       let project = projects[activeIndex];
       if (!project) {
@@ -185,7 +192,7 @@ export default {
           memberAddStatus !== "todo" || arrayEqual([], computedMemberIds);
         return disabled;
       }
-      let projectMemberIds = project["members"].map((val) => val["_id"]);
+      let projectMemberIds = project["members"].map(val => val["_id"]);
       let disabled =
         memberAddStatus !== "todo" ||
         arrayEqual(projectMemberIds, computedMemberIds);
@@ -200,7 +207,7 @@ export default {
       return teams.length > 0 && teams[teamSelectIndex]["members"].length === 0;
     },
     computedTooltipTitle() {
-      return function (item) {
+      return function(item) {
         // max length 10
         return sliceFromLeft(item.username, 10);
       };
@@ -214,19 +221,19 @@ export default {
     computedMemberIds() {
       const { members } = this;
       return parser(members, "_id");
-    },
+    }
   },
   methods: {
     stopPropagation,
     ...mapMutations({
-      add_project_members: "project/add_project_members",
+      add_project_members: "project/add_project_members"
     }),
     formData() {
       const { members, id, projects, activeIndex } = this;
       return {
         members: parser(members, "_id"),
         user: id,
-        projectId: projects[activeIndex]["_id"],
+        projectId: projects[activeIndex]["_id"]
       };
     },
     resetForm() {
@@ -252,11 +259,11 @@ export default {
     },
     removeUser(user) {
       const { members } = this;
-      this.members = members.filter((u) => u._id !== user._id);
+      this.members = members.filter(u => u._id !== user._id);
     },
     addUser(user) {
       const { members } = this;
-      let containUser = members.some((u) => {
+      let containUser = members.some(u => {
         if (u._id === user._id) return true;
       });
       if (!containUser) this.members = members.concat(user);
@@ -268,7 +275,7 @@ export default {
         let formData = this.formData();
         let url = URL.POST_ADD_PROJECT_MEMBER();
         const res = await this.$http.post(url, formData, {
-          emulateJSON: true,
+          emulateJSON: true
         });
         this.add_project_members(res.data.data);
         this.memberAddStatus = "done";
@@ -284,8 +291,8 @@ export default {
       setTimeout(() => {
         $("#modal-create-team").modal("show");
       }, 350);
-    },
-  },
+    }
+  }
 };
 </script>
 

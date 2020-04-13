@@ -8,14 +8,26 @@
       />
     </div>
     <div class="username">
-      <icon :name="computedGender" :style="computedGenderStyle" /><span>{{
-        item.username
-      }}</span>
+      <div>
+        <icon :name="computedGender" :style="computedGenderStyle" />
+        <span
+          class="badge badge-warning"
+          style="margin-left: 5px; font-size: 12px; width: auto"
+          v-show="computedIsCreator"
+          >{{ $t("CREATOR") }}</span
+        >
+      </div>
+      <div>
+        <span>{{ item.username }}</span>
+      </div>
     </div>
     <div class="operation">
-      <a :class="computedOperationClass" @click.stop="operation">{{
-        computedOperationLabel
-      }}</a>
+      <a
+        v-show="!computedIsCreator"
+        :class="computedOperationClass"
+        @click.stop="operation"
+        >{{ computedOperationLabel }}</a
+      >
     </div>
   </div>
 </template>
@@ -33,11 +45,15 @@ export default {
     },
     excludeList: {
       type: Array
+    },
+    creator: {
+      type: Object
     }
   },
   computed: {
     computedOperationLabel() {
-      const { excludeList, item } = this;
+      const { excludeList, item, computedIsCreator } = this;
+      if (computedIsCreator) return "";
       if (excludeList && excludeList.includes(item._id))
         return this.$t("REMOVE");
       return this.$t("ADD");
@@ -55,6 +71,10 @@ export default {
     computedGenderStyle() {
       const { item } = this;
       return item.gender === "m" ? "color: cornflowerblue" : "color: lightpink";
+    },
+    computedIsCreator() {
+      const { creator, item } = this;
+      return creator && creator._id === item._id;
     }
   },
   methods: {
@@ -98,6 +118,14 @@ export default {
   flex-wrap: nowrap;
   width: 65%;
   height: 100%;
+  div {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
   span {
     font-size: 14px;
     overflow: hidden;

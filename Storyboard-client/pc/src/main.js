@@ -3,6 +3,7 @@
 import Vue from "vue";
 import App from "./App";
 import VueResource from "vue-resource";
+import VueScrollLock from "vue-scroll-lock";
 
 // bootstrap
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -27,6 +28,7 @@ Vue.use(Toast);
 Vue.use(Confirm);
 Vue.use(Chatbox);
 Vue.use(Mailbox);
+Vue.use(VueScrollLock);
 Vue.use(VueResource);
 
 Vue.http.interceptors.push(function(req, next) {

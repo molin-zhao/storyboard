@@ -166,11 +166,7 @@
           </div>
         </form>
       </div>
-      <div
-        class="modal-footer"
-        style="width: 100%; height: 100%; border-top: none;"
-        slot="modal-footer"
-      >
+      <div class="modal-footer" slot="modal-footer">
         <button
           :disabled="computedBtnDisabled"
           type="submit"
@@ -204,7 +200,7 @@ import badgeIcon from "@/components/badgeIcon";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
 import modal from "@/components/modal";
-import { more } from "@/common/theme/icon";
+import { more } from "@/common/theme/style";
 import { mouseclick, mouseover, mouseleave } from "@/common/utils/mouse";
 import * as URL from "@/common/utils/url";
 import { mapState, mapMutations } from "vuex";
@@ -214,7 +210,7 @@ export default {
     badgeIcon,
     popover,
     tooltip,
-    modal,
+    modal
   },
   mounted() {
     this.fetchWarehouse();
@@ -227,7 +223,7 @@ export default {
       selectIndex: 0,
       file: null,
       uploadedBOM: [],
-      showUploadedFeedback: false,
+      showUploadedFeedback: false
     };
   },
 
@@ -235,12 +231,12 @@ export default {
     ...mapState("user", ["id", "token"]),
     ...mapState("warehouse", ["warehouse"]),
     computedWarehouseName() {
-      return function (index) {
+      return function(index) {
         return this.warehouse[index]["name"];
       };
     },
     navActiveStyle() {
-      return function (index) {
+      return function(index) {
         const { selectIndex } = this;
         return index === selectIndex
           ? "background-color: white; color: black"
@@ -260,11 +256,11 @@ export default {
       const { file } = this;
       if (file) return file.name;
       return "";
-    },
+    }
   },
   methods: {
     ...mapMutations({
-      reload_warehouse: "warehouse/reload_warehouse",
+      reload_warehouse: "warehouse/reload_warehouse"
     }),
     mouseclick,
     mouseover,
@@ -307,14 +303,14 @@ export default {
         return this.$alert.show({
           type: "warning",
           message: this.$t("FILE_EXTENSION_NOT_SUPPORT"),
-          interval: 5000,
+          interval: 5000
         });
       }
       if (file.size > 1024 * 1024 * 5) {
         return this.$alert.show({
           type: "warning",
           message: this.$t("FILE_EXCEED_MAX_SIZE", { limit: "5M" }),
-          interval: 5000,
+          interval: 5000
         });
       }
       this.file = file;
@@ -325,7 +321,7 @@ export default {
         const { file, warehouse, selectIndex } = this;
         if (!file) return;
         let fields = warehouse[selectIndex]["fields"];
-        let fieldNames = fields.map((f) => f.name);
+        let fieldNames = fields.map(f => f.name);
         let formData = new FormData();
         formData.append("file", file);
         formData.append("fields", JSON.stringify(fieldNames));
@@ -333,7 +329,7 @@ export default {
         this.uploading = "doing";
         console.log(url);
         const resp = await this.$http.post(url, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" }
         });
         this.uploadedBOM = resp.data.data; // 2 dimensional array
         this.uploading = "done";
@@ -350,14 +346,14 @@ export default {
     },
     hideFeedback() {
       this.showUploadedFeedback = false;
-    },
+    }
   },
   watch: {
     uploadedBOM(newVal, oldVal) {
       if (newVal.length > 0) this.showUploadedFeedback = true;
       else this.showUploadedFeedback = false;
-    },
-  },
+    }
+  }
 };
 </script>
 

@@ -23,11 +23,11 @@ export default {
     },
     computedOnlineIndicatorStyle() {
       const { status } = this;
-      return `background-color: ${status ? "#5cb85c" : "gainsboro"}`;
+      return `background-color: ${status ? "#5cb85c" : "lightgrey"}`;
     },
     computedOnlineTextStyle() {
       const { status } = this;
-      return `color: ${status ? "#5cb85c" : "lightgrey"}`;
+      return `color: ${status ? "#5cb85c" : "gray"}; font-size: 14px`;
     }
   }
 };
@@ -39,8 +39,11 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: flex-start;
   align-items: center;
+  span {
+    margin-left: 5px;
+  }
 }
 .indicator {
   width: 10px;

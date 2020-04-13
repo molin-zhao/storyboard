@@ -23,12 +23,12 @@ const ERROR = {
     ARGUMENTS_INVALID: "Arguments invalid",
     PARAM_NOT_PROVIDED: "Params not provided",
     SERVICE_NOT_AVAILABLE: "Service not available",
-    SERVICE_NOT_ACCEPTABLE: "Service not acceptable"
-  }
+    SERVICE_NOT_ACCEPTABLE: "Service not acceptable",
+  },
 };
 const SUCCESS = {
   OK: "success.",
-  ACCEPTED: "server accepted the request."
+  ACCEPTED: "server accepted the request.",
 };
 
 const handleError = (res, err, data = null) => {
@@ -59,18 +59,19 @@ const handleError = (res, err, data = null) => {
       code = 500;
       break;
   }
-  let message = code === 500 || !err.message ? ERROR.SERVER_ERROR : err.message;
+  let message =
+    code === 500 || !err || !err.message ? ERROR.SERVER_ERROR : err.message;
   console.log(err);
   return res.status(code).json({
     message,
-    data
+    data,
   });
 };
 
 const handleSuccess = (res, data = null, code = 200) => {
   return res.status(code).json({
     message: SUCCESS.OK,
-    data
+    data,
   });
 };
 
@@ -78,5 +79,5 @@ module.exports = {
   ERROR,
   SUCCESS,
   handleError,
-  handleSuccess
+  handleSuccess,
 };

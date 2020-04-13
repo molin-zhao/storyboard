@@ -34,6 +34,9 @@ export default {
     item: {
       type: Object,
       required: true
+    },
+    creator: {
+      type: Object
     }
   },
   computed: {

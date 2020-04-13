@@ -117,8 +117,7 @@ const createTask = taskId => {
     status: undefined,
     priority: undefined,
     start_date: undefined,
-    due_date: undefined,
-    members: []
+    due_date: undefined
   };
   return obj;
 };
@@ -128,8 +127,7 @@ const createProject = projectId => {
   obj[projectId] = {
     name: undefined,
     description: undefined,
-    phases: {},
-    members: []
+    phases: {}
   };
   return obj;
 };
@@ -153,20 +151,71 @@ const isEdited = rootProj => {
   return false;
 };
 
-const trimLog = (rootProj, root = true) => {
-  if (!rootProj) return null;
-  let rootRef = root ? Object.assign({}, rootProj) : rootProj;
-  let keys = Object.keys(rootRef);
-  for (key in keys) {
-    if (typeof rootRef[key] === "undefined") {
-      delete rootRef[key];
-      continue;
-    }
-    if (rootRef[key] && rootRef[key].constructor === Object) {
-      trimLog(rootRef[key], false);
-    }
+const generateLog = (obj, prefix = "") => {
+  let hasLog = false;
+  if (!obj.constructor || obj.constructor !== Object) return;
+  for (let key in obj) {
+    if (typeof obj[key] === "undefined") delete obj[key];
+    else if (!hasLog) hasLog = true;
+    else continue;
   }
-  return rootRef;
+  if (!hasLog) return null;
+  if (prefix !== "") {
+    let objs = Object.keys(obj).reduce((newData, key) => {
+      let newKey = prefix + key;
+      newData[newKey] = obj[key];
+      return newData;
+    }, {});
+    return objs;
+  }
+  return obj;
+};
+
+const confirmLog = log => {
+  let logCopy = Object.assign({}, log);
+  let projectLogs = {};
+  let phaseLogs = {};
+  let groupLogs = {};
+  let taskLogs = {};
+  for (let projectId in logCopy) {
+    let project = logCopy[projectId];
+    if (project["phases"]) {
+      for (let phaseId in project["phases"]) {
+        let phase = project["phases"][phaseId];
+        if (phase["groups"]) {
+          for (let groupId in phase["groups"]) {
+            let group = phase["groups"][groupId];
+            if (group["tasks"]) {
+              for (let taskId in group["tasks"]) {
+                let task = group["tasks"][taskId];
+                let trimmedTaskLog = generateLog(
+                  task,
+                  "phases.$.groups.0.tasks.0."
+                );
+                if (trimmedTaskLog) taskLogs[taskId] = { $set: trimmedTaskLog };
+              }
+              delete group["tasks"];
+            }
+            let trimmedGroupLog = generateLog(group, "phases.$.groups.0.");
+            if (trimmedGroupLog) groupLogs[groupId] = { $set: trimmedGroupLog };
+          }
+          delete phase["groups"];
+        }
+        let trimmedPhaseLog = generateLog(phase, "phases.$.");
+        if (trimmedPhaseLog) phaseLogs[phaseId] = { $set: trimmedPhaseLog };
+      }
+      delete project["phases"];
+    }
+    let trimmedProjectLog = generateLog(project);
+    if (trimmedProjectLog) projectLogs[projectId] = { $set: trimmedProjectLog };
+  }
+
+  return {
+    projectLogs,
+    phaseLogs,
+    groupLogs,
+    taskLogs
+  };
 };
 
 const logCount = rootProj => {
@@ -324,6 +373,47 @@ const addProjectMembers = (state, projectId, members) => {
   }
 };
 
+const editTaskMembers = (state, groupId, taskId, members) => {
+  let projects = state.projects;
+  let groupLookup = state.groupLookup;
+  if (
+    groupLookup[groupId].constructor === Array &&
+    groupLookup[groupId].length === 3
+  ) {
+    console.log("lookup group");
+    let projectIndex = groupLookup[groupId][0];
+    let phaseIndex = groupLookup[groupId][1];
+    let groupIndex = groupLookup[groupId][2];
+    let tasks =
+      projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][
+        "tasks"
+      ];
+    for (let i = 0; i < tasks.length; i++) {
+      if (tasks[i]["_id"] === taskId) {
+        tasks[i]["members"] = members;
+      }
+    }
+  } else {
+    for (let i = 0; i < projects.length; i++) {
+      let phases = projects[i]["phases"];
+      for (let j = 0; j < phases.length; j++) {
+        let groups = phases[j]["groups"];
+        for (let k = 0; k < groups.length; k++) {
+          if (groups[k]["_id"] === groupId) {
+            let tasks = group[k]["tasks"];
+            for (let l = 0; l < tasks.length; k++) {
+              if (tasks[l]["_id"] === taskId) {
+                tasks[l]["members"] = members;
+              }
+            }
+            return;
+          }
+        }
+      }
+    }
+  }
+};
+
 const deleteTask = (state, groupId, taskId) => {
   let projects = state.projects;
   let groupLookup = state.groupLookup;
@@ -451,7 +541,7 @@ export {
   getPhaseLog,
   getProjectLog,
   logCount,
-  trimLog,
+  confirmLog,
   addTask,
   addGroup,
   addPhase,
@@ -460,5 +550,6 @@ export {
   deletePhase,
   deleteProject,
   generateLookup,
-  addProjectMembers
+  addProjectMembers,
+  editTaskMembers
 };

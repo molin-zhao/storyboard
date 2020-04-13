@@ -1,52 +1,56 @@
 <template>
   <div class="user-wrapper" style="border-bottom: 1px gainsboro solid">
-    <div class="avatar">
-      <avatar :src="item.avatar" class="avatar-img" />
-    </div>
-    <div class="username">
-      <div>
-        <icon :name="computedGender" :style="computedGenderStyle" />
-        <span
-          class="badge badge-warning"
-          style="margin-left: 5px; font-size: 12px; width: auto"
-          v-show="computedIsCreator"
-          >{{ $t("CREATOR") }}</span
-        >
-      </div>
-      <div>
-        <span>{{ item.username }}</span>
-      </div>
-    </div>
     <div class="operation">
       <icon
-        v-show="!computedIsCreator"
-        name="message"
-        style="color: var(--main-color-blue)"
-        @click.native.stop="chat"
+        class="operation-icon"
+        :name="computedOperationName"
+        :style="computedOperationStyle"
+        @click.native="operation"
       />
+    </div>
+    <div class="avatar">
+      <avatar
+        default-img="/static/image/user_empty.png"
+        :src="item.avatar"
+        class="avatar-img"
+      />
+    </div>
+    <div class="username">
+      <icon :name="computedGender" :style="computedGenderStyle" /><span>{{
+        item.username
+      }}</span>
     </div>
   </div>
 </template>
 
 <script>
 import avatar from "@/components/avatar";
-import onlineStatus from "@/components/onlineStatus";
-import { stopPropagation } from "@/common/utils/mouse";
 export default {
   components: {
-    avatar,
-    onlineStatus
+    avatar
   },
   props: {
     item: {
       type: Object,
       required: true
     },
-    creator: {
-      type: Object
+    excludeList: {
+      type: Array,
+      default: () => []
     }
   },
   computed: {
+    computedOperationName() {
+      const { excludeList, item } = this;
+      if (excludeList && excludeList.includes(item["_id"]))
+        return "roundcheckfill";
+      return "round";
+    },
+    computedOperationStyle() {
+      const { computedOperationName } = this;
+      if (computedOperationName === "round") return "color: lightgrey";
+      return "color: var(--main-color-blue)";
+    },
     computedGender() {
       const { item } = this;
       return item.gender === "m" ? "male" : "female";
@@ -54,18 +58,14 @@ export default {
     computedGenderStyle() {
       const { item } = this;
       return item.gender === "m" ? "color: cornflowerblue" : "color: lightpink";
-    },
-    computedIsCreator() {
-      const { creator, item } = this;
-      return creator && creator._id === item._id;
     }
   },
   methods: {
-    stopPropagation,
-    chat() {
-      this.$chatbox.show({
-        to: this.item
-      });
+    operation() {
+      const { computedOperationName, item } = this;
+      if (computedOperationName === "round")
+        return this.$emit("add-user", item);
+      return this.$emit("remove-user", item);
     }
   }
 };
@@ -97,18 +97,10 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: nowrap;
   width: 65%;
   height: 100%;
-  div {
-    width: 100%;
-    height: 30%;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-  }
   span {
     font-size: 14px;
     overflow: hidden;
@@ -124,5 +116,10 @@ export default {
   justify-content: center;
   align-items: center;
   width: 20%;
+}
+.operation-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
 }
 </style>

@@ -209,11 +209,13 @@ export default {
   ADD_TASK: "Add a task...",
   ADD_TASK_NAME: "Edit task name...",
   ADD_TASK_ERROR: "Cannot add a new task temporarily",
+  EDIT_TASK_MEMBER: "Edit task member(s)",
   TASK_MEMBERS: "Task members",
   NO_TASK_MEMBER_ALLOC: "Task temporarily not assigned",
   ASSIGN_TASK: "Allot task",
   CREATE_PROJECT: "Create new project",
   CREATE_PHASE: "Create new phase",
+  CREATOR: "creator",
 
   // errors
   SMS_ERROR: "Cannot temporarily get the SMS code.",

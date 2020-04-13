@@ -315,17 +315,22 @@
 }
 
 .modal-wrapper {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 10049 !important;
-  background-color: #0000001a;
+  background-color: #0000004d;
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.my-modal {
+  min-width: 500px;
+  min-height: 300px;
 }
 
 .a-btn {

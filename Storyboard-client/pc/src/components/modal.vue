@@ -6,31 +6,30 @@
       role="dialog"
       @click.stop="hide"
     >
-      <div
-        class="modal-dialog modal-dialog-centered"
-        role="document"
-        @click.stop="stopPropagation"
-      >
-        <div class="modal-content">
-          <div class="modal-header">
-            <slot name="modal-header"></slot>
-            <a
-              style="font-size: 20px; cursor: pointer"
-              class="display-only"
-              aria-hidden="true"
-              aria-label="Close"
-              @click.stop="hide"
-              >&times;</a
-            >
-          </div>
-          <div class="modal-body">
+      <transition name="top-in">
+        <div
+          v-show="visible"
+          class="modal-dialog modal-dialog-centered my-modal"
+          role="document"
+          @click.stop="stopPropagation"
+        >
+          <div class="modal-content">
+            <div class="modal-header">
+              <slot name="modal-header"></slot>
+              <a
+                style="font-size: 20px; cursor: pointer"
+                class="display-only"
+                aria-hidden="true"
+                aria-label="Close"
+                @click.stop="hide"
+                >&times;</a
+              >
+            </div>
             <slot name="modal-body"></slot>
-          </div>
-          <div class="modal-footer">
             <slot name="modal-footer"></slot>
           </div>
         </div>
-      </div>
+      </transition>
     </div>
   </transition>
 </template>
@@ -73,5 +72,18 @@ export default {
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.2s;
+}
+
+.top-in-enter,
+.top-in-leave-to {
+  transform: translateY(-200px);
+}
+.top-in-leave,
+.top-in-enter-to {
+  transform: translateY(0);
+}
+.top-in-enter-active,
+.top-in-leave-active {
+  transition: all 0.35s;
 }
 </style>

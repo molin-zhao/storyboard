@@ -39,9 +39,9 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
         {
           name: "",
           description: "",
-          groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }]
-        }
-      ]
+          groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }],
+        },
+      ],
     });
     let project = await newProject.save();
     return handleSuccess(res, project);
@@ -71,7 +71,7 @@ router.post("/phase/create", verifyAuthorization, async (req, res) => {
     let newPhase = {
       name,
       description,
-      groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }]
+      groups: [{ name: "", color, tasks: [{ name: "", members: [] }] }],
     };
     const createRes = await Project.createPhase(projectId, newPhase);
     return handleSuccess(res, createRes);
@@ -91,7 +91,7 @@ router.post("/group/create", verifyAuthorization, async (req, res) => {
     let newGroup = {
       name: "",
       color,
-      tasks: [{ name: "", members: [] }]
+      tasks: [{ name: "", members: [] }],
     };
     const resp = await Project.createGroup(phaseId, newGroup);
     return handleSuccess(res, resp);
@@ -112,7 +112,7 @@ router.post("/task/create", verifyAuthorization, async (req, res) => {
       priority,
       startDate,
       dueDate,
-      groupId
+      groupId,
     } = req.body;
     let newTask = {
       name,
@@ -120,7 +120,7 @@ router.post("/task/create", verifyAuthorization, async (req, res) => {
       start_date: startDate,
       due_date: dueDate,
       status,
-      priority
+      priority,
     };
     const createRes = await Project.createTask(groupId, newTask);
     return handleSuccess(res, createRes);
@@ -190,4 +190,40 @@ router.post(
     }
   }
 );
+
+/**
+ * edit task members
+ */
+router.post(
+  "/task/member/edit",
+  verifyAuthorization,
+  verifyUser,
+  async (req, res) => {
+    try {
+      let taskId = req.body.taskId;
+      let members = req.body.members;
+      const resp = await Project.editTaskMembers(taskId, members);
+      return handleSuccess(res, resp);
+    } catch (err) {
+      return handleError(res, err);
+    }
+  }
+);
+
+/**
+ * save project logs
+ */
+router.post("/save", verifyAuthorization, verifyUser, async (req, res) => {
+  try {
+    const { projectLogs, phaseLogs, groupLogs, taskLogs } = req.body;
+    const projectIds = await Project.saveProjectLogs(projectLogs);
+    const phaseIds = await Project.savePhaseLogs(phaseLogs);
+    const groupIds = await Project.saveGroupLogs(groupLogs);
+    const taskIds = await Project.saveTaskLogs(taskLogs);
+    let data = { projectIds, phaseIds, groupIds, taskIds };
+    return handleSuccess(res, data);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
 module.exports = router;

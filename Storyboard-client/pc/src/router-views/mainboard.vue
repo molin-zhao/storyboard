@@ -115,17 +115,17 @@
                     <span style="color: grey;">{{ $t("SYNC_PROJECT") }}</span>
                   </a>
                   <a
-                    :style="`pointer-events: ${
-                      computedLogNumber ? 'auto' : 'none'
-                    };`"
+                    :style="
+                      `pointer-events: ${computedLogNumber ? 'auto' : 'none'};`
+                    "
                     @click.stop="saveProject"
                   >
                     <icon
                       class="setting-icon"
                       name="save"
-                      :style="`color: ${
-                        computedLogNumber ? 'grey' : 'lightgray'
-                      }`"
+                      :style="
+                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
+                      "
                     />
                     <span
                       v-show="computedLogNumber"
@@ -143,9 +143,9 @@
                       >{{ computedLogNumber }}</span
                     >
                     <span
-                      :style="`color: ${
-                        computedLogNumber ? 'grey' : 'lightgray'
-                      }`"
+                      :style="
+                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
+                      "
                       >{{ $t("SAVE_PROJECT") }}</span
                     >
                   </a>
@@ -208,8 +208,7 @@
     </div>
 
     <!-- modals -->
-    <create-project-form />
-    <create-task-members />
+    <create-project />
     <create-phase />
     <create-project-members />
     <create-team />
@@ -227,15 +226,14 @@ import datepicker from "@/components/datepicker";
 import vueScroll from "vuescroll";
 import userOnlineContact from "@/components/userOnlineContactCell";
 import phase from "@/components/phase";
-import createProjectForm from "@/components/form/createProject";
-import createTaskMembers from "@/components/form/createTaskMembers";
+import createProject from "@/components/form/createProject";
 import createProjectMembers from "@/components/form/createProjectMembers";
 import createTeam from "@/components/form/createTeam";
 import createPhase from "@/components/form/createPhase";
 import createWarehouse from "@/components/form/createWarehouse";
-import { isEdited, logCount } from "@/common/utils/log";
+import { isEdited, logCount, confirmLog } from "@/common/utils/log";
 import { mouseclick, mouseover, mouseleave } from "@/common/utils/mouse";
-import { group, more } from "@/common/theme/icon";
+import { group, more } from "@/common/theme/style";
 import { mapState, mapMutations } from "vuex";
 import * as URL from "@/common/utils/url";
 export default {
@@ -247,15 +245,15 @@ export default {
       members: [],
       ops: {
         vuescroll: {
-          mode: "native",
+          mode: "native"
         },
         scrollPanel: {
-          scrollingX: false,
+          scrollingX: false
         },
         bar: {
-          background: "lightgrey",
-        },
-      },
+          background: "lightgrey"
+        }
+      }
     };
   },
   components: {
@@ -268,12 +266,11 @@ export default {
     phase,
     vueScroll,
     userOnlineContact,
-    createProjectForm,
-    createTaskMembers,
+    createProject,
     createProjectMembers,
     createTeam,
     createWarehouse,
-    createPhase,
+    createPhase
   },
   computed: {
     ...mapState("project", ["projects", "activeIndex", "logs"]),
@@ -313,7 +310,7 @@ export default {
     computedMemberList() {
       const { projects, activeIndex } = this;
       return projects[activeIndex]["members"];
-    },
+    }
   },
   methods: {
     mouseclick,
@@ -322,7 +319,7 @@ export default {
     isEdited,
     ...mapMutations({
       add_log: "project/add_log",
-      remove_log: "project/remove_log",
+      remove_log: "project/remove_log"
     }),
     descriptionChange(val) {
       const { projects, activeIndex } = this;
@@ -331,12 +328,12 @@ export default {
         this.add_log({
           projectId: projects[activeIndex]._id,
           field: "description",
-          value: val,
+          value: val
         });
       } else {
         this.remove_log({
           projectId: projects[activeIndex]._id,
-          field: "description",
+          field: "description"
         });
       }
     },
@@ -347,7 +344,7 @@ export default {
         let url = URL.GET_PROJECT_ONLINE_MEMBERS(projectId);
         const resp = await this.$http.get(url);
         let resMembers = resp.data.data.members;
-        this.members = resMembers.filter((member) => member.online);
+        this.members = resMembers.filter(member => member.online);
       } catch (err) {
         console.log(err);
       }
@@ -355,28 +352,35 @@ export default {
     syncProject() {
       console.log("sync");
     },
-    saveProject() {
-      console.log("save");
+    async saveProject() {
+      try {
+        const { logs, id } = this;
+        let confirmLogs = confirmLog(logs);
+        let data = { user: id, ...confirmLogs };
+        let url = URL.POST_SAVE_PROJECT_LOG();
+        const resp = await this.$http.post(url, data, { emulateJson: true });
+        console.log(resp.data);
+      } catch (err) {}
     },
     importProject() {},
     exportProject() {},
     addProjectMember() {
       $("#modal-create-project-member").modal("show");
-    },
+    }
   },
   mounted() {
-    $(document).ready(function () {
+    $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
   },
   watch: {
     projects: {
       deep: true,
-      handler: function (newValue, oldValue) {
-        if (newVal) this.fetchOnlineUsers();
-      },
-    },
-  },
+      handler: function(newValue, oldValue) {
+        if (newValue) this.fetchOnlineUsers();
+      }
+    }
+  }
 };
 </script>
 

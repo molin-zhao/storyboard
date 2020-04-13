@@ -22,7 +22,7 @@
     </div>
     <div class="row-item" v-else-if="isType('TITLE_MEMBER')">
       <member
-        :member="task.members"
+        :members="task.members"
         :phase-index="phaseIndex"
         :group-id="groupId"
         :task-id="task._id"

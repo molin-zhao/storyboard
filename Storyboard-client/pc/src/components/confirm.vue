@@ -1,59 +1,48 @@
 <template>
-  <transition name="fade">
-    <div v-show="visible" class="modal-wrapper display-only" @click="hideModal">
-      <div
-        @click.stop="clickModal"
-        class="modal-dialog modal-dialog-centered my-modal"
-      >
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title display-only">
-              {{ title }}
-            </h5>
-            <a
-              style="font-size: 20px; cursor: pointer"
-              class="display-only"
-              aria-hidden="true"
-              aria-label="Close"
-              @click="close"
-              >&times;</a
-            >
-          </div>
-          <div class="modal-body">
-            <p>{{ message }}</p>
-          </div>
-          <div class="modal-footer">
-            <button v-if="processing" class="btn btn-sm btn-primary" disabled>
-              <span
-                class="spinner-border spinner-border-sm"
-                role="status"
-                aria-hidden="true"
-              ></span>
-            </button>
-            <button
-              v-else
-              @click.stop="confirm"
-              type="button"
-              class="btn btn-sm btn-primary"
-            >
-              {{ confirmLabel }}
-            </button>
-            <button
-              class="btn btn-sm btn-danger"
-              @click.stop="cancel"
-              :disabled="processing ? true : false"
-            >
-              {{ cancelLabel }}
-            </button>
-          </div>
-        </div>
-      </div>
+  <modal
+    ref="confirm-modal"
+    @on-modal-hide="modalHide"
+    @on-modal-show="modalShow"
+  >
+    <h5 slot="modal-header" class="modal-title">
+      {{ title }}
+    </h5>
+    <div slot="modal-body" class="modal-body">
+      <p>{{ message }}</p>
     </div>
-  </transition>
+    <div slot="modal-footer" class="modal-footer">
+      <button v-if="processing" class="btn btn-sm btn-primary" disabled>
+        <span
+          class="spinner-border spinner-border-sm"
+          role="status"
+          aria-hidden="true"
+        ></span>
+      </button>
+      <button
+        v-else
+        @click.stop="confirm"
+        type="button"
+        class="btn btn-sm btn-primary create-btn"
+      >
+        {{ confirmLabel }}
+      </button>
+      <button
+        class="btn btn-sm btn-danger create-btn"
+        @click.stop="cancel"
+        :disabled="processing ? true : false"
+      >
+        {{ cancelLabel }}
+      </button>
+    </div>
+  </modal>
 </template>
 
 <script>
+import modal from "@/components/modal";
 export default {
+  components: {
+    modal
+  },
   data() {
     return {
       visible: false,
@@ -88,10 +77,16 @@ export default {
   },
   methods: {
     show() {
-      if (!this.visible) this.visible = true;
+      if (!this.visible) {
+        let modal = this.$refs["confirm-modal"];
+        if (modal) return modal.show();
+      }
     },
     close() {
-      if (this.visible) this.visible = false;
+      if (this.visible) {
+        let modal = this.$refs["confirm-modal"];
+        if (modal) return modal.hide();
+      }
     },
     confirm() {
       if (this.success) this.success();
@@ -106,27 +101,15 @@ export default {
     },
     clickModal() {
       return;
+    },
+    modalHide() {
+      this.visible = false;
+    },
+    modalShow() {
+      this.visible = true;
     }
   }
 };
 </script>
 
-<style lang="scss" scoped>
-.my-modal {
-  min-width: 500px;
-  min-height: 300px;
-}
-
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-.fade-leave,
-.fade-enter-to {
-  opacity: 1;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.2s;
-}
-</style>
+<style lang="scss" scoped></style>

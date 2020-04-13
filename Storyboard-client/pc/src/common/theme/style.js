@@ -36,3 +36,16 @@ export const bell = {
     plain: "bell"
   }
 };
+
+export const ops = {
+  vuescroll: {
+    mode: "native"
+  },
+  scrollPanel: {
+    scrollingX: false
+  },
+  bar: {
+    background: "lightgrey"
+  },
+  maxHeight: "100%"
+};

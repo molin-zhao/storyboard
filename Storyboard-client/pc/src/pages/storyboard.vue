@@ -133,24 +133,26 @@
           <div class="project-wrapper">
             <span class="display-only">{{ $t("PROJECTS") }}</span>
             <div class="list-group list-group-flush project-list display-only">
-              <a
-                style="
+              <vue-scroll :ops="ops">
+                <a
+                  style="
                   border: none;
                   border-radius: 5px;
                   padding: 5px;
                   cursor: pointer;
                 "
-                @click="projectLabelClick(index)"
-                v-for="(item, index) in projects"
-                :key="index"
-                :class="projectLabel(index)"
-                >{{ item.name
-                }}<span
-                  v-if="isEdited(logs[item._id])"
-                  class="editing-badge"
-                  :style="computedProjectEditedStyle(index)"
-                ></span
-              ></a>
+                  @click="projectLabelClick(index)"
+                  v-for="(item, index) in projects"
+                  :key="index"
+                  :class="projectLabel(index)"
+                  >{{ item.name
+                  }}<span
+                    v-if="isEdited(logs[item._id])"
+                    class="editing-badge"
+                    :style="computedProjectEditedStyle(index)"
+                  ></span
+                ></a>
+              </vue-scroll>
             </div>
             <a
               id="create-project-btn"
@@ -209,14 +211,15 @@ import badgeIcon from "@/components/badgeIcon";
 import imageBtn from "@/components/imageBtn";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
+import vueScroll from "vuescroll";
 import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
-import { bell } from "@/common/theme/icon";
+import { bell, ops } from "@/common/theme/style";
 import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
 import {
   createSocketConnection,
-  getNotifyMembers,
+  getNotifyMembers
 } from "@/common/utils/socket";
 import { isEdited, generateLookup } from "@/common/utils/log";
 import { getUnreadCount } from "@/common/utils/message";
@@ -226,13 +229,15 @@ export default {
     imageBtn,
     popover,
     tooltip,
+    vueScroll
   },
   data() {
     return {
       storyboardLoading: false,
       reloading: false,
       bell,
-      errorCode: -1,
+      ops,
+      errorCode: -1
     };
   },
   computed: {
@@ -243,13 +248,13 @@ export default {
       "username",
       "gender",
       "phone",
-      "email",
+      "email"
     ]),
     ...mapState("project", ["projects", "activeIndex", "logs"]),
     ...mapState("team", ["teams"]),
     ...mapState("message", ["messages"]),
     projectLabel() {
-      return function (index) {
+      return function(index) {
         if (index === this.activeIndex) {
           return "list-group-item list-group-item-primary";
         }
@@ -257,7 +262,7 @@ export default {
       };
     },
     computedProjectEditedStyle() {
-      return function (index) {
+      return function(index) {
         const { activeIndex } = this;
         if (index === activeIndex) return "background-color: #6495ed";
         return "background-color: lightgrey";
@@ -266,7 +271,7 @@ export default {
     computedUnreadMessageCount() {
       const { messages } = this;
       return getUnreadCount(messages);
-    },
+    }
   },
   async mounted() {
     try {
@@ -282,7 +287,7 @@ export default {
         createSocketConnection({
           id,
           token,
-          nList: getNotifyMembers(info.projects),
+          nList: getNotifyMembers(info.projects)
         })
       );
     } catch (err) {
@@ -296,7 +301,7 @@ export default {
       save_userinfo: "user/save_userinfo",
       remove_credential: "/user/remove_credential",
       remove_userinfo: "user/remove_userinfo",
-      restore_message: "message/restore_message",
+      restore_message: "message/restore_message"
     }),
     ...mapMutations({
       reload_projects: "project/reload_projects",
@@ -304,7 +309,7 @@ export default {
       add_lookup: "project/add_lookup",
       reload_teams: "team/reload_teams",
       add_userinfo: "user/add_userinfo",
-      add_socket: "user/add_socket",
+      add_socket: "user/add_socket"
     }),
     mouseover,
     mouseleave,
@@ -366,7 +371,7 @@ export default {
           }
         },
         confirmLabel: this.$t("CONFIRM"),
-        cancelLabel: this.$t("CANCEL"),
+        cancelLabel: this.$t("CANCEL")
       });
     },
     goTo(route) {
@@ -375,22 +380,22 @@ export default {
     showMailbox() {
       const { id, avatar, username, gender } = this;
       this.$mailbox.show();
-    },
+    }
   },
   watch: {
     projects: {
       deep: true,
-      handler: function (newValue, oldValue) {
+      handler: function(newValue, oldValue) {
         console.log("project changed");
-        let oldProjectKeys = oldValue.map((pro) => pro._id);
-        let newProjectKeys = newValue.map((pro) => pro._id);
+        let oldProjectKeys = oldValue.map(pro => pro._id);
+        let newProjectKeys = newValue.map(pro => pro._id);
         if (newProjectKeys.toString() !== oldProjectKeys.toString()) {
           const lookups = generateLookup(newValue);
           this.add_lookup(lookups);
         }
-      },
-    },
-  },
+      }
+    }
+  }
 };
 </script>
 
@@ -501,6 +506,7 @@ export default {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
+    max-height: 90%;
     a {
       width: 100%;
       text-align: left;
