@@ -77,7 +77,11 @@
                       :src="item.avatar"
                       default-img="/static/image/user_empty.png"
                     />
-                    <icon name="close" class="selected-user-remove" />
+                    <icon
+                      v-show="computedCanRemoveMember(item)"
+                      name="close"
+                      class="selected-user-remove"
+                    />
                   </div>
                 </div>
               </div>
@@ -221,6 +225,12 @@ export default {
     computedMemberIds() {
       const { members } = this;
       return parser(members, "_id");
+    },
+    computedCanRemoveMember() {
+      return function(item) {
+        const { computedProjectCreator } = this;
+        return item._id !== computedProjectCreator._id;
+      };
     }
   },
   methods: {
@@ -258,7 +268,8 @@ export default {
       console.log(err);
     },
     removeUser(user) {
-      const { members } = this;
+      const { members, computedProjectCreator } = this;
+      if (user._id === computedProjectCreator._id) return;
       this.members = members.filter(u => u._id !== user._id);
     },
     addUser(user) {

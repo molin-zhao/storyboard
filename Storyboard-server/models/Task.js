@@ -29,15 +29,8 @@ const TaskSchema = new Schema(
     members: {
       type: [
         {
-          status: {
-            type: String,
-            enum: ["planned", "working", "stuck", "done"],
-            default: "working",
-          },
-          member: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-          },
+          type: Schema.Types.ObjectId,
+          ref: "User",
         },
       ],
       default: [],

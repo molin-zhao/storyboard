@@ -92,20 +92,20 @@ export default {
     ...mapState("project", ["projects", "activeIndex", "logs"]),
     computedStatus() {
       const {
+        logs,
+        taskId,
+        status,
         projects,
         activeIndex,
         phaseIndex,
-        logs,
-        groupId,
-        taskId,
-        status
+        groupId
       } = this;
-      let cproId = projects[activeIndex]._id;
-      let cphaId = projects[activeIndex]["phases"][phaseIndex]._id;
+      let projectId = projects[activeIndex]["_id"];
+      let phaseId = projects[activeIndex]["phases"][phaseIndex]["_id"];
       let logStatus = getTaskLog(
         logs,
-        cproId,
-        cphaId,
+        projectId,
+        phaseId,
         groupId,
         taskId,
         "status"
@@ -187,8 +187,8 @@ export default {
       } = this;
       if (this.computedStatus === item) return;
       if (newTask) return this.$emit("on-change", item);
-      let projectId = projects[activeIndex]._id;
-      let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
+      let projectId = projects[activeIndex]["_id"];
+      let phaseId = projects[activeIndex]["phases"][phaseIndex]["_id"];
       if (status === item)
         return this.remove_log({
           projectId,

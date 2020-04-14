@@ -23,9 +23,9 @@
     </div>
     <div class="operation">
       <a
-        v-show="!computedIsCreator"
         :class="computedOperationClass"
         @click.stop="operation"
+        :style="computedOperationStyle"
         >{{ computedOperationLabel }}</a
       >
     </div>
@@ -34,6 +34,7 @@
 
 <script>
 import avatar from "@/components/avatar";
+import { mapState } from "vuex";
 export default {
   components: {
     avatar
@@ -51,15 +52,17 @@ export default {
     }
   },
   computed: {
+    ...mapState("user", ["id"]),
     computedOperationLabel() {
-      const { excludeList, item, computedIsCreator } = this;
-      if (computedIsCreator) return "";
+      const { excludeList, item, computedIsCreator, id } = this;
+      if (id === item._id || computedIsCreator) return this.$t("DEFAULT");
       if (excludeList && excludeList.includes(item._id))
         return this.$t("REMOVE");
       return this.$t("ADD");
     },
     computedOperationClass() {
-      const { excludeList, item } = this;
+      const { excludeList, item, id } = this;
+      if (id === item._id) return "text-secondary op-link";
       if (excludeList && excludeList.includes(item._id))
         return "text-danger op-link";
       return "text-primary op-link";
@@ -75,6 +78,11 @@ export default {
     computedIsCreator() {
       const { creator, item } = this;
       return creator && creator._id === item._id;
+    },
+    computedOperationStyle() {
+      const { id, item, computedIsCreator } = this;
+      let disabled = id === item._id || computedIsCreator;
+      return `pointer-events: ${disabled ? "none" : "auto"}`;
     }
   },
   methods: {

@@ -55,7 +55,10 @@
                           v-for="(item, index) in computedMemberList"
                           :key="index"
                         >
-                          <user-online-contact :item="item" />
+                          <user-online-contact
+                            :item="item"
+                            :creator="computedProjectCreator"
+                          />
                         </div>
                       </vue-scroll>
                     </div>
@@ -115,18 +118,20 @@
                     <span style="color: grey;">{{ $t("SYNC_PROJECT") }}</span>
                   </a>
                   <a
-                    :style="
-                      `pointer-events: ${computedLogNumber ? 'auto' : 'none'};`
-                    "
+                    :style="computedSaveProjectBtnStyle"
                     @click.stop="saveProject"
                   >
                     <icon
+                      v-if="!computedIsSavingProject"
                       class="setting-icon"
                       name="save"
-                      :style="
-                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
-                      "
+                      :style="computedSaveProjectBtnColor"
                     />
+                    <span
+                      v-else
+                      class="spinner-border spinner-border-sm setting-icon"
+                      :style="computedSaveProjectBtnColor"
+                    ></span>
                     <span
                       v-show="computedLogNumber"
                       class="badge badge-danger badge-pill"
@@ -142,12 +147,9 @@
                       "
                       >{{ computedLogNumber }}</span
                     >
-                    <span
-                      :style="
-                        `color: ${computedLogNumber ? 'grey' : 'lightgray'}`
-                      "
-                      >{{ $t("SAVE_PROJECT") }}</span
-                    >
+                    <span :style="computedSaveProjectBtnColor">{{
+                      $t("SAVE_PROJECT")
+                    }}</span>
                   </a>
                   <a @click.stop="importProject">
                     <icon
@@ -259,7 +261,9 @@ export default {
         bar: {
           background: "lightgrey"
         }
-      }
+      },
+      savingIds: {},
+      syncIds: {}
     };
   },
   components: {
@@ -316,6 +320,34 @@ export default {
     computedMemberList() {
       const { projects, activeIndex } = this;
       return projects[activeIndex]["members"];
+    },
+    computedIsSavingProject() {
+      const { projects, activeIndex, savingIds } = this;
+      let projectId = projects[activeIndex]["_id"];
+      return Object.keys(savingIds).includes(projectId);
+    },
+    computedIsSyncProject() {
+      const { projects, activeIndex, syncIds } = this;
+      let projectId = projects[activeIndex]["_id"];
+      return Object.keys(syncIds).includes(projectId);
+    },
+    computedSaveProjectBtnStyle() {
+      const { computedLogNumber, computedIsSavingProject } = this;
+      return `pointer-events: ${
+        computedLogNumber && !computedIsSavingProject ? "auto" : "none"
+      };`;
+    },
+    computedSaveProjectBtnColor() {
+      const { computedLogNumber, computedIsSavingProject } = this;
+      return `color: ${
+        computedLogNumber && !computedIsSavingProject ? "grey" : "lightgray"
+      }`;
+    },
+    computedProjectCreator() {
+      const { projects, activeIndex } = this;
+      let project = projects[activeIndex];
+      if (project) return project["creator"];
+      return {};
     }
   },
   methods: {
@@ -325,7 +357,9 @@ export default {
     isEdited,
     ...mapMutations({
       add_log: "project/add_log",
-      remove_log: "project/remove_log"
+      remove_log: "project/remove_log",
+      sync_project: "project/sync_project",
+      merge_logs: "project/merge_logs"
     }),
     descriptionChange(val) {
       const { projects, activeIndex } = this;
@@ -355,18 +389,34 @@ export default {
         console.log(err);
       }
     },
-    syncProject() {
-      console.log("sync");
+    async syncProject() {
+      const { activeIndex, projects } = this;
+      let projectId = projects[activeIndex]["_id"];
+      try {
+        let url = URL.GET_SYNC_PROJECT(projectId);
+        this.syncIds[projectId] = true;
+        const resp = await this.$http.get(url);
+        this.sync_project(resp.data.data);
+      } catch (err) {
+      } finally {
+        delete this.syncIds[projectId];
+      }
     },
     async saveProject() {
+      const { logs, id, activeIndex, projects } = this;
+      let projectId = projects[activeIndex]["_id"];
       try {
-        const { logs, id } = this;
-        let confirmLogs = confirmLog(logs);
-        let data = { user: id, ...confirmLogs };
+        // console.log(logs);
+        let logInfo = confirmLog(logs[projectId]);
+        let data = { user: id, ...logInfo };
         let url = URL.POST_SAVE_PROJECT_LOG();
+        this.$set(this.savingIds, projectId, true);
         const resp = await this.$http.post(url, data, { emulateJson: true });
-        console.log(resp.data);
-      } catch (err) {}
+        this.merge_logs({ ids: resp.data.data, logs: logInfo });
+      } catch (err) {
+      } finally {
+        this.$delete(this.savingIds, projectId);
+      }
     },
     importProject() {},
     exportProject() {},
@@ -387,7 +437,6 @@ export default {
     $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
-    
   },
   watch: {
     projects: {

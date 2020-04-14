@@ -1,6 +1,7 @@
 export default {
   // labels
   LANGUAGE: "Language",
+  DEFAULT: "Default",
   LOGIN: "Login",
   LOGGEDIN: "Logged in",
   LOGOUT: "Logout",

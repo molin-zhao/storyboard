@@ -103,6 +103,10 @@ export const GET_ONLINE_USER = projectId => {
   return API_HOST + `/user/online?project=${projectId}`;
 };
 
+export const GET_SYNC_PROJECT = projectId => {
+  return API_HOST + `/project/sync?project=${projectId}`;
+};
+
 export const DELETE_TASK = (groupId, taskId) => {
   return API_HOST + `/project/task/delete?id=${taskId}&&group=${groupId}`;
 };

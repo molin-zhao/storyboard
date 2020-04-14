@@ -55,28 +55,25 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
   }
 });
 
-router.delete(
-  "/delete",
-  /**verifyAuthorization, verifyUser,*/ async (req, res) => {
+router.delete("/delete", verifyAuthorization, verifyUser, async (req, res) => {
+  try {
+    let projectId = req.query.id;
+    const session = await mongoose.startSession();
+    await session.startTransaction();
     try {
-      let projectId = req.query.id;
-      const session = await mongoose.startSession();
-      await session.startTransaction();
-      try {
-        const resp = await Project.deleteProject(projectId, session);
-        await session.commitTransaction();
-        return handleSuccess(res, resp);
-      } catch (e) {
-        await session.abortTransaction();
-        throw e;
-      } finally {
-        await session.endSession();
-      }
-    } catch (err) {
-      return handleError(res, err);
+      const resp = await Project.deleteProject(projectId, session);
+      await session.commitTransaction();
+      return handleSuccess(res, resp);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
     }
+  } catch (err) {
+    return handleError(res, err);
   }
-);
+});
 /**
  * create a phase
  */
@@ -292,12 +289,22 @@ router.post(
 router.post("/save", verifyAuthorization, verifyUser, async (req, res) => {
   try {
     const { projectLogs, phaseLogs, groupLogs, taskLogs } = req.body;
-    const projectIds = await Project.saveProjectLogs(projectLogs);
-    const phaseIds = await Project.savePhaseLogs(phaseLogs);
-    const groupIds = await Project.saveGroupLogs(groupLogs);
-    const taskIds = await Project.saveTaskLogs(taskLogs);
-    let data = { projectIds, phaseIds, groupIds, taskIds };
-    return handleSuccess(res, data);
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const projectIds = await Project.saveProjectLogs(projectLogs, session);
+      const phaseIds = await Project.savePhaseLogs(phaseLogs, session);
+      const groupIds = await Project.saveGroupLogs(groupLogs, session);
+      const taskIds = await Project.saveTaskLogs(taskLogs, session);
+      await session.commitTransaction();
+      let data = { projectIds, phaseIds, groupIds, taskIds };
+      return handleSuccess(res, data);
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }

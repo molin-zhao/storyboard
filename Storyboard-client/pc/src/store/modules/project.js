@@ -10,7 +10,8 @@ import {
   deletePhase,
   deleteProject,
   addProjectMembers,
-  editTaskMembers
+  editTaskMembers,
+  mergeLogs
 } from "@/common/utils/log";
 const state = {
   projects: [],
@@ -29,6 +30,11 @@ const mutations = {
     addProject(state, payload);
     state.projects = state.projects.concat(payload);
   },
+  sync_project(state, payload) {
+    state.projects = state.projects.map(
+      project => project["_id" === payload["_id"] ? payload : project]
+    );
+  },
   reload_projects(state, payload) {
     state.projects = payload;
   },
@@ -36,10 +42,10 @@ const mutations = {
     state.activeIndex = payload;
   },
   add_log(state, payload) {
-    state.logs = addLog(state.logs, payload);
+    state.logs = addLog(state, payload);
   },
   remove_log(state, payload) {
-    state.logs = removeLog(state.logs, payload);
+    state.logs = removeLog(state, payload);
   },
   add_task(state, payload) {
     addTask(state, payload.groupId, payload.task);
@@ -74,6 +80,10 @@ const mutations = {
   },
   edit_task_members(state, payload) {
     editTaskMembers(state, payload.groupId, payload.taskId, payload.members);
+  },
+  merge_logs(state, payload) {
+    const { ids, logs } = payload;
+    mergeLogs(state, ids, logs);
   }
 };
 

@@ -2,6 +2,7 @@ export default {
   // labels
   LANGUAGE: "语言",
   LOGIN: "登录",
+  DEFAULT: "默认",
   LOGOUT: "登出",
   SETTINGS: "设置",
   MAINBOARD: "任务板",

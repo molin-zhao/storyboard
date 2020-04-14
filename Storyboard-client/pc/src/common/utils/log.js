@@ -1,90 +1,89 @@
-const addLog = (orgLogs, payload) => {
+const addLog = (state, payload) => {
   try {
     // payload -> {projectId, phaseId*, groupId*, taskId*, field, value}
     // logs -> tree structure
+    let logs = state.logs;
     const { projectId, phaseId, groupId, taskId, field, value } = payload;
-    let root = orgLogs[projectId];
-    if (!root)
-      root = Object.assign(orgLogs, createProject(projectId))[projectId];
+    // 1. projectId is required
+    if (!projectId) return;
+
+    // 2. first log of projectId, create a empty obj with key projectId
+    if (!logs[projectId]) logs[projectId] = createProject();
+
+    // 3. position logs by checking provided ids
+    // 1) phaseId not provided, only change project field
     if (!phaseId) {
-      // update project field
-      root[field] = value;
-      return assignProject(orgLogs, projectId, root);
+      logs[projectId][field] = value;
+      // state.logs = assignProject(logs, projectId, logs[projectId]);
+      return Object.assign({}, logs);
     }
+    // 2) groupId not provided, only change phase field
     if (!groupId) {
-      // update phase field,
-      if (!root["phases"]) root["phases"] = { phaseId: {} };
-      if (!root["phases"][phaseId]) root["phases"][phaseId] = {};
-      root["phases"][phaseId][field] = value;
-      return assignProject(orgLogs, projectId, root);
+      let phases = logs[projectId]["phases"];
+      if (!phases) phases = createPhase(phaseId);
+      if (!phases[phaseId]) phases[phaseId] = createPhase();
+      phases[phaseId][field] = value;
+      logs[projectId]["phases"] = phases;
+      // state.logs = assignProject(orgLogs, projectId, logs[projectId]);
+      return Object.assign({}, logs);
     }
+    // 3) taskId not provided, only change group field
     if (!taskId) {
-      // update group field,
-      if (!root["phases"]) root["phases"] = createPhase(phaseId);
-      if (!root["phases"][phaseId])
-        root["phases"] = Object.assign(
-          {},
-          root["phases"],
-          createPhase(phaseId)
-        );
-      if (!root["phases"][phaseId]["groups"])
-        root["phases"][phaseId]["groups"] = createGroup(groupId);
-      if (!root["phases"][phaseId]["groups"][groupId])
-        root["phases"][phaseId]["groups"] = Object.assign(
-          {},
-          root["phases"][phaseId]["groups"],
-          createGroup(groupId)
-        );
-      root["phases"][phaseId]["groups"][groupId][field] = value;
-      return assignProject(orgLogs, projectId, root);
+      let phases = logs[projectId]["phases"];
+      if (!phases) phases = createPhase(phaseId);
+      if (!phases[phaseId]) phases[phaseId] = createPhase();
+      let groups = phases[phaseId]["groups"];
+      if (!groups) groups = createGroup(groupId);
+      if (!groups[groupId]) groups[groupId] = createGroup();
+      groups[groupId][field] = value;
+      phases[phaseId]["groups"] = groups;
+      logs[projectId]["phases"] = phases;
+      return Object.assign({}, logs);
     }
-    // update task field
-    if (!root["phases"]) root["phases"] = createPhase(phaseId);
-    if (!root["phases"][phaseId])
-      root["phases"] = Object.assign({}, root["phases"], createPhase(phaseId));
-    if (!root["phases"][phaseId]["groups"])
-      root["phases"][phaseId]["groups"] = createGroup(groupId);
-    if (!root["phases"][phaseId]["groups"][groupId])
-      root["phases"][phaseId]["groups"] = Object.assign(
-        {},
-        root["phases"][phaseId]["groups"],
-        createGroup(groupId)
-      );
-    if (!root["phases"][phaseId]["groups"][groupId]["tasks"])
-      root["phases"][phaseId]["groups"][groupId]["tasks"] = createTask(taskId);
-    if (!root["phases"][phaseId]["groups"][groupId]["tasks"][taskId])
-      root["phases"][phaseId]["groups"][groupId]["tasks"] = Object.assign(
-        {},
-        root["phases"][phaseId]["groups"][groupId]["tasks"],
-        createTask(taskId)
-      );
-    root["phases"][phaseId]["groups"][groupId]["tasks"][taskId][field] = value;
-    return assignProject(orgLogs, projectId, root);
+    // 4) taskId provided, only change task field
+    let phases = logs[projectId]["phases"];
+    if (!phases) phases = createPhase(phaseId);
+    if (!phases[phaseId]) phases[phaseId] = createPhase();
+    let groups = phases[phaseId]["groups"];
+    if (!groups) groups = createGroup(groupId);
+    if (!groups[groupId]) groups[groupId] = createGroup();
+    let tasks = groups[groupId]["tasks"];
+    if (!tasks) tasks = createTask(taskId);
+    if (!tasks[taskId]) tasks[taskId] = createTask();
+    tasks[taskId][field] = value;
+    groups[groupId]["tasks"] = tasks;
+    phases[phaseId]["groups"] = groups;
+    logs[projectId]["phases"] = phases;
+    return Object.assign({}, logs);
   } catch (err) {
-    console.log(err.message);
+    console.log(err);
   }
 };
 
-const removeLog = (orgLogs, payload) => {
+const removeLog = (state, payload) => {
   try {
+    let logs = state.logs;
+    console.log(logs);
+    console.log(payload);
     const { projectId, phaseId, groupId, taskId, field } = payload;
-    let root = orgLogs[projectId];
     if (!phaseId) {
-      root[field] = undefined;
-      return assignProject(orgLogs, projectId, root);
+      // remove project field
+      logs[projectId][field] = undefined;
+      return Object.assign({}, logs);
     }
     if (!groupId) {
-      root["phases"][phaseId][field] = undefined;
-      return assignProject(orgLogs, projectId, root);
+      // remove phase field
+      logs[projectId]["phases"][phaseId][field] = undefined;
+      return Object.assign({}, logs);
     }
     if (!taskId) {
-      root["phases"][phaseId]["groups"][groupId][field] = undefined;
-      return assignProject(orgLogs, projectId, root);
+      logs[projectId]["phases"][phaseId]["groups"][groupId][field] = undefined;
+      return Object.assign({}, logs);
     }
-    root["phases"][phaseId]["groups"][groupId]["tasks"][taskId][
+    logs[projectId]["phases"][phaseId]["groups"][groupId]["tasks"][taskId][
       field
     ] = undefined;
-    return assignProject(orgLogs, projectId, root);
+    return Object.assign({}, logs);
   } catch (err) {
     console.log(err);
   }
@@ -92,50 +91,70 @@ const removeLog = (orgLogs, payload) => {
 
 const createPhase = phaseId => {
   let obj = {};
-  obj[phaseId] = {
-    name: undefined,
-    description: undefined,
-    groups: {}
-  };
+  if (phaseId) {
+    obj[phaseId] = {
+      name: undefined,
+      description: undefined,
+      groups: {}
+    };
+  } else {
+    obj["name"] = undefined;
+    obj["description"] = undefined;
+    obj["groups"] = {};
+  }
   return obj;
 };
 
 const createGroup = groupId => {
   let obj = {};
-  obj[groupId] = {
-    name: undefined,
-    color: undefined,
-    tasks: {}
-  };
+  if (groupId) {
+    obj[groupId] = {
+      name: undefined,
+      color: undefined,
+      tasks: {}
+    };
+  } else {
+    obj["name"] = undefined;
+    obj["color"] = undefined;
+    obj["tasks"] = {};
+  }
   return obj;
 };
 
 const createTask = taskId => {
   let obj = {};
-  obj[taskId] = {
-    name: undefined,
-    status: undefined,
-    priority: undefined,
-    start_date: undefined,
-    due_date: undefined
-  };
+  if (taskId) {
+    obj[taskId] = {
+      name: undefined,
+      status: undefined,
+      priority: undefined,
+      start_date: undefined,
+      due_date: undefined
+    };
+  } else {
+    obj["name"] = undefined;
+    obj["status"] = undefined;
+    obj["priority"] = undefined;
+    obj["start_date"] = undefined;
+    obj["due_date"] = undefined;
+  }
   return obj;
 };
 
 const createProject = projectId => {
   let obj = {};
-  obj[projectId] = {
-    name: undefined,
-    description: undefined,
-    phases: {}
-  };
+  if (projectId) {
+    obj[projectId] = {
+      name: undefined,
+      description: undefined,
+      phases: {}
+    };
+  } else {
+    obj["name"] = undefined;
+    obj["description"] = undefined;
+    obj["phases"] = {};
+  }
   return obj;
-};
-
-const assignProject = (org, projectId, source) => {
-  let obj = {};
-  obj[projectId] = source;
-  return Object.assign({}, org, obj);
 };
 
 const isEdited = rootProj => {
@@ -171,14 +190,21 @@ const generateLog = (obj, prefix = "") => {
   return obj;
 };
 
-const confirmLog = log => {
-  let logCopy = Object.assign({}, log);
+const confirmLogs = logs => {
   let projectLogs = {};
   let phaseLogs = {};
   let groupLogs = {};
   let taskLogs = {};
-  for (let projectId in logCopy) {
-    let project = logCopy[projectId];
+  if (!logs || logs.constructor !== Object)
+    return {
+      projectLogs,
+      phaseLogs,
+      groupLogs,
+      taskLogs
+    };
+  let logsCopy = Object.assign({}, logs);
+  for (let projectId in logsCopy) {
+    let project = logsCopy[projectId];
     if (project["phases"]) {
       for (let phaseId in project["phases"]) {
         let phase = project["phases"][phaseId];
@@ -215,6 +241,255 @@ const confirmLog = log => {
   };
 };
 
+const confirmLog = log => {
+  let projectLogs = {};
+  let phaseLogs = {};
+  let groupLogs = {};
+  let taskLogs = {};
+  if (!log || log.constructor !== Object)
+    return {
+      projectLogs,
+      phaseLogs,
+      groupLogs,
+      taskLogs
+    };
+  let projectCopy = Object.assign({}, log);
+  if (projectCopy["phases"]) {
+    for (let phaseId in projectCopy["phases"]) {
+      let phaseCopy = Object.assign({}, projectCopy["phases"][phaseId]);
+      if (phaseCopy["groups"]) {
+        for (let groupId in phaseCopy["groups"]) {
+          let groupCopy = Object.assign({}, phaseCopy["groups"][groupId]);
+          if (groupCopy["tasks"]) {
+            for (let taskId in groupCopy["tasks"]) {
+              let taskCopy = Object.assign({}, groupCopy["tasks"][taskId]);
+              let trimmedTaskLog = generateLog(taskCopy);
+              if (trimmedTaskLog) taskLogs[taskId] = { $set: trimmedTaskLog };
+            }
+            delete groupCopy["tasks"];
+          }
+          let trimmedGroupLog = generateLog(groupCopy);
+          if (trimmedGroupLog) groupLogs[groupId] = { $set: trimmedGroupLog };
+        }
+        delete phaseCopy["groups"];
+      }
+      let trimmedPhaseLog = generateLog(phaseCopy);
+      if (trimmedPhaseLog) phaseLogs[phaseId] = { $set: trimmedPhaseLog };
+    }
+    delete projectCopy["phases"];
+  }
+  let trimmedProjectLog = generateLog(projectCopy);
+  if (trimmedProjectLog) projectLogs[projectId] = { $set: trimmedProjectLog };
+  return {
+    projectLogs,
+    phaseLogs,
+    groupLogs,
+    taskLogs
+  };
+};
+
+const mergeLogs = (state, ids, logs) => {
+  const { projectIds, phaseIds, groupIds, taskIds } = ids;
+  const { projectLogs, phaseLogs, groupLogs, taskLogs } = logs;
+  for (let taskId in taskLogs) {
+    if (taskIds.includes(taskId)) {
+      updateTask(state, taskId, taskLogs[taskId]["$set"]);
+    }
+  }
+  for (let groupId in groupLogs) {
+    if (groupIds.includes(groupId)) {
+      updateGroup(state, groupId, groupLogs[groupId]["$set"]);
+    }
+  }
+  for (let phaseId in phaseLogs) {
+    if (phaseIds.includes(phaseId)) {
+      updatePhase(state, phaseId, phaseLogs[phaseId]["$set"]);
+    }
+  }
+  for (let projectId in projectLogs) {
+    if (projectIds.includes(projectId)) {
+      updateProject(state, projectId, projectLogs[projectId]["$set"]);
+    }
+  }
+};
+
+const updateProject = (state, projectId, update) => {
+  if (!update || update.constructor !== Object) return;
+  let projects = state.projects;
+  let projectLookup = state.projectLookup;
+  let projectLookupVector = projectLookup[projectId];
+  if (
+    projectLookupVector &&
+    projectLookupVector.constructor === Array &&
+    projectLookupVector.length === 1
+  ) {
+    let projectIndex = projectLookupVector[0];
+    for (let key in update) {
+      projects[projectIndex][key] = update[key];
+    }
+  } else {
+    nativeUpdateProject(state, projectId, update);
+  }
+};
+
+const updatePhase = (state, phaseId, update) => {
+  if (!update || update.constructor !== Object) return;
+  let projects = state.projects;
+  let phaseLookup = state.phaseLookup;
+  let phaseLookupVector = phaseLookup[phaseId];
+  if (
+    phaseLookupVector &&
+    phaseLookupVector.constructor === Array &&
+    phaseLookupVector.length === 2
+  ) {
+    let projectIndex = phaseLookupVector[0];
+    let phaseIndex = phaseLookupVector[1];
+    let projectId = projects[projectIndex]["_id"];
+    for (let key in update) {
+      projects[projectIndex]["phases"][phaseIndex][key] = update[key];
+      removeLog(state, { projectId, phaseId, field: key });
+    }
+  } else {
+    nativeUpdatePhase(state, phaseId, update);
+  }
+};
+
+const updateGroup = (state, groupId, update) => {
+  if (!update || update.constructor !== Object) return;
+  let projects = state.projects;
+  let groupLookup = state.groupLookup;
+  let groupLookupVector = groupLookup[groupId];
+  if (
+    groupLookupVector &&
+    groupLookupVector.constructor === Array &&
+    groupLookupVector.length === 3
+  ) {
+    let projectIndex = groupLookupVector[0];
+    let phaseIndex = groupLookupVector[1];
+    let groupIndex = groupLookupVector[2];
+    let projectId = projects[projectIndex]["_id"];
+    let phaseId = projects[projectIndex]["phases"][phaseIndex]["_id"];
+    for (let key in update) {
+      projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][key] =
+        update[key];
+      removeLog(state, { projectId, phaseId, groupId, field: key });
+    }
+  } else {
+    nativeUpdateGroup(state, groupId, update);
+  }
+};
+
+const updateTask = (state, taskId, update) => {
+  if (!update || update.constructor !== Object) return;
+  let projects = state.projects;
+  let taskLookup = state.taskLookup;
+  let taskLookupVector = taskLookup[taskId];
+  if (
+    taskLookupVector &&
+    taskLookupVector.constructor === Array &&
+    taskLookupVector.length === 4
+  ) {
+    let projectIndex = taskLookupVector[0];
+    let phaseIndex = taskLookupVector[1];
+    let groupIndex = taskLookupVector[2];
+    let taskIndex = taskLookupVector[3];
+    let projectId = projects[projectIndex]["_id"];
+    let phaseId = projects[projectIndex]["phases"][phaseIndex]["_id"];
+    let groupId =
+      projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex]["_id"];
+    for (let key in update) {
+      projects[projectIndex]["phases"][phaseIndex]["groups"][groupIndex][
+        "tasks"
+      ][taskIndex][key] = update[key];
+      removeLog(state, { projectId, phaseId, groupId, taskId, field: key });
+    }
+  } else {
+    nativeUpdateTask(state, taskId, update);
+  }
+};
+
+const nativeUpdateProject = (state, projectId, update) => {
+  let projects = state.projects;
+  for (let i = 0; i < projects.length; i++) {
+    if (projects[i]["_id"] === projectId) {
+      for (let key in update) {
+        projects[i][key] = update[key];
+        removeLog(state, { projectId, field: key });
+      }
+      return;
+    }
+  }
+};
+
+const nativeUpdatePhase = (state, phaseId, update) => {
+  let projects = state.projects;
+  for (let i = 0; i < projects.length; i++) {
+    for (let j = 0; j < projects[i]["phases"].length; j++) {
+      if (projects[i]["phases"][j]["_id"] === phaseId) {
+        let projectId = projects[i]["_id"];
+        for (let key in update) {
+          projects[i]["phases"][j][key] = update[key];
+          removeLog(state, { projectId, phaseId, field: key });
+        }
+        return;
+      }
+    }
+  }
+};
+
+const nativeUpdateGroup = (state, groupId, update) => {
+  let projects = state.projects;
+  for (let i = 0; i < projects.length; i++) {
+    let phases = projects[i]["phases"];
+    for (let j = 0; j < phases.length; k++) {
+      let groups = phases[j]["groups"];
+      for (let k = 0; k < groups.length; k++) {
+        if (groups[k]["_id"] === groupId) {
+          let projectId = projects[i]["_id"];
+          let phaseId = phases[j]["_id"];
+          for (let key in udpate) {
+            projects[i]["phases"][j]["groups"][k][key] = update[key];
+            removeLog(state, { projectId, phaseId, groupId, field: key });
+          }
+          return;
+        }
+      }
+    }
+  }
+};
+
+const nativeUpdateTask = (state, taskId, update) => {
+  let projects = state.projects;
+  for (let i = 0; i < projects.length; i++) {
+    let phases = projects[i]["phases"];
+    for (let j = 0; j < phases.length; k++) {
+      let groups = phases[j]["groups"];
+      for (let k = 0; k < groups.length; k++) {
+        let tasks = groups[k]["tasks"];
+        for (let l = 0; l < tasks.length; l++) {
+          if (tasks[l]["_id"] === taskId) {
+            let projectId = projects[i]["_id"];
+            let phaseId = phases[j]["_id"];
+            let groupId = groups[k]["_id"];
+            for (let key in update) {
+              projects[i]["phases"][j]["groups"][k]["tasks"][l][key] =
+                update[key];
+              removeLog(state, {
+                projectId,
+                phaseId,
+                groupId,
+                taskId,
+                field: key
+              });
+            }
+            return;
+          }
+        }
+      }
+    }
+  }
+};
+
 const logCount = rootProj => {
   if (!rootProj) return 0;
   let count = 0;
@@ -227,9 +502,9 @@ const logCount = rootProj => {
   return count;
 };
 
-const getTaskLog = (projects, projId, phaseId, groupId, taskId, field) => {
+const getTaskLog = (logs, projectId, phaseId, groupId, taskId, field) => {
   try {
-    return projects[projId]["phases"][phaseId]["groups"][groupId]["tasks"][
+    return logs[projectId]["phases"][phaseId]["groups"][groupId]["tasks"][
       taskId
     ][field];
   } catch (err) {
@@ -237,25 +512,25 @@ const getTaskLog = (projects, projId, phaseId, groupId, taskId, field) => {
   }
 };
 
-const getGroupLog = (projects, projId, phaseId, groupId, field) => {
+const getGroupLog = (logs, projectId, phaseId, groupId, field) => {
   try {
-    return projects[projId]["phases"][phaseId]["groups"][groupId][field];
+    return logs[projectId]["phases"][phaseId]["groups"][groupId][field];
   } catch (err) {
     return undefined;
   }
 };
 
-const getPhaseLog = (projects, projId, phaseId, field) => {
+const getPhaseLog = (logs, projectId, phaseId, field) => {
   try {
-    return projects[projId]["phases"][phaseId][field];
+    return logs[projectId]["phases"][phaseId][field];
   } catch (err) {
     return undefined;
   }
 };
 
-const getProjectLog = (projects, projId, field) => {
+const getProjectLog = (logs, projectId, field) => {
   try {
-    return projects[projId][field];
+    return projectId[projectId][field];
   } catch (err) {
     return undefined;
   }
@@ -451,11 +726,13 @@ const nativeAddTask = (state, groupId, task) => {
 const updateProjectLookup = (state, projectIndex, lookupId) => {
   let projectLookup = state.projectLookup;
   projectLookup[lookupId] = [projectIndex];
+  state.projectLookup = Object.assign({}, projectLookup);
 };
 
 const updatePhaseLookup = (state, projectIndex, phaseIndex, lookupId) => {
   let phaseLookup = state.phaseLookup;
   phaseLookup[lookupId] = [projectIndex, phaseIndex];
+  state.phaseLookup = Object.assign({}, phaseLookup);
 };
 
 const updateGroupLookup = (
@@ -467,6 +744,7 @@ const updateGroupLookup = (
 ) => {
   let groupLookup = state.groupLookup;
   groupLookup[lookupId] = [projectIndex, phaseIndex, groupIndex];
+  state.groupLookup = Object.assign({}, groupLookup);
 };
 
 const updateTaskLookup = (
@@ -479,6 +757,7 @@ const updateTaskLookup = (
 ) => {
   let taskLookup = state.taskLookup;
   taskLookup[lookupId] = [projectIndex, phaseIndex, groupIndex, taskIndex];
+  state.taskLookup = Object.assign({}, taskLookup);
 };
 
 const addProjectMembers = (state, projectId, members) => {
@@ -690,6 +969,8 @@ export {
   getProjectLog,
   logCount,
   confirmLog,
+  confirmLogs,
+  mergeLogs,
   addTask,
   addGroup,
   addPhase,

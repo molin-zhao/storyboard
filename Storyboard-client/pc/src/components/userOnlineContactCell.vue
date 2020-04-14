@@ -10,10 +10,17 @@
       </div>
       <div class="username">
         <span>{{ item.username }}</span>
+        <span
+          class="badge badge-warning"
+          style="margin-left: 5px; font-size: 12px; width: auto"
+          v-show="computedIsCreator"
+          >{{ $t("CREATOR") }}</span
+        >
       </div>
     </div>
     <div class="operation">
       <icon
+        v-show="computedMessageVisible"
         name="message"
         style="color: var(--main-color-blue)"
         @click.native.stop="chat"
@@ -25,6 +32,7 @@
 <script>
 import avatar from "@/components/avatar";
 import onlineStatus from "@/components/onlineStatus";
+import { mapState } from "vuex";
 export default {
   components: {
     avatar,
@@ -40,6 +48,7 @@ export default {
     }
   },
   computed: {
+    ...mapState("user", ["id"]),
     computedGender() {
       const { item } = this;
       return item.gender === "m" ? "male" : "female";
@@ -47,6 +56,14 @@ export default {
     computedGenderStyle() {
       const { item } = this;
       return item.gender === "m" ? "color: cornflowerblue" : "color: lightpink";
+    },
+    computedMessageVisible() {
+      const { id, item } = this;
+      return id !== item._id;
+    },
+    computedIsCreator() {
+      const { creator, item } = this;
+      return creator && creator._id === item._id;
     }
   },
   methods: {
@@ -110,7 +127,8 @@ export default {
       text-overflow: ellipsis;
       text-align: left;
       white-space: nowrap;
-      width: 95%;
+      max-width: 50%;
+      margin-left: 2px;
     }
   }
 }

@@ -69,7 +69,7 @@
                     style="width: 100%; height: 50px"
                   >
                     <search-input
-                      style="margin-left: 10%;height: 90%; width: 90%; border-radius: 10px"
+                      style="margin-left: 10%; height: 90%; width: 90%; border-radius: 10px"
                       :url="computedSearchUrl"
                       :data-source="searchResult"
                       :limit="5"
@@ -96,7 +96,7 @@
                     <div class="source-display" v-if="computedShowSearchResult">
                       <vue-scroll :ops="ops">
                         <div
-                          style="width: 90%; height: 50px"
+                          style="width: 100%; height: 50px"
                           v-for="item in searchResult[searchValue].data"
                           :key="item._id"
                         >
@@ -118,23 +118,22 @@
                     <div v-else></div>
                   </div>
                   <div style="width: 100%" v-else>
-                    <vue-scroll
-                      class="source-display"
-                      v-if="computedShowTeamResult"
-                    >
-                      <div
-                        style="width: 90%; height: 50px"
-                        v-for="item in teams[teamSelectIndex].members"
-                        :key="item._id"
-                      >
-                        <user-add-delete-cell
-                          :item="item"
-                          :exclude-list="projectMembers"
-                          @remove-user="removeUser"
-                          @add-user="addUser"
-                        />
-                      </div>
-                    </vue-scroll>
+                    <div class="source-display" v-if="computedShowTeamResult">
+                      <vue-scroll>
+                        <div
+                          style="width: 100%; height: 50px"
+                          v-for="item in teams[teamSelectIndex].members"
+                          :key="item._id"
+                        >
+                          <user-add-delete-cell
+                            :item="item"
+                            :exclude-list="projectMembers"
+                            @remove-user="removeUser"
+                            @add-user="addUser"
+                          />
+                        </div>
+                      </vue-scroll>
+                    </div>
                     <div v-else-if="computedShowTeamResultEmpty">
                       <span>{{ $t("NO_USER_FOUND") }}</span>
                     </div>

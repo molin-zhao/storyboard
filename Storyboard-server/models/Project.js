@@ -60,7 +60,7 @@ ProjectSchema.statics.fetchUserProjects = function (userId) {
         populate: {
           path: "tasks",
           populate: {
-            path: "members.member",
+            path: "members",
             model: "User",
             select: "_id username avatar gender",
           },
@@ -163,7 +163,7 @@ ProjectSchema.statics.createPhase = function (projectId, phaseDef, session) {
             populate: {
               path: "tasks",
               populate: {
-                path: "members.member",
+                path: "members",
                 model: "User",
               },
             },
@@ -204,7 +204,7 @@ ProjectSchema.statics.createGroup = function (phaseId, groupDef, session) {
           .populate({
             path: "tasks",
             populate: {
-              path: "members.member",
+              path: "members",
               model: "User",
             },
           })
@@ -234,7 +234,7 @@ ProjectSchema.statics.createTask = function (groupId, taskDef, session) {
       if (resp.ok === 1 && resp.nModified === 1) {
         const popluatedTask = task
           .populate({
-            path: "members.member",
+            path: "members",
             model: "User",
           })
           .execPopulate();
@@ -434,7 +434,7 @@ ProjectSchema.statics.fetchOnlineMembers = function (projectId) {
 
 ProjectSchema.statics.addProjectMembers = function (projectId, members) {
   return new Promise((resolve, reject) => {
-    return this.findByIdAndUpdate(
+    return Project.findByIdAndUpdate(
       projectId,
       {
         $addToSet: { members },
@@ -484,10 +484,11 @@ ProjectSchema.statics.saveProjectLogs = function (logs, session) {
       for (const key of keys) {
         const resp = await Project.updateOne(
           { _id: objectId(key) },
-          logs[key]
-        ).session(session);
+          logs[key],
+          { session }
+        );
         if (resp.ok === 1 && resp.nModified === 1) projectIds.push(key);
-        else continue;
+        else return reject();
       }
       return resolve(projectIds);
     } catch (err) {
@@ -504,12 +505,11 @@ ProjectSchema.statics.savePhaseLogs = function (logs, session) {
       if (keys.length === 0) return resolve([]);
       let phaseIds = [];
       for (const key of keys) {
-        const resp = await Phase.updateOne(
-          { _id: objectId(key) },
-          logs[key]
-        ).session(session);
+        const resp = await Phase.updateOne({ _id: objectId(key) }, logs[key], {
+          session,
+        });
         if (resp.ok === 1 && resp.nModified === 1) phaseIds.push(key);
-        else continue;
+        else return reject();
       }
       return resolve(phaseIds);
     } catch (err) {
@@ -526,12 +526,11 @@ ProjectSchema.statics.saveGroupLogs = function (logs, session) {
       if (keys.length === 0) return resolve([]);
       let groupIds = [];
       for (const key of keys) {
-        const resp = await Group.updateOne(
-          { _id: objectId(key) },
-          logs[key]
-        ).session(session);
+        const resp = await Group.updateOne({ _id: objectId(key) }, logs[key], {
+          session,
+        });
         if (resp.ok === 1 && resp.nModified === 1) groupIds.push(key);
-        else continue;
+        else return reject();
       }
       return resolve(groupIds);
     } catch (err) {
@@ -548,12 +547,11 @@ ProjectSchema.statics.saveTaskLogs = function (logs, session) {
       if (keys.length === 0) return resolve([]);
       let taskIds = [];
       for (const key of keys) {
-        const resp = await Task.updateOne(
-          { _id: objectId(key) },
-          logs[key]
-        ).session(session);
+        const resp = await Task.updateOne({ _id: objectId(key) }, logs[key], {
+          session,
+        });
         if (resp.ok === 1 && resp.nModified === 1) taskIds.push(key);
-        else continue;
+        else return reject();
       }
       return resolve(taskIds);
     } catch (err) {
@@ -563,4 +561,5 @@ ProjectSchema.statics.saveTaskLogs = function (logs, session) {
 };
 
 const Project = mongoose.model("Project", ProjectSchema);
+
 module.exports = Project;
