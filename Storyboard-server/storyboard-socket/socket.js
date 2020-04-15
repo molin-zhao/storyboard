@@ -7,14 +7,13 @@ const User = require("../models/User");
 
 const createSocketServer = (server, app) => {
   const io = socketIo(server);
-  io.on("connection", socket => {
+  io.on("connection", (socket) => {
     socket.on("establish-connection", async (client, callback) => {
       try {
         // must provide credentials
-        let token = client.token;
-        let user = client.id;
-        if (!token || !user) return socket.disconnect();
-        const tokenResp = await redisOps.getJwtToken(user);
+        const { id, token, userInfo, notifyList } = client;
+        if (!token || !id) return socket.disconnect();
+        const tokenResp = await redisOps.getJwtToken(id);
         if (tokenResp.status !== 200 || tokenResp.body.data !== token) {
           throw new Error(ERROR.USER_AUTHENTICATION_FAILED);
         }
@@ -22,13 +21,16 @@ const createSocketServer = (server, app) => {
         // 1. bind redis user <-> socket server
         // 2. bind mongodb user <-> status
         // 3. bind local user <-> socket
-        const nameResp = await redisOps.setSocketServer(user, SERVER_NAME);
+        const nameResp = await redisOps.setSocketServer(id, SERVER_NAME);
         if (nameResp.status !== 200) {
           throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
         }
-        await User.setOnline(user);
-        socket.user = user;
-        app.locals.user_socket[user] = socket;
+        await User.setOnline(id);
+        socket.user = id;
+        socket.userInfo = userInfo;
+        socket.notifyList = notifyList;
+        app.locals.user_socket[id] = socket;
+        notifyUser(app, userInfo, notifyList, "online");
         return callback(true);
       } catch (err) {
         console.log(err);
@@ -36,36 +38,49 @@ const createSocketServer = (server, app) => {
         return socket.disconnect();
       }
     });
+    socket.on("fetch-messages", async (userId) => {
+      try {
+        const messages = await Message.fetchMessages(userId);
+        socket.emit("receive-messages", messages, async (ack) => {
+          if (ack) {
+            // messages received, remove from db
+            const del_message = await Message.deleteMany({ _id: { $in: ack } });
+            console.log(del_message);
+          }
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    });
     socket.on("send-message", async (message, callback) => {
       try {
         const { to } = message; // user id;
-        const resp = await redisOps.getSocketServer(to._id);
+        const toUserId = to["_id"];
+        const resp = await redisOps.getSocketServer(toUserId);
         let serverName = resp.body.data;
         let unicastChannel = app.locals.unicast;
         let user_socket = app.locals.user_socket;
-        if (serverName === SERVER_NAME) {
+        if (serverName && serverName === SERVER_NAME) {
           // user is connected to this server
-          let to_socket = user_socket[to._id];
+          let to_socket = user_socket[toUserId];
           if (to_socket && to_socket.connected)
-            to_socket.emit("receive-message", message, async ack => {
-              if (ack) return callback(true);
-              return callback(false);
+            to_socket.emit("push-message", message, async (ack) => {
+              if (!ack) return callback(false);
+              return callback(true);
             });
         } else {
           // user is connected to other server or offline
           if (serverName && unicastChannel) {
             // connected to other server
-            const resp = await unicastChannel.publish(
+            await unicastChannel.publish(
               RABBITMQ_CLUSTER.EXCHANGE.UNICAST.NAME,
               serverName,
               message
             );
-            console.log(resp);
             callback(true);
           } else {
             // user is offline
-            const resp = await Message.createMessage(message);
-            console.log(resp);
+            await Message.createMessage(message);
             callback(true);
           }
         }
@@ -77,6 +92,8 @@ const createSocketServer = (server, app) => {
     socket.on("disconnect", async () => {
       try {
         let user = socket.user;
+        let userInfo = socket.userInfo;
+        let notifyList = socket.notifyList;
         if (app.locals.user_socket[user]) {
           app.locals.user_socket[user].disconnect();
           app.locals.user_socket[user] = undefined;
@@ -84,6 +101,7 @@ const createSocketServer = (server, app) => {
         }
         await redisOps.delSocketServer(user);
         await User.setOffline(user);
+        notifyUser(app, userInfo, notifyList, "offline");
       } catch (err) {
         console.log(err);
       }
@@ -94,16 +112,31 @@ const createSocketServer = (server, app) => {
 const processMessage = (message, app) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const { to } = message;
-      let socket = app.locals.user_socket[to];
+      const { type, to } = message;
+      let toId = "";
+      if (to && to.constructor === String) {
+        toId = to;
+      } else if (to && to.constructor === Object) {
+        toId = to["_id"];
+      } else {
+        // no dest user specified
+        // ignore this messasge
+        return resolve();
+      }
+      let socket = app.locals.user_socket[toId];
       if (socket && socket.connected) {
-        socket.emit("receive-message", message, ack => {
-          return resolve(ack);
-        });
+        if (type === "chat") {
+          socket.emit("push-message", message, (ack) => {
+            return resolve(ack);
+          });
+        } else {
+          socket.emit(type, message);
+          return resolve();
+        }
       } else {
         // user just offline or socket is not connected
-        const resp = await Message.createMessage(message);
-        return resolve(resp);
+        if (type === "chat") await Message.createMessage(message);
+        return resolve();
       }
     } catch (err) {
       return reject(err);
@@ -111,7 +144,28 @@ const processMessage = (message, app) => {
   });
 };
 
+const notifyUser = async (app, user, list, type = "online") => {
+  if (!list || list.constructor !== Array) return;
+  for (let userId in list) {
+    const resp = await redisOps.getSocketServer(userId);
+    let serverName = resp.body.data;
+    let unicastChannel = app.locals.unicast;
+    let user_socket = app.locals.user_socket;
+    if (serverName && serverName === SERVER_NAME) {
+      let to_socket = user_socket[userId];
+      if (to_socket && to_socket.connected)
+        to_socket.emit(type, { type, meta: user, to: userId });
+    } else if (serverName && unicastChannel) {
+      await unicastChannel.publish(
+        RABBITMQ_CLUSTER.EXCHANGE.UNICAST.NAME,
+        serverName,
+        { type, meta: user, to: userId }
+      );
+    }
+  }
+};
+
 module.exports = {
   createSocketServer,
-  processMessage
+  processMessage,
 };

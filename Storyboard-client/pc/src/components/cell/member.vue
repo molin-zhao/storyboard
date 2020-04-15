@@ -45,16 +45,6 @@
               <span style="font-size: 20px">{{
                 $t("NO_TASK_MEMBER_ALLOC")
               }}</span>
-              <a
-                class="text-primary"
-                style="
-                  display: flex; 
-                  flex-direction: row; 
-                  justifycontent: center; 
-                  align-items: center"
-                @click="showEditTaskMember"
-                ><icon name="add" />{{ $t("ASSIGN_TASK") }}</a
-              >
             </div>
             <vue-scroll v-else :ops="ops">
               <div

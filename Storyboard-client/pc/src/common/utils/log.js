@@ -762,15 +762,17 @@ const updateTaskLookup = (
 
 const addProjectMembers = (state, projectId, members) => {
   let projects = state.projects;
-  for (let i = 0; i < projects.length; i++) {
-    if (projects[i]["_id"] === projectId) {
-      if (projects["members"]) {
-        projects["members"] = projects["members"].concat(members);
-      } else {
-        projects["members"] = members;
-      }
-      break;
-    }
+  let projectLookup = state.projectLookup;
+  let projectLookupVector = projectLookup[projectId];
+  if (
+    projectLookupVector &&
+    projectLookupVector.constructor === Array &&
+    projectLookupVector.length === 1
+  ) {
+    let projectIndex = projectLookupVector[0];
+    projects[projectIndex]["members"] = members;
+  } else {
+    nativeUpdateProject(state, projectId, { members });
   }
 };
 

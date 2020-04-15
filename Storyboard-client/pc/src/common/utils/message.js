@@ -1,67 +1,93 @@
-const pushMessage = (state, message) => {
+const pushMessages = (state, msg) => {
   try {
-    let messages = state.messages;
-    const { from } = message;
-    if (messages[from._id]) {
-      messages[from._id]["username"] = from.username;
-      messages[from._id]["avatar"] = from.avatar;
-      messages[from._id]["gender"] = from.gender;
-      messages[from._id]["messages"] = messages[from._id]["messages"].concat(
-        message
-      );
-    } else {
-      messages[from._id] = {
-        username: from.username,
-        avatar: from.avatar,
-        gender: from.gender,
-        messages: [message]
-      };
+    if (msg.constructor === Object) {
+      pushMessage(state, msg);
+      return Object.assign({}, state.messages);
     }
+    if (msg.constructor === Array) {
+      for (let m of msg) {
+        pushMessage(state, m);
+      }
+      return Object.assign({}, state.messages);
+    }
+    return state.messages;
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
+    return state.messages;
   }
 };
 
-const removeMessasge = (state, message) => {
+const pushMessage = (state, msg) => {
+  let messages = state.messages;
+  const { from } = msg;
+  const fromId = from["_id"];
+  if (!messages[fromId]) {
+    messages[fromId] = {
+      username: from["username"],
+      avatar: from["avatar"],
+      gender: from["gender"],
+      messages: []
+    };
+  }
+  messages[fromId]["messages"] = messages[fromId]["messages"].concat({
+    read: false,
+    ...msg
+  });
+  if (messages[fromId]["username"] !== from["username"])
+    messages[fromId]["username"] = from["username"];
+  if (messages[fromId]["gender"] !== from["gender"])
+    messages[fromId]["gender"] = from["gender"];
+  if (messages[fromId]["avatar"] !== from["avatar"])
+    messages[fromId]["avatar"] = from["avatar"];
+};
+
+const removeMessage = (state, message) => {
   try {
     let messages = state.messages;
-    const { from, to } = message;
-    if (messages[to]) {
-      messages[to]["messages"] = messages[to]["messages"].filter(
-        m => m._id !== message._id
+    const { from, to, _id } = message;
+    const fromId = from["_id"];
+    const toId = to["_id"];
+    if (messages[toId]) {
+      messages[toId]["messages"] = messages[toId]["messages"].filter(
+        m => m["_id"] !== _id
       );
-    } else if (messages[from._id]) {
-      messages[from._id]["messages"] = messages[from._id]["messages"].filter(
-        m => m._id !== message._id
-      );
-    } else {
-      return;
+      return Object.assign({}, state.messages);
     }
+    if (messages[fromId]) {
+      messages[fromId]["messages"] = messages[fromId]["messages"].filter(
+        m => m["_id"] !== _id
+      );
+      return Object.assign({}, state.messages);
+    }
+    return state.messages;
   } catch (err) {
     console.log(err);
+    return state.messages;
   }
 };
 
-const pushMessages = (state, messageArr) => {};
-
+// append user sent messages
 const appendMessage = (state, message) => {
   try {
     let messages = state.messages;
-    const { from, to } = message;
-    if (messages[to._id]) {
-      messages[to._id]["messages"] = messages[to._id]["messages"].concat(
-        message
-      );
-    } else {
-      messages[to._id] = {
-        username: to.username,
-        avatar: to.avatar,
-        gender: to.gender,
-        messages: [message]
+    const { to } = message;
+    const toId = to["_id"];
+    if (!messages[toId]) {
+      messages[toId] = {
+        username: to["username"],
+        avatar: to["avatar"],
+        gender: to["gender"],
+        messages: []
       };
     }
+    messages[toId]["messages"] = messages[toId]["messages"].concat({
+      read: true,
+      ...message
+    });
+    return Object.assign({}, state.messages);
   } catch (err) {
     console.log(err);
+    return state.messages;
   }
 };
 
@@ -77,18 +103,39 @@ const createMessage = (type, content, from, to) => {
   };
 };
 
+const getUnreadCountByFromId = (messages, fromId) => {
+  let count = 0;
+  let msgFrom = messages[fromId];
+  if (!msgFrom) return null;
+  let msgs = msgFrom["messages"];
+  if (!msgs || msgs.length === 0) return null;
+  for (let msg of msgs) {
+    if (!msg["read"]) count++;
+  }
+  return count > 0 ? count : null;
+};
+
 const getUnreadCount = messages => {
   let count = 0;
-  if (!messages || messages.constructor !== Object) return null;
-  if (Object.keys(messages).length === 0) return null;
   for (let key in messages) {
-    let mArr = messages[key]["messages"];
-    for (let index in mArr) {
-      if (mArr[index]["read"]) continue;
-      count++;
+    let msgArr = messages[key]["messages"];
+    for (let msg of msgArr) {
+      if (!msg["read"]) count++;
     }
   }
   return count > 0 ? count : null;
+};
+
+const markAsRead = (state, id) => {
+  let messages = state.messages;
+  let msgFrom = messages[id];
+  if (!msgFrom) return state.messages;
+  let msgs = msgFrom["messages"];
+  if (!msgs || msgs.length === 0) return state.messages;
+  for (let msg in msgs) {
+    if (!msg["read"]) msg["read"] = true;
+  }
+  return Object.assign({}, state.messages);
 };
 
 const uuid = (len, radix) => {
@@ -124,9 +171,11 @@ const uuid = (len, radix) => {
 };
 
 export {
-  pushMessage,
+  pushMessages,
   createMessage,
   appendMessage,
-  removeMessasge,
-  getUnreadCount
+  removeMessage,
+  getUnreadCount,
+  getUnreadCountByFromId,
+  markAsRead
 };

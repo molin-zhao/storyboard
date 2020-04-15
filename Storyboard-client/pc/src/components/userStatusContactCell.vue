@@ -18,8 +18,13 @@
       </div>
     </div>
     <div class="operation">
+      <span :class="computedBadgeClass" style="font-size: 10px">{{
+        computedBadgeLabel
+      }}</span>
+    </div>
+    <div class="operation">
       <icon
-        v-show="!computedIsCreator"
+        v-show="computedShowMessage"
         name="message"
         style="color: var(--main-color-blue)"
         @click.native.stop="chat"
@@ -32,6 +37,7 @@
 import avatar from "@/components/avatar";
 import onlineStatus from "@/components/onlineStatus";
 import { stopPropagation } from "@/common/utils/mouse";
+import { mapState } from "vuex";
 export default {
   components: {
     avatar,
@@ -44,9 +50,18 @@ export default {
     },
     creator: {
       type: Object
+    },
+    memberStuck: {
+      type: Array,
+      default: () => []
+    },
+    memberDone: {
+      type: Array,
+      default: () => []
     }
   },
   computed: {
+    ...mapState("user", ["id"]),
     computedGender() {
       const { item } = this;
       return item.gender === "m" ? "male" : "female";
@@ -58,6 +73,22 @@ export default {
     computedIsCreator() {
       const { creator, item } = this;
       return creator && creator._id === item._id;
+    },
+    computedShowMessage() {
+      const { id, item } = this;
+      return id !== item._id;
+    },
+    computedBadgeClass() {
+      const { memberStuck, memberDone, item } = this;
+      if (memberStuck.includes(item._id)) return "badge badge-warning";
+      if (memberDone.includes(item._id)) return "badge badge-success";
+      return "badge badge-light";
+    },
+    computedBadgeLabel() {
+      const { memberStuck, memberDone, item } = this;
+      if (memberStuck.includes(item._id)) return this.$t("STATUS_STUCK");
+      if (memberDone.includes(item._id)) return this.$t("STATUS_DONE");
+      return this.$t("STATUS_WORKING");
     }
   },
   methods: {
@@ -99,7 +130,7 @@ export default {
   justify-content: center;
   align-items: center;
   flex-wrap: nowrap;
-  width: 65%;
+  width: 45%;
   height: 100%;
   div {
     width: 100%;
@@ -118,6 +149,7 @@ export default {
     width: 95%;
   }
 }
+
 .operation {
   display: flex;
   height: 100%;

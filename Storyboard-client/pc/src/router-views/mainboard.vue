@@ -122,16 +122,10 @@
                     @click.stop="saveProject"
                   >
                     <icon
-                      v-if="!computedIsSavingProject"
                       class="setting-icon"
                       name="save"
                       :style="computedSaveProjectBtnColor"
                     />
-                    <span
-                      v-else
-                      class="spinner-border spinner-border-sm setting-icon"
-                      :style="computedSaveProjectBtnColor"
-                    ></span>
                     <span
                       v-show="computedLogNumber"
                       class="badge badge-danger badge-pill"
@@ -147,7 +141,12 @@
                       "
                       >{{ computedLogNumber }}</span
                     >
-                    <span :style="computedSaveProjectBtnColor">{{
+                    <span
+                      v-if="computedIsSavingProject"
+                      class="spinner-border spinner-border-sm setting-icon"
+                      :style="computedSaveProjectBtnColor"
+                    ></span>
+                    <span :style="computedSaveProjectBtnColor" v-else>{{
                       $t("SAVE_PROJECT")
                     }}</span>
                   </a>
@@ -437,14 +436,6 @@ export default {
     $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
-  },
-  watch: {
-    projects: {
-      deep: true,
-      handler: function(newValue, oldValue) {
-        if (newValue) this.fetchOnlineUsers();
-      }
-    }
   }
 };
 </script>

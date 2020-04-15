@@ -108,10 +108,9 @@ export default {
       return false;
     },
     computedMessageFailed() {
-      // const { failedMessages, message } = this;
-      // if (failedMessages.indexOf(message._id) !== -1) return true;
-      // return false;
-      return true;
+      const { failedMessages, message } = this;
+      if (failedMessages.indexOf(message._id) !== -1) return true;
+      return false;
     },
     computedMessageSent() {
       const { message, id } = this;
@@ -139,7 +138,7 @@ export default {
       add_failed: "message/add_failed",
       remove_failed: "message/remove_failed",
       save_message: "message/save_message",
-      remove_message: "message/remove/message"
+      remove_message: "message/remove_message"
     }),
     mouseclick,
     hide,
@@ -163,7 +162,7 @@ export default {
     deleteMessage(message) {
       this.remove_pending(message._id);
       this.remove_failed(message._id);
-      this.remove_message(message._id);
+      this.remove_message(message);
     }
   },
   mounted() {

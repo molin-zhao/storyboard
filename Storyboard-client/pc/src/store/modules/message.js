@@ -1,7 +1,8 @@
 import {
-  pushMessage,
+  pushMessages,
   appendMessage,
-  removeMessasge
+  removeMessage,
+  markAsRead
 } from "@/common/utils/message";
 const state = {
   messages: {}, // tree
@@ -13,9 +14,9 @@ const getters = {};
 const actions = {
   restore_message: ({ commit }) => {
     try {
-      let state_message = localStorage.getItem("message");
-      if (state_message) {
-        commit("init_message", JSON.parse(state_message));
+      let storageMessage = localStorage.getItem("message");
+      if (storageMessage) {
+        commit("init_message", JSON.parse(storageMessage));
       } else {
         commit("init_message", {
           messages: {},
@@ -27,14 +28,14 @@ const actions = {
   }
 };
 const mutations = {
-  push_message(state, payload) {
-    pushMessage(state, payload);
+  push_messages(state, payload) {
+    state.messages = pushMessages(state, payload);
   },
   append_message(state, payload) {
-    appendMessage(state, payload);
+    state.messages = appendMessage(state, payload);
   },
   remove_message(state, payload) {
-    removeMessasge(state, payload);
+    state.messages = removeMessage(state, payload);
   },
   add_pending(state, payload) {
     state.pendingMessages = state.pendingMessages.concat(payload);
@@ -55,6 +56,9 @@ const mutations = {
     state.messages = payload.messages;
     state.pendingMessages = payload.pendingMessages;
     state.failedMessages = payload.failedMessages;
+  },
+  mark_read(state, payload) {
+    state.messages = markAsRead(state, payload);
   }
 };
 

@@ -1,5 +1,6 @@
 import io from "socket.io-client";
 import * as URL from "@/common/utils/url";
+import { parser } from "@/common/utils/array";
 import store from "@/store";
 
 const createSocketConnection = user => {
@@ -12,24 +13,32 @@ const createSocketConnection = user => {
     }
     const socket = io(URL.CONNECT_SOCKET(), {
       reconnection: true,
-      reconnectionDelay: 1000 * 60 * 2, // 2 minutes
-      reconnectionAttempts: Infinity,
-      reconnectionDelayMax: 1000 * 60 * 5
+      reconnectionDelay: 1000 * 60 * 5, // 5 minutes
+      reconnectionAttempts: 3,
+      reconnectionDelayMax: 1000 * 60 * 10
     });
     socket.emit("establish-connection", user, ack => {
-      if (!ack) socket.close();
+      if (!ack) return socket.close();
+      else console.log("connected");
     });
     socket.on("connect", () => {
-      console.log("try to connect to server");
+      console.log("connecting to server");
     });
     socket.on("disconnect", () => {
-      console.log("disconnected");
       socket.close();
       store.commit("user/remove_socket");
+      console.log("disconnected");
     });
-    socket.on("receive-message", (message, callback) => {
-      store.commit("message/push_message", message);
-      callback(true);
+    socket.on("receive-messages", (messages, callback) => {
+      store.commit("message/push_messages", messages);
+      store.commit("message/save_message");
+      const receivedMessageIds = parser(messages, "_id");
+      callback(receivedMessageIds);
+    });
+    socket.on("push-message", (message, callback) => {
+      store.commit("message/push_messages", message);
+      store.commit("message/save_message");
+      return callback(true);
     });
     return socket;
   } catch (err) {
@@ -38,12 +47,12 @@ const createSocketConnection = user => {
   }
 };
 
-const getNotifyMembers = projects => {
+const getNotifyMembers = (projects, exclude) => {
   let notifyMembers = {};
   projects.map(project => {
     let members = project["members"];
     members.map(member => {
-      notifyMembers[member._id] = "";
+      if (member._id !== exclude) notifyMembers[member._id] = "";
     });
   });
   return Object.keys(notifyMembers);

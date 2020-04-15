@@ -116,7 +116,8 @@ export default {
       add_pending: "message/add_pending",
       remove_pending: "message/remove_pending",
       add_failed: "message/add_failed",
-      remove_failed: "message/remove_failed"
+      remove_failed: "message/remove_failed",
+      mark_read: "message/mark_read"
     }),
     mouseclick,
     stopPropagation,
@@ -135,29 +136,23 @@ export default {
     },
     sendMessage(val) {
       const { socket, id, to, gender, avatar, username } = this;
-      console.log(socket);
       if (!socket)
         return this.$alert.show({
           type: "warning",
           message: this.$t("SEND_MESSAGE_ERROR"),
           interval: 5000
         });
-
-      let data = createMessage(
+      const data = createMessage(
         "chat",
         val,
-        {
-          _id: id,
-          gender,
-          avatar,
-          username
-        },
+        { _id: id, gender, avatar, username },
         to
       );
       this.add_pending(data._id);
       this.append_message(data);
       this.save_message();
       socket.emit("send-message", data, ack => {
+        console.log(ack);
         if (!ack) this.add_failed(data._id);
         this.remove_pending(data._id);
         this.save_message();
@@ -177,6 +172,15 @@ export default {
         } finally {
           this.loading = false;
         }
+      }
+    },
+    messages: {
+      deep: true,
+      handler: function(newValue, oldValue) {
+        console.log("message changed");
+        const { to } = this;
+        this.mark_read(to["_id"]);
+        this.save_message();
       }
     }
   }

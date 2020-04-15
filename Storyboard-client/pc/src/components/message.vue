@@ -15,42 +15,38 @@
 
 <script>
 import avatar from "@/components/avatar";
+import { mapState } from "vuex";
+import { getUnreadCountByFromId } from "@/common/utils/message";
 export default {
   components: {
     avatar
   },
   props: {
-    message: {
-      type: Object,
-      required: true
-    },
     from: {
       type: String,
       required: true
     }
   },
   computed: {
+    ...mapState("message", ["messages"]),
     computedUnreadMessageCount() {
-      const { message, from } = this;
-      let messageArr = message["messages"];
-      let count = 0;
-      for (let i = messageArr.length - 1; i >= 0; i--) {
-        if (!messageArr[i]["read"]) count++;
-      }
-      return count > 0 ? count : null;
+      const { from, messages } = this;
+      return getUnreadCountByFromId(messages, from);
     },
     computedLastMessage() {
-      const { message } = this;
-      let lastMessage = message["messages"].pop();
+      const { messages, from } = this;
+      let msgs = messages[from]["messages"];
+      if (!msgs || msgs.length === 0) return "";
+      let lastMessage = msgs[msgs.length - 1];
       return lastMessage ? lastMessage.content : "";
     },
     computedUsername() {
-      const { message, from } = this;
-      return message["username"];
+      const { messages, from } = this;
+      return messages[from]["username"];
     },
     computedUserAvatar() {
-      const { message } = this;
-      return message["avatar"];
+      const { messages, from } = this;
+      return messages[from]["avatar"];
     }
   }
 };

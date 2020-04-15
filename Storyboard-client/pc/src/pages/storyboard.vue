@@ -269,8 +269,7 @@ export default {
       };
     },
     computedUnreadMessageCount() {
-      const { messages } = this;
-      return getUnreadCount(messages);
+      return getUnreadCount(this.messages);
     }
   },
   async mounted() {
@@ -287,7 +286,8 @@ export default {
         createSocketConnection({
           id,
           token,
-          nList: getNotifyMembers(info.projects)
+          userInfo: info.user,
+          notifyList: getNotifyMembers(info.projects, id)
         })
       );
     } catch (err) {
