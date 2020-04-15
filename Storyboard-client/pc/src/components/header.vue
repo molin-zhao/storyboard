@@ -10,17 +10,20 @@
         />
         Storyboard
       </a>
-      <div v-if="id && token" class="avatar-wrapper ml-auto">
+      <!-- <div v-if="id && token" class="avatar-wrapper ml-auto">
         <span class="avatar-label">{{ $t("WELCOME") }}</span>
         <span class="avatar-label">{{ username }}</span>
         <avatar
           :src="avatar"
           style="width: 40px; height: 40px; border-radius: 20px"
         />
-      </div>
-      <div v-else class="ml-auto">
-        <ul class="navbar-nav header-items">
-          <li class="nav-item dropdown header-item">
+      </div> -->
+      <div class="ml-auto">
+        <div class="navbar-nav header-items">
+          <div>
+            <icon :name="computedLocalIcon" style="width: 20px; height: 20px" />
+          </div>
+          <div class="header-item dropdown">
             <a
               class="nav-link nav-link-custom dropdown-toggle nav-title"
               href="#"
@@ -29,8 +32,8 @@
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
+              style="margin-left: 5px"
             >
-              <icon name="lang" style="color: white" />
               {{ $t("LANGUAGE") }}
             </a>
             <div
@@ -45,31 +48,31 @@
                 >{{ $t("ZH_CN") }} {{ renderCurrentLocale("zh-CN") }}</a
               >
             </div>
-          </li>
-          <li
-            v-if="!isMobile"
-            :class="`nav-item header-item ${computedActiveLink('register')}`"
+          </div>
+          <div
+            v-show="!isMobile"
+            :class="`header-item ${computedActiveLink('register')}`"
           >
             <router-link
               class="nav-link nav-link-custom nav-title"
               to="/register"
-              >{{ $t("REGISTER") }}
-              <span class="sr-only">(current)</span></router-link
+              >{{ $t("REGISTER") }}</router-link
             >
-          </li>
-          <li v-if="!isMobile" class="nav-item header-item">
-            <a class="nav-link nav-link-custom nav-title">|</a>
-          </li>
-          <li
-            v-if="!isMobile"
-            :class="`nav-item header-item ${computedActiveLink('login')}`"
+          </div>
+          <div v-show="!isMobile">
+            <span style="font-size:30px; color: white">|</span>
+          </div>
+          <div
+            v-show="!isMobile"
+            :class="`header-item ${computedActiveLink('login')}`"
           >
-            <router-link class="nav-link nav-link-custom nav-title" to="/login"
-              >{{ $t("LOGIN") }}
-              <span class="sr-only">(current)</span></router-link
+            <router-link
+              class="nav-link nav-link-custom nav-title"
+              to="/login"
+              >{{ $t("LOGIN") }}</router-link
             >
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -98,6 +101,9 @@ export default {
         if (item === this.activeItem) return "nav-active";
         return "";
       };
+    },
+    computedLocalIcon() {
+      return this.$i18n.locale;
     }
   },
   methods: {
@@ -146,6 +152,12 @@ export default {
     flex-wrap: nowrap;
     .header-item {
       border: none;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 80px;
+      height: 100%;
       margin-left: 10px;
       margin-right: 10px;
     }

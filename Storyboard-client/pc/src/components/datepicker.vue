@@ -4,7 +4,7 @@
       <a @click.stop="prevMonth" style="cursor: pointer">
         <icon name="left" style="width: 2vw; height: 2vw; color: #A5C4EC" />
       </a>
-      <div class="display-only" style="font-family: kai">
+      <div class="display-only">
         <transition name="fade">
           <span v-if="showMonth">{{
             $t(`${month_name[displayMonthIndex]}`)

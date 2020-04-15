@@ -9,7 +9,7 @@ import { mapState, mapMutations } from "vuex";
 import { LOCAL_SECRET_LEN } from "@/common/config/crypto";
 import { decrypt } from "@/common/utils/form";
 export default {
-  name: "Storyboard-App",
+  name: "Cokework-App",
   mounted() {
     // check user credential
     this.checkCredentials();
@@ -69,7 +69,7 @@ body {
   color: #2c3e50;
   width: 100vw;
   height: 100vh;
-  font-family: kai;
+  font-family: "kai";
   min-width: 1024px;
   min-height: 600px;
   position: relative;
