@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <div class="header-nav">
+    <div class="header-nav display-only">
       <a class="navbar-brand nav-title" style="margin-left: 10px">
         <img
           src="/static/logo.png"
