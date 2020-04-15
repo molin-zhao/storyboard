@@ -10,15 +10,15 @@
         />
         Storyboard
       </a>
-      <!-- <div v-if="id && token" class="avatar-wrapper ml-auto">
+      <div v-if="id && token" class="avatar-wrapper ml-auto">
         <span class="avatar-label">{{ $t("WELCOME") }}</span>
         <span class="avatar-label">{{ username }}</span>
         <avatar
           :src="avatar"
           style="width: 40px; height: 40px; border-radius: 20px"
         />
-      </div> -->
-      <div class="ml-auto">
+      </div>
+      <div v-else class="ml-auto">
         <div class="navbar-nav header-items">
           <div>
             <icon :name="computedLocalIcon" style="width: 20px; height: 20px" />
@@ -60,7 +60,7 @@
             >
           </div>
           <div v-show="!isMobile">
-            <span style="font-size:30px; color: white">|</span>
+            <span style="font-size:30px; color: whitesmoke">|</span>
           </div>
           <div
             v-show="!isMobile"
@@ -163,7 +163,7 @@ export default {
     }
   }
   .nav-title {
-    color: white;
+    color: whitesmoke;
   }
   .nav-active {
     font-weight: bold;
@@ -173,7 +173,6 @@ a {
   cursor: pointer;
 }
 .avatar-wrapper {
-  width: 200px;
   height: 100%;
   display: flex;
   flex-direction: row;
@@ -182,7 +181,7 @@ a {
   margin-right: 10px;
   .avatar-label {
     color: whitesmoke;
-    margin-right: 5px;
+    margin-right: 10px;
   }
 }
 
