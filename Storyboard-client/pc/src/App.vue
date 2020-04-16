@@ -69,7 +69,7 @@ body {
   color: #2c3e50;
   width: 100vw;
   height: 100vh;
-  font-family: "kai";
+  font-family: sans-serif;
   min-width: 1024px;
   min-height: 600px;
   position: relative;
