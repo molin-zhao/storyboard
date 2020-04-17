@@ -13,6 +13,10 @@ import {
   editTaskMembers,
   mergeLogs
 } from "@/common/utils/log";
+import {
+  updateGlobalProjectMembers,
+  updateGlobalMemberStatus
+} from "@/common/utils/socket";
 const state = {
   projects: [],
   activeIndex: 0,
@@ -20,7 +24,8 @@ const state = {
   taskLookup: {}, // reverse index for task
   groupLookup: {}, // reverse index for group
   phaseLookup: {}, // reverse index for phase
-  projectLookup: {} // reverse index for project
+  projectLookup: {}, // reverse index for project
+  globalProjectMembers: {} // set of project members
 };
 
 const getters = {};
@@ -84,6 +89,13 @@ const mutations = {
   merge_logs(state, payload) {
     const { ids, logs } = payload;
     mergeLogs(state, ids, logs);
+  },
+  update_global_members(state, payload) {
+    state.globalProjectMembers = updateGlobalProjectMembers(state, payload);
+  },
+  update_global_member_status(state, payload) {
+    const { user, status } = payload;
+    state.globalProjectMembers = updateGlobalMemberStatus(state, user, status);
   }
 };
 

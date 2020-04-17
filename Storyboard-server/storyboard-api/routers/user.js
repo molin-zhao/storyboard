@@ -6,6 +6,7 @@ const redisOps = require("../../redisOps");
 const Project = require("../../models/Project");
 const Team = require("../../models/Team");
 const User = require("../../models/User");
+const Message = require("../../models/Message");
 
 /**
  * search user by username
@@ -36,7 +37,7 @@ router.get("/storyboard", verifyAuthorization, verifyUser, async (req, res) => {
     let data = {
       projects: userProjs,
       teams: userTeams,
-      user: userInfo
+      user: userInfo,
     };
     return handleSuccess(res, data);
   } catch (err) {
@@ -54,7 +55,7 @@ router.post("/profile", verifyAuthorization, verifyUser, async (req, res) => {
     let gender = req.body.gender;
     let avatar = req.body.avatar;
     const user = await User.findByIdAndUpdate(reqUser, {
-      $set: { username, gender, avatar }
+      $set: { username, gender, avatar },
     });
     handleSuccess(res, user);
   } catch (err) {
@@ -86,6 +87,46 @@ router.get("/online", async (req, res) => {
     const resp = await redisOps.getSocketServer(userId);
     if (resp.status === 200 && resp.body.data) return handleSuccess(res, true);
     return handleSuccess(res, false);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * get users online status by user ids
+ */
+router.post("/online", verifyAuthorization, async (req, res) => {
+  try {
+    let memberIds = req.body.memberIds;
+    const resp = await User.find({ _id: { $in: memberIds } }).select(
+      "_id online"
+    );
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * get message sent to the user
+ */
+router.get("/message", verifyAuthorization, async (req, res) => {
+  try {
+    let userId = req.query.id;
+    if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
+    const resp = await Message.fetchMessages(userId);
+    if (!resp || (resp.constructor === Array && resp.length === 0))
+      return handleSuccess(res, []);
+    let messageIds = [];
+    if (resp.constructor === Array) {
+      for (let msg of resp) {
+        messageIds.push(msg["_id"]);
+      }
+    } else {
+      messageIds.push(resp["_id"]);
+    }
+    await Message.deleteMany({ _id: { $in: messageIds } });
+    return handleSuccess(res, resp);
   } catch (err) {
     return handleError(res, err);
   }

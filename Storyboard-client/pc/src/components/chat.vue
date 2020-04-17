@@ -1,12 +1,6 @@
 <template>
   <div class="chat-wrapper" @click.stop="resetVisibleComponents">
-    <span
-      v-if="!to || loading"
-      class="spinner-border spinner-border-bg"
-      role="status"
-      aria-hidden="true"
-    ></span>
-    <div v-else class="chat">
+    <div class="chat">
       <div class="chat-user">
         <div class="chat-user-avatar-wrapper">
           <avatar
@@ -23,7 +17,10 @@
               style="color: cornflowerblue"
             />
             <icon v-else name="female" style="color: lightpink" />
-            <online-status style="margin-left: 5px" :status="onlineStatus" />
+            <online-status
+              style="margin-left: 5px"
+              :status="computedUserOnline"
+            />
           </div>
           <div class="chat-user-name">
             <span>{{ to["username"] }}</span>
@@ -103,10 +100,20 @@ export default {
       "socket"
     ]),
     ...mapState("message", ["messages", "pendingMessages", "failedMessages"]),
+    ...mapState("project", ["globalProjectMembers"]),
     computedMessages() {
       const { messages, to } = this;
       if (messages[to._id]) return messages[to._id]["messages"];
       return [];
+    },
+    computedUserOnline() {
+      const { globalProjectMembers, to } = this;
+      const userId = to["_id"];
+      const userOnline =
+        typeof globalProjectMembers[userId] === "undefined"
+          ? false
+          : globalProjectMembers[userId];
+      return userOnline;
     }
   },
   methods: {
@@ -160,20 +167,6 @@ export default {
     }
   },
   watch: {
-    async to(newVal, oldVal) {
-      if (newVal) {
-        try {
-          this.loading = true;
-          let url = URL.GET_USER_ONLINE(newVal._id);
-          const resp = await this.$http.get(url);
-          this.onlineStatus = resp.data.data;
-        } catch (err) {
-          console.log(err);
-        } finally {
-          this.loading = false;
-        }
-      }
-    },
     messages: {
       deep: true,
       handler: function(newValue, oldValue) {

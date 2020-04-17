@@ -2,12 +2,13 @@
   <div class="row-item-wrapper" :style="computedStyle">
     <div class="row-item" v-if="isType('TITLE_NAME')">
       <name
+        @click.native="showTaskDetail"
         :phase-index="phaseIndex"
         :group-id="groupId"
-        :editable="true"
+        :editable="false"
         :value="task.name"
         :task-id="task._id"
-        :default-value="$t('ADD_TASK_NAME')"
+        default-value="ADD_TASK_NAME"
         :color="color"
       />
     </div>
@@ -17,7 +18,7 @@
         :group-id="groupId"
         :status="task.status"
         :task-id="task._id"
-        :editable="true"
+        :editable="editable"
       />
     </div>
     <div class="row-item" v-else-if="isType('TITLE_MEMBER')">
@@ -33,7 +34,7 @@
         :phase-index="phaseIndex"
         :group-id="groupId"
         :priority="task.priority"
-        :editable="true"
+        :editable="editable"
         :task-id="task._id"
       />
     </div>
@@ -43,7 +44,7 @@
         :due-date="task.due_date"
         :phase-index="phaseIndex"
         :group-id="groupId"
-        :editable="true"
+        :editable="editable"
         :task-id="task._id"
       />
     </div>
@@ -55,7 +56,7 @@
         :start-date="task.start_date"
         :due-date="task.due_date"
         :task-id="task._id"
-        :editable="true"
+        :editable="editable"
       />
     </div>
     <div v-else></div>
@@ -98,6 +99,10 @@ export default {
     groupId: {
       type: String,
       required: true
+    },
+    editable: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {
@@ -108,6 +113,16 @@ export default {
     },
     computedStyle() {
       return `width: calc(${this.title.init_w} + ${this.title.offset_w}px); ${this.style};`;
+    }
+  },
+  methods: {
+    showTaskDetail() {
+      this.$task.show({
+        task: this.task,
+        groupId: this.groupId,
+        phaseIndex: this.phaseIndex,
+        editable: this.editable
+      });
     }
   }
 };

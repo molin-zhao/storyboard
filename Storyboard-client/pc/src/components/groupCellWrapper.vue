@@ -27,6 +27,7 @@
       :phase-index="phaseIndex"
       :group-id="groupId"
       style="border-right: 1px solid white;"
+      :editable="editable"
     />
   </div>
 </template>
@@ -59,6 +60,10 @@ export default {
     groupId: {
       type: String,
       default: ""
+    },
+    editable: {
+      type: Boolean,
+      default: false
     },
     showDeleteBtn: {
       type: Boolean,

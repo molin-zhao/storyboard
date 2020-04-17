@@ -131,6 +131,18 @@ export const GET_USER_ONLINE = userId => {
   return API_HOST + `/user/online?id=${userId}`;
 };
 
+export const GET_USER_MESSAGE = userId => {
+  return API_HOST + `/user/message?id=${userId}`;
+};
+
+export const POST_USER_ONLINE = () => {
+  return API_HOST + "/user/online";
+};
+
+export const GET_UESR_MESSAGE = userId => {
+  return API_HOST + `/user/message?id=${userId}`;
+};
+
 export const GET_PROJECT_ONLINE_MEMBERS = projectId => {
   return API_HOST + `/project/member/online?id=${projectId}`;
 };

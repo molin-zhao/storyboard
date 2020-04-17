@@ -23,6 +23,7 @@
               @popover-visible="groupSettingShow"
             >
               <tooltip
+                v-if="computedCanEdit"
                 background-color="white"
                 border-color="whitesmoke"
                 contentStyle="width: 200px; height: 250px; background-color: white;border-radius: 10px;box-shadow: -5px 2px 5px lightgrey; -webkit-box-shadow: -5px 2px 5px lightgrey;border: 1px solid whitesmoke"
@@ -84,6 +85,30 @@
                   </a>
                 </div>
               </tooltip>
+              <tooltip
+                v-else
+                background-color="white"
+                border-color="whitesmoke"
+                contentStyle="width: 200px; height: 50px; background-color: white;border-radius: 10px;box-shadow: -5px 2px 5px lightgrey; -webkit-box-shadow: -5px 2px 5px lightgrey;border: 1px solid whitesmoke"
+              >
+                <div class="settings-top-align">
+                  <a
+                    @click="collapseGroup"
+                    style="
+                    border-top: none;
+                    border-radius: 10px;
+                    border-bottom: none;
+                  "
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="collapse"
+                      style="color: grey"
+                    />
+                    <span style="color: grey">{{ $t("COLLAPSE_GROUP") }}</span>
+                  </a>
+                </div>
+              </tooltip>
             </popover>
           </badge-icon>
         </div>
@@ -91,6 +116,7 @@
         <div class="setting-group-label">
           <div>
             <editable-text
+              :editable="computedCanEdit"
               :default-value="$t('UNTITLE_GROUP', { index: groupIndex + 1 })"
               :value="computedGroupTitle"
               :input-style="`font-size: 18px; color: ${item.color}`"
@@ -148,15 +174,17 @@
             :phase-index="phaseIndex"
             :group-id="groupId"
             :show-delete-btn="showDeleteTask"
+            :editable="computedCanEdit"
           />
         </group-row>
         <!-- add a task -->
         <add-task
+          v-show="computedCanEdit"
           :titles="titles"
           :phase-index="phaseIndex"
           :group-id="groupId"
           :color="item.color"
-          :editable="true"
+          :editable="computedCanEdit"
           class="group-cell"
         />
       </div>
@@ -224,6 +252,12 @@ export default {
           plain: "triangledownfill"
         }
       };
+    },
+    computedCanEdit() {
+      const { id, projects, activeIndex } = this;
+      let project = projects[activeIndex];
+      let creator = project["creator"];
+      return creator["_id"] === id;
     }
   },
   props: {

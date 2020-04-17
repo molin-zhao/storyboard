@@ -1,11 +1,6 @@
 <template>
   <transition name="fade">
-    <div
-      v-show="visible"
-      class="chatbox"
-      :style="`font-family: ${font}`"
-      @click="hide"
-    >
+    <div v-show="visible" class="chatbox" @click="hide">
       <div class="chatbox-background">
         <transition name="sidebar">
           <div
@@ -79,6 +74,7 @@ export default {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  font-family: sans-serif;
 }
 .chatbox-background {
   display: flex;

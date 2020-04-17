@@ -1,31 +1,17 @@
 <template>
   <div class="name-cell-wrapper">
     <div class="group-color" :style="`background-color: ${color}`" />
-    <div class="name-cell">
-      <editable-text
-        :row="1"
-        :value="computedValue"
-        :editable="editable"
-        :default-value="defaultValue"
-        @input-change="inputChange"
-      />
+    <div class="name-cell display-only">
+      <span>{{ computedValue }}</span>
     </div>
   </div>
 </template>
 
 <script>
-import editableText from "@/components/editableText";
 import { mapState, mapMutations } from "vuex";
 import { getTaskLog } from "@/common/utils/log";
 export default {
-  components: {
-    editableText
-  },
   props: {
-    editable: {
-      type: Boolean,
-      default: true
-    },
     value: {
       type: String,
       default: ""
@@ -48,10 +34,6 @@ export default {
     },
     taskId: {
       type: String
-    },
-    newTask: {
-      type: Boolean,
-      default: false
     }
   },
   computed: {
@@ -59,6 +41,7 @@ export default {
     computedValue() {
       const {
         value,
+        defaultValue,
         projects,
         activeIndex,
         logs,
@@ -76,39 +59,8 @@ export default {
         taskId,
         "name"
       );
-      return logName ? logName : value;
-    }
-  },
-  methods: {
-    ...mapMutations({
-      add_log: "project/add_log",
-      remove_log: "project/remove_log"
-    }),
-    inputChange(val) {
-      const {
-        value,
-        projects,
-        activeIndex,
-        phaseIndex,
-        groupId,
-        taskId,
-        newTask
-      } = this;
-      if (newTask) return this.$emit("on-change", val);
-      let projectId = projects[activeIndex]._id;
-      let phaseId = projects[activeIndex]["phases"][phaseIndex]._id;
-      if (val === value) {
-        this.remove_log({ projectId, phaseId, groupId, taskId, field: "name" });
-      } else {
-        this.add_log({
-          projectId,
-          phaseId,
-          groupId,
-          taskId,
-          field: "name",
-          value: val
-        });
-      }
+      let taskName = value ? value : defaultValue;
+      return logName ? logName : taskName;
     }
   }
 };
@@ -128,9 +80,17 @@ export default {
     height: 100%;
     width: calc(100% - 4px);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
+    span {
+      width: 100%;
+      overflow: hidden;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+    }
   }
 }
 </style>

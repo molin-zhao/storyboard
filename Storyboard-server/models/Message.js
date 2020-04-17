@@ -44,7 +44,7 @@ MessageSchema.statics.createMessage = function (message) {
 
 MessageSchema.statics.fetchMessages = function (userId) {
   let id = objectId(userId);
-  return this.find({ from: id })
+  return this.find({ to: id })
     .populate({
       path: "from",
       select: "_id username avatar gender",
@@ -54,7 +54,7 @@ MessageSchema.statics.fetchMessages = function (userId) {
       path: "to",
       select: "_id username avatar gender",
       model: "User",
-    })
-    .execPopulate();
+    });
 };
+
 module.exports = mongoose.model("Message", MessageSchema);

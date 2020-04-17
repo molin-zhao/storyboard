@@ -17,6 +17,7 @@ import Toast from "@/plugins/toast";
 import Confirm from "@/plugins/confirm";
 import Chatbox from "@/plugins/chatbox";
 import Mailbox from "@/plugins/mailbox";
+import Task from "@/plugins/task";
 
 import store from "@/store";
 import router from "@/router";
@@ -28,9 +29,11 @@ Vue.use(Toast);
 Vue.use(Confirm);
 Vue.use(Chatbox);
 Vue.use(Mailbox);
+Vue.use(Task);
 Vue.use(VueScrollLock);
 Vue.use(VueResource);
 
+Vue.http.options.emulateJSON = true;
 Vue.http.interceptors.push(function(req, next) {
   if (this && this.token) req.headers.set("Authorization", this.token);
   next(res => {

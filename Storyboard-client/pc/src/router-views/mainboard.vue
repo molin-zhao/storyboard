@@ -88,6 +88,7 @@
           >
             <popover ref="more" style="right: 2.5vw; top: -20px;">
               <tooltip
+                v-if="computedCanEdit"
                 content-style="
                 width: 200px;
                 height: 200px;
@@ -175,6 +176,39 @@
                   </a>
                 </div>
               </tooltip>
+              <tooltip
+                v-else
+                content-style="
+                width: 200px;
+                height: 50px;
+                border-radius: 10px;
+                box-shadow: -5px 2px 5px lightgrey; 
+                -webkit-box-shadow: -5px 2px 5px lightgrey;
+                border: 1px solid whitesmoke;
+                "
+                arrow-placement="right"
+                arrow-position="top: calc(1.5vw)"
+                background-color="white"
+                border-color="whitesmoke"
+              >
+                <div class="settings-top-align">
+                  <a
+                    @click.stop="syncProject"
+                    style="
+                      border-top: none;
+                      border-radius: 10px;
+                      border-bottom: none;
+                    "
+                  >
+                    <icon
+                      class="setting-icon"
+                      name="refresh"
+                      style="color: grey;"
+                    />
+                    <span style="color: grey;">{{ $t("SYNC_PROJECT") }}</span>
+                  </a>
+                </div>
+              </tooltip>
             </popover>
           </badge-icon>
         </div>
@@ -187,6 +221,7 @@
           input-style="font-size: 25px;"
           :row="3"
           @input-change="descriptionChange"
+          :editable="computedCanEdit"
         />
       </div>
       <div class="mainboard-body">
@@ -347,6 +382,12 @@ export default {
       let project = projects[activeIndex];
       if (project) return project["creator"];
       return {};
+    },
+    computedCanEdit() {
+      const { id, projects, activeIndex } = this;
+      let project = projects[activeIndex];
+      let creator = project["creator"];
+      return creator["_id"] === id;
     }
   },
   methods: {

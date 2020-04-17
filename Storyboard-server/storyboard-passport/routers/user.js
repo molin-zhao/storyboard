@@ -7,7 +7,7 @@ const {
   REGISTER_HTML,
   REGISTER_LENGTH,
   REGISTER_SUBJECT,
-  REGISTER_TEMPLATE
+  REGISTER_TEMPLATE,
 } = require("../../config/code.config");
 const { CRYPTO } = require("../../config/encrypt.config");
 const {
@@ -17,7 +17,7 @@ const {
   isEmailOrPhone,
   decrypt,
   isPassword,
-  isPhone
+  isPhone,
 } = require("../../utils");
 const redisOps = require("../../redisOps");
 const { ERROR, handleError, handleSuccess } = require("../../response");
@@ -25,7 +25,7 @@ const {
   verifyAuthorization,
   verifyUser,
   getToken,
-  decodeToken
+  decodeToken,
 } = require("../../authenticate");
 const User = require("../../models/User");
 
@@ -178,7 +178,7 @@ router.post("/register/local", async (req, res) => {
         phone: account,
         password,
         avatar,
-        gender
+        gender,
       });
     } else {
       newUser = new User({
@@ -187,7 +187,7 @@ router.post("/register/local", async (req, res) => {
         email: account,
         password,
         avatar,
-        gender
+        gender,
       });
     }
     const user = await newUser.save(); // user contains all fields
@@ -199,7 +199,7 @@ router.post("/register/local", async (req, res) => {
       username: user.username,
       gender: user.gender,
       phone: user.phone,
-      email: user.email
+      email: user.email,
     };
     return handleSuccess(res, resData);
   } catch (err) {
@@ -264,7 +264,7 @@ router.post("/login/sms", async (req, res) => {
       username,
       email,
       phone,
-      gender
+      gender,
     };
     return handleSuccess(res, resData);
   } catch (err) {

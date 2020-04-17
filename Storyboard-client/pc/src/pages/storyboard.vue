@@ -217,10 +217,7 @@ import { eventBus } from "@/common/utils/eventBus";
 import { bell, ops } from "@/common/theme/style";
 import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
-import {
-  createSocketConnection,
-  getNotifyMembers
-} from "@/common/utils/socket";
+import { createSocketConnection } from "@/common/utils/socket";
 import { isEdited, generateLookup } from "@/common/utils/log";
 import { getUnreadCount } from "@/common/utils/message";
 export default {
@@ -250,7 +247,12 @@ export default {
       "phone",
       "email"
     ]),
-    ...mapState("project", ["projects", "activeIndex", "logs"]),
+    ...mapState("project", [
+      "projects",
+      "activeIndex",
+      "logs",
+      "globalProjectMembers"
+    ]),
     ...mapState("team", ["teams"]),
     ...mapState("message", ["messages"]),
     projectLabel() {
@@ -272,29 +274,9 @@ export default {
       return getUnreadCount(this.messages);
     }
   },
-  async mounted() {
-    try {
-      const { id, token } = this;
-      this.storyboardLoading = true;
-      const info = await this.fetchInfo();
-      this.reload_projects(info.projects);
-      this.reload_teams(info.teams);
-      this.add_userinfo(info.user);
-      this.save_userinfo(info.user);
-      this.restore_message();
-      this.add_socket(
-        createSocketConnection({
-          id,
-          token,
-          userInfo: info.user,
-          notifyList: getNotifyMembers(info.projects, id)
-        })
-      );
-    } catch (err) {
-      this.errorCode = err.status;
-    } finally {
-      this.storyboardLoading = false;
-    }
+  mounted() {
+    this.fetchInfo();
+    this.fetchMessage();
   },
   methods: {
     ...mapActions({
@@ -309,7 +291,11 @@ export default {
       add_lookup: "project/add_lookup",
       reload_teams: "team/reload_teams",
       add_userinfo: "user/add_userinfo",
-      add_socket: "user/add_socket"
+      add_socket: "user/add_socket",
+      update_global_members: "project/update_global_members",
+      update_global_member_status: "project/update_global_member_status",
+      push_messages: "message/push_messages",
+      save_message: "message/save_message"
     }),
     mouseover,
     mouseleave,
@@ -325,32 +311,126 @@ export default {
     resetVisibleComponents() {
       return eventBus.$emit("reset-visible-component");
     },
-    fetchInfo() {
-      return new Promise(async (resolve, reject) => {
-        try {
-          let url = URL.GET_USER_STORYBOARD(this.id);
-          const info = await this.$http.get(url);
-          return resolve(info.data.data);
-        } catch (err) {
-          return reject(err);
-        }
-      });
+    createSocket(user) {
+      const { id, token } = this;
+      const info = { id, token, user };
+      const options = {
+        online: this.userOnlineCallback,
+        offline: this.userOfflineCallback,
+        receiveMessage: this.userReceiveMessageCallback
+      };
     },
-    async reload() {
+    async fetchInfo() {
       try {
-        this.reloading = true;
-        const info = await this.fetchInfo();
+        const { id, token } = this;
+        const url = URL.GET_USER_STORYBOARD(id);
+        this.storyboardLoading = true;
+        const resp = await this.$http.get(url);
+        const info = resp.data.data;
         this.reload_projects(info.projects);
         this.reload_teams(info.teams);
         this.add_userinfo(info.user);
         this.save_userinfo(info.user);
+        this.add_socket(this.createSocket(info.user));
+      } catch (err) {
+        this.errorCode = err.status;
+      } finally {
+        this.storyboardLoading = false;
+      }
+    },
+    async fetchMessage() {
+      try {
+        const { id } = this;
         this.restore_message();
+        const url = URL.GET_USER_MESSAGE(id);
+        const resp = await this.$http.get(url);
+        const msg = resp.data.data;
+        this.push_messages(msg);
+        this.save_message();
+      } catch (err) {}
+    },
+    async reload() {
+      try {
+        const { id, token } = this;
+        const url = URL.GET_USER_STORYBOARD(id);
+        this.reloading = true;
+        const resp = await this.$http.get(url);
+        const info = resp.data.data;
+        this.reload_projects(info.projects);
+        this.reload_teams(info.teams);
+        this.add_userinfo(info.user);
+        this.save_userinfo(info.user);
+        this.add_socket(this.createSocket(info.user));
         this.errorCode = -1;
       } catch (err) {
         this.errorCode = err.status;
       } finally {
         this.reloading = false;
       }
+    },
+    async getNewMembersOnlineStatus(projects) {
+      try {
+        const { id, globalProjectMembers, socket } = this;
+        let newMembers = [];
+        for (let project of projects) {
+          let members = project["members"];
+          for (let member of members) {
+            let memberId = member["_id"];
+            if (
+              memberId !== id &&
+              typeof globalProjectMembers[memberId] === "undefined"
+            ) {
+              newMembers.push(memberId);
+            }
+          }
+        }
+        if (newMembers.length > 0) {
+          const resp = await this.$http.post(url, { memberIds: newMembers });
+          this.update_global_members(resp.data.data);
+          if (socket && socket.connected)
+            socket.emit("notify-list", newMembers);
+        }
+      } catch (err) {}
+    },
+    userOnlineCallback(user) {
+      const { globalProjectMembers } = this;
+      const userId = user["_id"];
+      if (!userId) return;
+      if (globalProjectMembers[userId] === false) {
+        let payload = { user, status: "online" };
+        this.update_global_member_status(payload);
+        this.$toast.show({
+          meta: user,
+          message: "online",
+          messageType: "online-offline",
+          interval: 5000
+        });
+      }
+    },
+    userOfflineCallback(user) {
+      const { globalProjectMembers } = this;
+      const userId = user["_id"];
+      if (!userId) return;
+      if (globalProjectMembers[userId] === true) {
+        let payload = { user, status: "offline" };
+        this.update_global_member_status(payload);
+        this.$toast.show({
+          meta: user,
+          message: "offline",
+          messageType: "online-offline",
+          interval: 5000
+        });
+      }
+    },
+    userReceiveMessageCallback(message) {
+      this.push_messages(message);
+      this.save_message();
+      this.$toast.show({
+        meta: message["from"],
+        message: message["content"],
+        messageType: "receive-message",
+        interval: 5000
+      });
     },
     logout() {
       this.$confirm.show({
@@ -390,9 +470,11 @@ export default {
         let oldProjectKeys = oldValue.map(pro => pro._id);
         let newProjectKeys = newValue.map(pro => pro._id);
         if (newProjectKeys.toString() !== oldProjectKeys.toString()) {
+          // root index changed
           const lookups = generateLookup(newValue);
           this.add_lookup(lookups);
         }
+        this.getNewMembersOnlineStatus(newValue);
       }
     }
   }

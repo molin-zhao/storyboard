@@ -27,6 +27,7 @@
             @input-change="nameChange"
             input-style="font-size: 18px"
             style="width: 100%; height: 100%; padding: 1px"
+            :editable="computedCanEdit"
           />
         </div>
         <div class="phase-description">
@@ -37,6 +38,7 @@
             input-style="font-size: 18px;"
             :row="5"
             @input-change="descriptionChange"
+            :editable="computedCanEdit"
           />
         </div>
         <div class="delete-phase-btn">
@@ -117,6 +119,12 @@ export default {
         "description"
       );
       return logPhaseDescription ? logPhaseDescription : phase.description;
+    },
+    computedCanEdit() {
+      const { projects, activeIndex, id } = this;
+      let project = projects[activeIndex];
+      let creator = project["creator"];
+      return creator["_id"] === id;
     }
   },
   methods: {

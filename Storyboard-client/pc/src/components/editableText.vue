@@ -1,13 +1,6 @@
 <template>
   <div ref="editableText" class="wrapper" :style="computedWrapperStyle">
-    <span
-      class="display-only"
-      v-show="!editing"
-      :style="computedTextLabelStyle"
-    >
-      {{ computedValue }}</span
-    >
-    <div v-show="editing && editable" class="input-wrapper">
+    <div v-if="editing && editable" class="input-wrapper">
       <input
         ref="input"
         v-if="row === 1"
@@ -30,6 +23,9 @@
         @input="onInput($event)"
       />
     </div>
+    <span class="display-only" v-else :style="computedTextLabelStyle">
+      {{ computedValue }}</span
+    >
   </div>
 </template>
 
@@ -70,17 +66,21 @@ export default {
       return this.defaultValue;
     },
     computedWrapperStyle() {
-      if (this.row === 1) {
+      const { row, editable } = this;
+      const cursor = editable ? "cursor: pointer" : "";
+      if (row === 1) {
         return `
         justify-content: center;
         align-items: flex-start;
         flex-wrap: nowrap;
+        ${cursor}
         `;
       } else {
         return `
         justify-content: flex-start;
         align-items: flex-start;
         flex-wrap: wrap;
+        ${cursor}
         `;
       }
     },
@@ -125,6 +125,7 @@ export default {
         this.$refs["editableText"].contains(target)
       ) {
         e.stopPropagation();
+        e.preventDefault();
         return this.beginEditing();
       } else {
         return this.endEditing();
@@ -142,6 +143,7 @@ export default {
       }
     },
     beginEditing() {
+      if (!this.editable) return;
       if (this.editing) return;
       // first time click, autofocus textinput
       this.editing = true;
@@ -191,9 +193,6 @@ export default {
   display: flex;
   flex-direction: column;
   position: relative;
-}
-.wrapper:hover {
-  cursor: pointer;
 }
 .input {
   width: 100%;

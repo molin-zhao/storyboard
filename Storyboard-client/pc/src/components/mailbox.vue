@@ -1,11 +1,6 @@
 <template>
   <transition name="fade">
-    <div
-      v-show="visible"
-      class="wrapper"
-      :style="`font-family: ${font}`"
-      @click="hide"
-    >
+    <div v-show="visible" class="wrapper" @click="hide">
       <div class="mailbox-background">
         <transition name="sidebar">
           <div
@@ -47,12 +42,6 @@ export default {
     chat,
     messageList
   },
-  props: {
-    font: {
-      type: String,
-      default: "kai"
-    }
-  },
   data() {
     return {
       visible: false,
@@ -93,6 +82,7 @@ export default {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  font-family: sans-serif;
 }
 .mailbox-background {
   display: flex;
