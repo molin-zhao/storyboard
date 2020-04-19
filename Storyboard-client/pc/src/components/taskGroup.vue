@@ -140,7 +140,11 @@
     >
       <div class="group-body">
         <transition-group class="group-title">
-          <a v-show="showDeleteTask" class="delete-task" key="ban">
+          <a
+            v-show="showDeleteTask && computedCanEdit"
+            class="delete-task"
+            key="ban"
+          >
             <icon
               name="ban"
               class="delete-task-icon"

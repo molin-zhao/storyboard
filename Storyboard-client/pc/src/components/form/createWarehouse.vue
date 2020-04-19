@@ -219,22 +219,12 @@
               <div class="selected-display" v-show="members.length > 0">
                 <label>{{ $t("ADDED_MEMBER") }}</label>
                 <div class="selected">
-                  <div
-                    class="selected-user"
+                  <user-avatar-cell
                     v-for="item in members"
                     :key="item._id"
-                    @click.stop="removeUser(item)"
-                    data-toggle="tooltip"
-                    data-placement="right"
-                    :title="computedTooltipTitle(item)"
-                  >
-                    <avatar
-                      style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover"
-                      :src="item.avatar"
-                      default-img="/static/image/user_empty.png"
-                    />
-                    <icon name="close" class="selected-user-remove" />
-                  </div>
+                    :item="item"
+                    @click.native.stop="removeUser(item)"
+                  />
                 </div>
               </div>
             </div>
@@ -265,16 +255,17 @@
 <script>
 import searchInput from "@/components/searchInput";
 import userAddDeleteCell from "@/components/userAddDeleteCell";
+import userAvatarCell from "@/components/userAvatarCell";
 import avatar from "@/components/avatar";
 import vueScroll from "vuescroll";
 import { mapState, mapMutations } from "vuex";
 import { parser } from "@/common/utils/array";
-import { sliceFromLeft } from "@/common/utils/string";
 import * as URL from "@/common/utils/url";
 export default {
   components: {
     searchInput,
     userAddDeleteCell,
+    userAvatarCell,
     vueScroll,
     avatar
   },
@@ -354,12 +345,6 @@ export default {
     computedMembers() {
       const { members } = this;
       return parser(members, "_id");
-    },
-    computedTooltipTitle() {
-      return function(item) {
-        // max length 10
-        return sliceFromLeft(item.username, 10);
-      };
     },
     computedCreateBtnClass() {
       const { createStatus } = this;

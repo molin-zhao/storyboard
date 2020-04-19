@@ -7,7 +7,7 @@
     aria-atomic="true"
   >
     <div class="toast-header">
-      <strong class="mr-auto">Bootstrap</strong>
+      <strong class="mr-auto">{{ $t("NOTIFICATION") }}</strong>
       <small>{{ $t("JUST_NOW") }}</small>
       <button
         @click.stop="resetTimer"
@@ -28,7 +28,7 @@
           />
         </div>
         <span class="user-name">{{ computedUsername }}</span>
-        <span class="online-label">{{ computedOnlineOffline }}</span>
+        <span class="online-label">{{ computedUserOnlineOffline }}</span>
       </div>
       <div class="toast-body-content" v-else-if="isType('receive-message')">
         <div class="user-avatar">
@@ -52,7 +52,7 @@
             :style="computedSaveProjectIconStyle"
           />
         </div>
-        <span class="save-project-text">{{ computedSaveProjectName }}</span>
+        <span class="save-project-text">{{ comoputedSaveProjectName }}</span>
         <span class="save-project-label">{{ computedSaveProjectLabel }}</span>
       </div>
       <div class="toast-body-content" v-else></div>
@@ -201,12 +201,14 @@ export default {
 @import "../common/theme/container.css";
 .toast-wrapper {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 10px;
+  right: 10px;
   z-index: 10048 !important;
   background-color: white;
   border: whitesmoke 1px solid;
   border-radius: 5px;
+  max-width: 350px;
+  min-width: 220px;
 }
 .toast-body-content {
   width: 100%;
@@ -219,7 +221,8 @@ export default {
     font-size: 14px;
   }
   .user-avatar {
-    width: 20%;
+    width: 15%;
+    min-width: 25px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -227,14 +230,14 @@ export default {
     align-items: center;
   }
   .user-name {
-    max-width: 40%;
+    width: 45%;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     color: lightgrey;
   }
   .message-label {
-    width: 40%;
+    width: 35%;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -249,7 +252,7 @@ export default {
     color: black;
   }
   .user-message {
-    max-width: 40%;
+    max-width: 50%;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

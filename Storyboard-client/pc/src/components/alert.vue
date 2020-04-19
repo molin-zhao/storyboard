@@ -1,7 +1,9 @@
 <template>
   <div
     :class="
-      `alert alert-${type} alert-dismissible fade ${visible ? 'show' : null}`
+      `alert alert-${type} alert-dismissible fade ${
+        visible ? 'show' : null
+      } shadow`
     "
   >
     <span v-if="message" class="display-only">{{ message }}</span>

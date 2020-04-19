@@ -11,12 +11,7 @@
           <span class="badge badge-pill badge-warning">{{ $t("EDITED") }}</span>
         </h5>
         <div class="mainboard-title-right">
-          <div
-            class="online-user"
-            data-toggle="tooltip"
-            data-placement="bottom"
-            :title="$t('ONLINE_MEMBER')"
-          >
+          <div class="online-user" v-tooltip:bottom="$t('ONLINE_MEMBER')">
             <badge-icon
               :wrapper-style="group.wrapperStyle"
               :icon-style="group.iconStyle"
@@ -472,11 +467,6 @@ export default {
     gotoEditProfile() {
       this.$router.push({ name: "account" });
     }
-  },
-  mounted() {
-    $(document).ready(function() {
-      $('[data-toggle="tooltip"]').tooltip();
-    });
   }
 };
 </script>

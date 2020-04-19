@@ -59,6 +59,7 @@ export default {
           this.$emit("input-change", value);
           this.timer = null;
           let trimmedVal = value.trim(" ");
+          // local strategy without http request
           if (this.searchStrategy) return this.searchStrategy(trimmedVal);
           if (
             this.dataSource[trimmedVal] != null &&

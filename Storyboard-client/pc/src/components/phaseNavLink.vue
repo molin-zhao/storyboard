@@ -256,7 +256,8 @@ export default {
 }
 .attention {
   position: absolute;
-  left: 10px;
+  width: 15%;
+  left: 0;
 }
 
 .phase-name {

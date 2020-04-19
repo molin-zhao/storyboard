@@ -74,7 +74,14 @@ const createSocketServer = (server, app) => {
       }
     });
     socket.on("notify-list", (list) => {
-      socket.notifyList = list;
+      let oldList = socket.notifyList;
+      let newList = null;
+      if (oldList && oldList.constructor === Array) {
+        newList = oldList.concat(list);
+      } else {
+        newList = list;
+      }
+      socket.notifyList = newList;
       let userInfo = socket.userInfo;
       notifyUser(app, userInfo, list, "online");
     });

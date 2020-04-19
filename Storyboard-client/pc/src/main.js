@@ -24,6 +24,13 @@ import router from "@/router";
 import i18n from "@/i18n";
 
 Vue.config.productionTip = false;
+Vue.directive("tooltip", function(el, binding) {
+  $(el).tooltip({
+    title: binding.value,
+    placement: binding.arg,
+    trigger: "hover"
+  });
+});
 Vue.use(Alert);
 Vue.use(Toast);
 Vue.use(Confirm);

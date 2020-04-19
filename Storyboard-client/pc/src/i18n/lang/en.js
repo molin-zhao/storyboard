@@ -178,6 +178,10 @@ export default {
   EXPORT_PROJECT: "Export",
   IMPORT_PROJECT: "Import",
   SAVE_PROJECT: "Save",
+  NOTIFICATION: "Notification",
+  JUST_NOW: "just now",
+  SHOW_ALL_TASK: "show all task(s)",
+  SHOW_MY_TASK: "only show my task(s)",
 
   CHANGE_GROUP_COLOR: "Change color",
   COLLAPSE_GROUP: "Collapse group",
@@ -217,6 +221,7 @@ export default {
   EDIT_TASK_MEMBER: "Edit task member(s)",
   TASK_MEMBERS: "Task members",
   NO_TASK_MEMBER_ALLOC: "Task temporarily not assigned",
+  NO_TASK_OF_MINE: "You are not being assigned to any tasks",
   ASSIGN_TASK: "Allot task",
   CREATE_PROJECT: "Create new project",
   CREATE_PHASE: "Create new phase",

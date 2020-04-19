@@ -136,7 +136,7 @@ export default {
   MAIN_EDIT_SETTING: "更改系统偏好设置",
   EDITED: "已编辑",
   SAVED: "已保存",
-  UNSAVED: "Unsaved",
+  UNSAVED: "未保存",
 
   PROJECT_NAME: "项目名称：",
   PHASE_NAME: "阶段名称：",
@@ -177,6 +177,10 @@ export default {
   EXPORT_PROJECT: "导出",
   IMPORT_PROJECT: "导入",
   SAVE_PROJECT: "保存",
+  NOTIFICATION: "通知",
+  JUST_NOW: "刚刚",
+  SHOW_ALL_TASK: "显示全部任务",
+  SHOW_MY_TASK: "仅显示我的任务",
 
   CHANGE_GROUP_COLOR: "更改颜色",
   COLLAPSE_GROUP: "折叠该组",
@@ -212,6 +216,7 @@ export default {
   EDIT_TASK_MEMBER: "编辑任务人员",
   TASK_MEMBERS: "任务人员列表",
   NO_TASK_MEMBER_ALLOC: "暂时没有任务负责人",
+  NO_TASK_OF_MINE: "没有委派给我的任务",
   ASSIGN_TASK: "任务分配",
   CREATE_PROJECT: "创建新项目",
   CREATE_PHASE: "创建新阶段",

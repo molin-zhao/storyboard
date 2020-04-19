@@ -1,7 +1,9 @@
 const parser = (array, field) => {
   if (array.constructor !== Array || field.constructor !== String)
     throw new Error("args invalid");
-  return array.map((item) => item[field]);
+  if (array.length === 0) return [];
+  if (!field) return array;
+  return array.map(item => item[field]);
 };
 
 const isEqual = (objX, objY, params = []) => {
@@ -25,16 +27,16 @@ const arrayEqual = (arrA, arrB, params = []) => {
   if (arrA === arrB) return true;
   if (arrA.length !== arrB.length) return false;
   if (params.length > 0) {
-    params.forEach((param) => {
-      let arrAWithParam = arrA.map((val) => val[param]);
-      let arrBWithParam = arrB.map((val) => val[param]);
-      arrAWithParam.forEach((val) => {
+    params.forEach(param => {
+      let arrAWithParam = arrA.map(val => val[param]);
+      let arrBWithParam = arrB.map(val => val[param]);
+      arrAWithParam.forEach(val => {
         if (arrBWithParam.indexOf(val) === -1) return false;
       });
     });
     return true;
   }
-  arrA.forEach((val) => {
+  arrA.forEach(val => {
     if (arrB.indexOf(val) === -1) {
       return false;
     }
@@ -42,4 +44,9 @@ const arrayEqual = (arrA, arrB, params = []) => {
   return true;
 };
 
-export { parser, isEqual, arrayEqual };
+const arrayFilter = (arr, callback) => {
+  if (!arr || arr.constructor !== Array) return [];
+  return arr.filter(val => callback(val));
+};
+
+export { parser, isEqual, arrayEqual, arrayFilter };

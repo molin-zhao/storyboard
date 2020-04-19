@@ -121,11 +121,6 @@ export default {
         });
       }
     }
-  },
-  watch: {
-    editable(newVal, oldVal) {
-      console.log(newVal);
-    }
   }
 };
 </script>

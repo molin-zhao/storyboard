@@ -142,22 +142,12 @@
                 </div>
               </div>
               <div class="selected" v-if="projectMembers.length > 0">
-                <div
-                  class="selected-user"
+                <user-avatar-cell
                   v-for="item in projectMembers"
                   :key="item._id"
-                  @click.stop="removeUser(item)"
-                  data-toggle="tooltip"
-                  data-placement="right"
-                  :title="computedTooltipTitle(item)"
-                >
-                  <avatar
-                    style="width: 50px; height: 50px; border-radius: 5px; object-fit: cover"
-                    :src="item.avatar"
-                    default-img="/static/image/user_empty.png"
-                  />
-                  <icon name="close" class="selected-user-remove" />
-                </div>
+                  :item="item"
+                  @click.native.stop="removeUser(item)"
+                />
               </div>
             </div>
           </form>
@@ -189,16 +179,17 @@
 <script>
 import searchInput from "@/components/searchInput";
 import userAddDeleteCell from "@/components/userAddDeleteCell";
+import userAvatarCell from "@/components/userAvatarCell";
 import avatar from "@/components/avatar";
 import vueScroll from "vuescroll";
 import { mapState, mapMutations } from "vuex";
 import { parser } from "@/common/utils/array";
-import { sliceFromLeft } from "@/common/utils/string";
 import * as URL from "@/common/utils/url";
 export default {
   components: {
     searchInput,
     userAddDeleteCell,
+    userAvatarCell,
     vueScroll,
     avatar
   },
@@ -276,12 +267,6 @@ export default {
     computedProjectMembers() {
       const { projectMembers } = this;
       return parser(projectMembers, "_id");
-    },
-    computedTooltipTitle() {
-      return function(item) {
-        // max length 10
-        return sliceFromLeft(item.username, 10);
-      };
     },
     computedCreateBtnClass() {
       const { projectCreateStatus } = this;
@@ -410,22 +395,5 @@ export default {
   justify-content: flex-start;
   align-items: flex-start;
   margin-top: 20px;
-  .selected-user {
-    cursor: pointer;
-    width: 20%;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    .selected-user-remove {
-      position: absolute;
-      top: 0px;
-      right: 10px;
-      width: 20px;
-      height: 20px;
-      font-weight: bold;
-    }
-  }
 }
 </style>
