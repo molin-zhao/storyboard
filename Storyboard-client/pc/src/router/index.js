@@ -19,7 +19,7 @@ const team = () => import("@/router-views/team");
 // const error = () => import("@/router-views/error");
 // const login = () => import("@/pages/login");
 // const register = ()=> import("@/pages/register");
-import index from "@/router-view/index";
+import index from "@/router-views/index";
 import error from "@/router-views/error";
 import login from "@/pages/login";
 import register from "@/pages/register";
