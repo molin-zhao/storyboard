@@ -9,16 +9,20 @@ Vue.use(vueRouter);
 
 const home = () => import("@/pages/home");
 const storyboard = () => import("@/pages/storyboard");
-const index = () => import("@/router-views/index");
-const error = () => import("@/router-views/error");
 const mobile = () => import("@/router-views/mobile");
-const login = () => import("@/pages/login");
-const register = () => import("@/pages/register");
 const settings = () => import("@/router-views/settings");
 const profile = () => import("@/router-views/profile");
 const mainboard = () => import("@/router-views/mainboard");
 const warehouse = () => import("@/router-views/warehouse");
 const team = () => import("@/router-views/team");
+// const index = () => import("@/router-views/index");
+// const error = () => import("@/router-views/error");
+// const login = () => import("@/pages/login");
+// const register = ()=> import("@/pages/register");
+import index from "@/router-view/index";
+import error from "@/router-views/error";
+import login from "@/pages/login";
+import register from "@/pages/register";
 
 const router = new vueRouter({
   mode: "history",
