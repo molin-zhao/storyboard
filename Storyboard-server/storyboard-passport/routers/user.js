@@ -37,6 +37,10 @@ router.get("/token/verify", async (req, res) => {
     let token = req.query.token;
     const decoded = await decodeToken(token);
     let userId = decoded._id;
+    const tokenLookup = await redisOps.getJwtToken(userId);
+    if (tokenLookup.status !== 200) throw new Error(ERROR.SERVER_ERROR);
+    if (tokenLookup.body.data !== token) throw new Error(ERROR.UNAUTHORIZED);
+    // verified, token is valid
     let exp = decoded.exp;
     let now = Math.round(Date.now() / 1000);
     let willExp = exp - now;
@@ -44,18 +48,15 @@ router.get("/token/verify", async (req, res) => {
       try {
         let newToken = getToken({ _id: userId });
         const renewResp = await redisOps.setJwtToken(userId, newToken);
-        if (renewResp.status === 200) {
-          // successfully renewed token
-          let newCred = { id: userId, token: newToken };
-          return handleSuccess(res, newCred, 201);
-        }
+        // successfully renewed token
+        let newCred = { id: userId, token: newToken };
+        return handleSuccess(res, newCred, 201);
       } catch (err) {
         // cannot renew token but current token is valid
         return handleSuccess(res);
       }
-    } else {
-      return handleSuccess(res);
     }
+    return handleSuccess(res);
   } catch (err) {
     return handleError(res, err);
   }

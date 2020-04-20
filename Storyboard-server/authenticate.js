@@ -4,13 +4,13 @@ const redisOps = require("./redisOps");
 const { AUTH } = require("./config/redis-cluster.config");
 const { ERROR, handleError } = require("./response");
 
-const getToken = cred => {
+const getToken = (cred) => {
   return jwt.sign(cred, JSONWEBTOKEN.SECRETKEY, {
-    expiresIn: JSONWEBTOKEN.MAX_AGE
+    expiresIn: JSONWEBTOKEN.MAX_AGE,
   });
 };
 
-const decodeToken = token => {
+const decodeToken = (token) => {
   return new Promise((resolve, reject) => {
     return jwt.verify(token, JSONWEBTOKEN.SECRETKEY, (err, decoded) => {
       if (err) return reject(ERROR.UNAUTHORIZED);
@@ -24,22 +24,16 @@ const verifyAuthorization = async (req, res, next) => {
     let token = req.headers.authorization;
     if (!token) throw new Error(ERROR.UNAUTHORIZED);
     const decoded = await decodeToken(token);
-    let tokenUser = decoded._id;
-    const tokenLookup = await redisOps.getJwtToken(tokenUser);
-    if (tokenLookup.status !== 200)
-      throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-    if (tokenLookup.body.data !== token) throw new Error(ERROR.UNAUTHORIZED);
-    // verified, token is valid
     req.user = decoded;
     return next();
   } catch (err) {
     if (err.message === ERROR.UNAUTHORIZED) {
       return res.status(401).json({
-        message: err.message
+        message: err.message,
       });
     } else {
       return res.status(500).json({
-        message: err.message ? err.message : ERROR.SERVER_ERROR
+        message: err.message ? err.message : ERROR.SERVER_ERROR,
       });
     }
   }
@@ -60,7 +54,7 @@ const verifyUser = (req, res, next) => {
   let requestUser = req.query.user || req.body.user;
   if (tokenUser !== requestUser)
     return res.status(403).json({
-      message: ERROR.FORBIDDEN
+      message: ERROR.FORBIDDEN,
     });
   return next();
 };
@@ -70,5 +64,5 @@ module.exports = {
   decodeToken,
   verifyAuthorization,
   verifyUser,
-  verifyRedisAuth
+  verifyRedisAuth,
 };

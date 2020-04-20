@@ -26,9 +26,7 @@
           <div class="header-item dropdown">
             <a
               class="nav-link nav-link-custom dropdown-toggle nav-title"
-              href="#"
               id="navbarDropdownMenuLink"
-              role="button"
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
@@ -114,7 +112,7 @@ export default {
     },
     renderCurrentLocale(localeId) {
       if (this.$i18n.locale === localeId) {
-        return "✔";
+        return "✓";
       }
     }
   },
@@ -156,7 +154,8 @@ export default {
       flex-direction: row;
       justify-content: center;
       align-items: center;
-      width: 60px;
+      max-width: 100px;
+      min-width: 60px;
       height: 100%;
       margin-left: 5px;
       margin-right: 5px;
@@ -164,6 +163,8 @@ export default {
   }
   .nav-title {
     color: whitesmoke;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
   .nav-active {
     font-weight: bold;
