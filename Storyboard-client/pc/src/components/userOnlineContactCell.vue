@@ -6,7 +6,7 @@
     <div class="user-meta">
       <div class="status">
         <icon :name="computedGender" :style="computedGenderStyle" />
-        <online-status style="margin-left: 5px" :status="item.online" />
+        <online-status style="margin-left: 5px" :status="computedIsOnline" />
       </div>
       <div class="username">
         <span>{{ item.username }}</span>
@@ -48,7 +48,7 @@ export default {
     }
   },
   computed: {
-    ...mapState("user", ["id"]),
+    ...mapState("user", ["id", "socket"]),
     computedGender() {
       const { item } = this;
       return item.gender === "m" ? "male" : "female";
@@ -64,6 +64,11 @@ export default {
     computedIsCreator() {
       const { creator, item } = this;
       return creator && creator._id === item._id;
+    },
+    computedIsOnline() {
+      const { item, id, socket } = this;
+      if (id === item._id) return socket && socket.connected;
+      return item.online;
     }
   },
   methods: {

@@ -62,8 +62,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../common/theme/color.css";
-@import "../common/theme/container.css";
 .wrapper {
   display: flex;
   flex-direction: column;

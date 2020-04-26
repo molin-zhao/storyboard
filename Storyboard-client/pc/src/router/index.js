@@ -9,16 +9,6 @@ Vue.use(vueRouter);
 
 const home = () => import("@/pages/home");
 const storyboard = () => import("@/pages/storyboard");
-const mobile = () => import("@/router-views/mobile");
-const settings = () => import("@/router-views/settings");
-const profile = () => import("@/router-views/profile");
-const mainboard = () => import("@/router-views/mainboard");
-const warehouse = () => import("@/router-views/warehouse");
-const team = () => import("@/router-views/team");
-// const index = () => import("@/router-views/index");
-// const error = () => import("@/router-views/error");
-// const login = () => import("@/pages/login");
-// const register = ()=> import("@/pages/register");
 import index from "@/router-views/index";
 import error from "@/router-views/error";
 import login from "@/pages/login";
@@ -34,10 +24,6 @@ const router = new vueRouter({
         {
           path: "",
           component: index
-        },
-        {
-          path: "mobile",
-          component: mobile
         },
         {
           path: "error/:code",
@@ -57,34 +43,7 @@ const router = new vueRouter({
     },
     {
       path: "/storyboard",
-      component: storyboard,
-      children: [
-        {
-          path: "",
-          name: "mainboard",
-          component: mainboard
-        },
-        {
-          path: "settings",
-          name: "settings",
-          component: settings
-        },
-        {
-          path: "profile",
-          name: "profile",
-          component: profile
-        },
-        {
-          path: "warehouse",
-          name: "warehouse",
-          component: warehouse
-        },
-        {
-          path: "team",
-          name: "team",
-          component: team
-        }
-      ]
+      component: storyboard
     },
     {
       path: "*",
@@ -111,18 +70,6 @@ router.beforeEach(async (to, from, next) => {
     }
   }
   if (to.matched.some(r => r.path === "/storyboard")) {
-    if (
-      from.matched.some(
-        r =>
-          r.name === "mainboard" ||
-          r.name === "settings" ||
-          r.name === "profile" ||
-          r.name === "warehouse" ||
-          r.name === "team"
-      )
-    ) {
-      return next();
-    }
     if (!isLogin()) return next({ name: "login" });
     try {
       let url = URL.GET_VERIFY_TOKEN(store.state.user.token);

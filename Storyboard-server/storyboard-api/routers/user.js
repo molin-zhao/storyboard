@@ -115,17 +115,18 @@ router.get("/message", verifyAuthorization, async (req, res) => {
     let userId = req.query.id;
     if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const resp = await Message.fetchMessages(userId);
-    if (!resp || (resp.constructor === Array && resp.length === 0))
-      return handleSuccess(res, []);
-    let messageIds = [];
-    if (resp.constructor === Array) {
-      for (let msg of resp) {
-        messageIds.push(msg["_id"]);
-      }
-    } else {
-      messageIds.push(resp["_id"]);
-    }
-    await Message.deleteMany({ _id: { $in: messageIds } });
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+router.post("/message/del", verifyAuthorization, async (req, res) => {
+  try {
+    let messageIds = req.body.messageIds;
+    if (!messageIds || messageIds.length === 0)
+      throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
+    const resp = await Message.deleteMany({ _id: { $in: messageIds } });
     return handleSuccess(res, resp);
   } catch (err) {
     return handleError(res, err);

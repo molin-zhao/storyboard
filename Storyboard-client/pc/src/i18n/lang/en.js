@@ -106,6 +106,8 @@ export default {
   PROGRESS_DONE: "Done ✓",
   CANCEL: "Cancel",
   CONFIRM: "Confirm",
+  CONNECTING: "connecting...",
+  RECONNECT: "reconnect",
   EMAIL_PHONE: "Email or phone number",
   PASSWORD: "Password",
   CONFIRM_PASSWORD: "Confirm password",

@@ -107,6 +107,8 @@ export default {
   PROGRESS_DONE: "完成 ✓",
   CANCEL: " 取消",
   CONFIRM: "确认",
+  CONNECTING: "连接中...",
+  RECONNECT: "重新连接",
   EMAIL_PHONE: "邮箱或电话号",
   PASSWORD: "密码",
   CONFIRM_PASSWORD: "确认密码",

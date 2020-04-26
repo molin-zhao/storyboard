@@ -37,6 +37,20 @@ export const bell = {
   }
 };
 
+export const user = {
+  wrapperStyle: {
+    plain: "width: 100%; height: 4vw",
+    hover: "background-color: black;"
+  },
+  iconStyle: {
+    plain: "width: 2vw; height: 2vw; color: grey;",
+    hover: "color: white;"
+  },
+  iconName: {
+    plain: "usericon"
+  }
+};
+
 export const ops = {
   vuescroll: {
     mode: "native"

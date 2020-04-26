@@ -8,7 +8,7 @@
     @mouseleave="checkMouseleave"
   >
     <icon :name="computedIconName" :style="computedIconStyle" />
-    <div :style="badgeStyle">
+    <div class="badge-wrapper" :style="badgeStyle">
       <span :class="`display-only badge ${badgeClass}`">{{
         computedBadgeNumber
       }}</span>
@@ -33,34 +33,36 @@ export default {
     },
     wrapperStyle: {
       type: Object,
-      default: {
+      default: () => ({
         plain: "",
         active: "",
         hover: ""
-      }
+      })
     },
     iconStyle: {
       type: Object,
-      default: {
+      default: () => ({
         plain: "",
         active: "",
         hover: ""
-      }
+      })
     },
     iconName: {
       type: Object,
       required: true,
-      default: {
+      default: () => ({
         plain: "",
         active: "",
         hover: ""
-      }
+      })
     },
     badgeClass: {
-      type: String
+      type: String,
+      default: ""
     },
     badgeStyle: {
-      type: String
+      type: String,
+      default: ""
     },
     autoReset: {
       type: Boolean,
@@ -115,7 +117,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../common/theme/container.css";
 .wrapper {
   display: flex;
   flex-direction: column;
@@ -124,7 +125,7 @@ export default {
   padding: 0;
   position: relative;
   cursor: pointer;
-  div {
+  .badge-wrapper {
     position: absolute;
     top: 5px;
     right: 5px;

@@ -40,7 +40,7 @@
         />
       </div>
     </div>
-    <div v-if="showStrategy === 0" class="phase-body">
+    <div v-show="showStrategy === 0" class="phase-body">
       <vue-scroll :ops="ops">
         <task-group
           v-for="(item, index) in computedSelectedGroup"
@@ -52,7 +52,7 @@
         />
       </vue-scroll>
     </div>
-    <div v-else class="phase-body">
+    <div v-show="showStrategy === 1" class="phase-body">
       <h5 style="margin-top: -25%" v-if="computedMyGroup.length === 0">
         {{ $t("NO_TASK_OF_MINE") }}
       </h5>

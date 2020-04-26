@@ -1,17 +1,13 @@
 const http = require("http");
 const express = require("express");
-const mongoose = require("mongoose");
 const logger = require("morgan");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const amqp = require("amqp-connection-manager");
 
-const { normalizePort, getMongoUrl, getRabbitmqUrl } = require("../utils");
+const { normalizePort } = require("../utils");
 const { ERROR } = require("../response");
 const { SERVER_API_PORT } = require("../config/server.config");
-const MONGO_CLUSTER = require("../config/mongo-cluster.config");
-const RABBITMQ_CLUSTER = require("../config/rabbitmq-cluster.config");
 
 const indexRouter = require("./routers/index");
 const projectRouter = require("./routers/project");
@@ -49,48 +45,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 3. setup mongodb connection
-let dbUrl = getMongoUrl(MONGO_CLUSTER.NODES, MONGO_CLUSTER.DB_NAME);
-mongoose
-  .connect(dbUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    authSource: MONGO_CLUSTER.AUTH_DB,
-    auth: MONGO_CLUSTER.AUTH,
-  })
-  .then(() => console.log("connected to mongodb"))
-  .catch((err) => console.log(`connect to mongodb error: ${err.message}`));
-mongoose.set("useFindAndModify", false);
-app.locals.mongoose = mongoose;
-
-// 4. setup rabbitmq connection
-let rabbitHost = getRabbitmqUrl(
-  RABBITMQ_CLUSTER.HOST,
-  RABBITMQ_CLUSTER.USER,
-  RABBITMQ_CLUSTER.PASSWORD
-);
-const rabbitmqConn = amqp.connect(rabbitHost);
-rabbitmqConn.on("connect", () => {
-  console.log("rabbitmq cluster connected");
-});
-rabbitmqConn.on("disconnect", (err) => {
-  console.log(`rabbitmq cluster disconnected with err: ${err.message}`);
-});
-const broadcastChannel = rabbitmqConn.createChannel({
-  json: true,
-  setup: (channel) =>
-    Promise.all([
-      channel.assertExchange(
-        RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.NAME,
-        RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.TYPE,
-        { durable: true }
-      ),
-    ]),
-});
-app.locals.broadcastChannel = broadcastChannel;
-
-// 5. start server
+// 3. start server
 let port = normalizePort(process.env.PORT || SERVER_API_PORT);
 app.set("port", port);
 const server = http.createServer(app);

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("../mongodb");
 const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
 const { BCRYPT } = require("../config/encrypt.config");
@@ -13,38 +13,38 @@ const UserSchema = new Schema(
       type: String,
       enum: ["local", "oauth"],
       select: false,
-      required: true
+      required: true,
     },
     username: {
       type: String,
-      required: true
+      required: true,
     },
     password: {
       type: String,
-      select: false
+      select: false,
     },
     avatar: {
       type: String,
-      default: "/static/image/m1.png"
+      default: "/static/image/m1.png",
     },
     email: {
       type: String,
-      default: ""
+      default: "",
     },
     phone: {
       type: String,
-      default: ""
+      default: "",
     },
     gender: {
       type: String,
       enum: ["m", "f"],
-      default: "m"
-    }
+      default: "m",
+    },
   },
   { timestamps: true }
 );
 
-UserSchema.pre("save", function(next) {
+UserSchema.pre("save", function (next) {
   if (this.strategy !== "local") return next();
   if (!this.isModified("password")) return next();
   bcrypt.genSalt(BCRYPT.SALT_FACTOR, (err, salt) => {
@@ -57,7 +57,7 @@ UserSchema.pre("save", function(next) {
   });
 });
 
-UserSchema.statics.loginUser = function(account, password) {
+UserSchema.statics.loginUser = function (account, password) {
   return new Promise((resolve, reject) => {
     let criteria =
       account.indexOf("@") === -1 ? { phone: account } : { email: account };
@@ -84,7 +84,7 @@ UserSchema.statics.loginUser = function(account, password) {
               gender,
               phone,
               email,
-              username
+              username,
             });
           } catch (err) {
             return reject(err);
@@ -94,7 +94,7 @@ UserSchema.statics.loginUser = function(account, password) {
   });
 };
 
-UserSchema.statics.getUserToken = async function(user) {
+UserSchema.statics.getUserToken = async function (user) {
   return new Promise(async (resolve, reject) => {
     try {
       let userCreds = { _id: user._id };
@@ -108,49 +108,49 @@ UserSchema.statics.getUserToken = async function(user) {
   });
 };
 
-UserSchema.statics.findAccount = function(account) {
+UserSchema.statics.findAccount = function (account) {
   let criteria =
     account.indexOf("@") === -1 ? { phone: account } : { email: account };
   return this.findOne(criteria);
 };
 
-UserSchema.statics.fetchUserInfo = function(userId) {
+UserSchema.statics.fetchUserInfo = function (userId) {
   return this.findOne({ _id: userId });
 };
 
-UserSchema.statics.searchUser = function(value, limit, exclude) {
+UserSchema.statics.searchUser = function (value, limit, exclude) {
   return this.aggregate([
     {
       $match: {
         username: { $regex: ".*" + value + ".*" },
-        _id: { $nin: objectId(exclude) }
-      }
+        _id: { $nin: objectId(exclude) },
+      },
     },
     {
       $project: {
         _id: 1,
         avatar: 1,
         username: 1,
-        gender: 1
-      }
+        gender: 1,
+      },
     },
     {
-      $limit: limit
+      $limit: limit,
     },
     {
       $sort: {
-        username: 1
-      }
-    }
+        username: 1,
+      },
+    },
   ]);
 };
 
-UserSchema.statics.setOnline = function(user) {
+UserSchema.statics.setOnline = function (user) {
   let id = objectId(user);
   return this.updateOne({ _id: id }, { $set: { online: true } });
 };
 
-UserSchema.statics.setOffline = function(user) {
+UserSchema.statics.setOffline = function (user) {
   let id = objectId(user);
   return this.updateOne({ _id: id }, { $set: { online: false } });
 };

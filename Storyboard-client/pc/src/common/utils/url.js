@@ -135,6 +135,10 @@ export const GET_USER_MESSAGE = userId => {
   return API_HOST + `/user/message?id=${userId}`;
 };
 
+export const POST_DEL_USER_MESSAGE = () => {
+  return API_HOST + "/user/message/del";
+};
+
 export const POST_USER_ONLINE = () => {
   return API_HOST + "/user/online";
 };

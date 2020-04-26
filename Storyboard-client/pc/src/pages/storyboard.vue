@@ -19,21 +19,12 @@
             :icon-name="bell.iconName"
             :number="computedUnreadMessageCount"
             @click.native.stop="showMailbox"
-          >
-            <popover ref="bell" style="left: 6vw; bottom: 0;">
-              <tooltip
-                content-style="width: 200px; height: 200px"
-                arrow-placement="left"
-                arrow-position="bottom: 1.5vw"
-              >
-              </tooltip>
-            </popover>
-          </badge-icon>
-          <image-btn
-            :src="avatar"
-            default-img="/static/image/user_empty.png"
-            wrapper-style="width: 100%; height: 4.5vw"
-            img-style="width: 54px; height: 54px; border-radius: 27px"
+          />
+          <badge-icon
+            :wrapper-style="user.wrapperStyle"
+            :icon-style="user.iconStyle"
+            :icon-name="user.iconName"
+            :number="0"
             @mouseover.native="mouseover('avatar')"
             @mouseleave.native="mouseleave('avatar')"
           >
@@ -53,6 +44,42 @@
                 border-color="whitesmoke"
               >
                 <div class="settings">
+                  <div class="settings-user-thumbnail">
+                    <div class="thumbnail-user">
+                      <avatar
+                        style="width: 50px; height: 50px; border-radius: 25px"
+                        :src="avatar"
+                        :user-id="id"
+                      />
+                      <div class="thumbnail-username">
+                        <icon
+                          :name="computedUserGenderName"
+                          :style="computedUserGenderStyle"
+                        />
+                        <span>{{ username }}</span>
+                      </div>
+                    </div>
+                    <div v-if="socketConnecting" class="thumbnail-status">
+                      <div class="connecting">
+                        <span
+                          class="spinner-grow spinner-grow-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        <span>{{ $t("CONNECTING") }}</span>
+                      </div>
+                    </div>
+                    <div v-else class="thumbnail-status">
+                      <online-status :status="computedIsOnline" />
+                      <a
+                        v-if="!computedIsOnline"
+                        class="reconnect"
+                        @click="connectToServer"
+                      >
+                        {{ $t("RECONNECT") }}
+                      </a>
+                    </div>
+                  </div>
                   <a
                     @click="goTo('mainboard')"
                     style="
@@ -76,22 +103,22 @@
                     />
                     <span style="color: black;">{{ $t("TEAM") }}</span>
                   </a>
-                  <a @click="goTo('warehouse')">
+                  <!-- <a @click="goTo('warehouse')">
                     <icon
                       class="setting-icon"
                       name="warehouse"
                       style="color: black;"
                     />
                     <span style="color: black;">{{ $t("WAREHOUSE") }}</span>
-                  </a>
-                  <a @click="goTo('settings')">
+                  </a> -->
+                  <!-- <a @click="goTo('settings')">
                     <icon
                       class="setting-icon"
                       name="setting"
                       style="color: black;"
                     />
                     <span style="color: black;">{{ $t("SETTINGS") }}</span>
-                  </a>
+                  </a> -->
                   <a @click="goTo('account')">
                     <icon
                       class="setting-icon"
@@ -120,7 +147,7 @@
                 </div>
               </tooltip>
             </popover>
-          </image-btn>
+          </badge-icon>
         </div>
       </div>
 
@@ -179,7 +206,11 @@
 
       <!-- storyboard -->
       <div v-if="errorCode === -1" class="storyboard">
-        <router-view></router-view>
+        <mainboard v-show="viewIsVisible('mainboard')" />
+        <settings v-show="viewIsVisible('settings')" />
+        <profile v-show="viewIsVisible('profile')" />
+        <warehouse v-show="viewIsVisible('warehouse')" />
+        <team v-show="viewIsVisible('team')" />
       </div>
       <div v-else class="storyboard">
         <div class="storyboard-empty">
@@ -211,13 +242,25 @@ import badgeIcon from "@/components/badgeIcon";
 import imageBtn from "@/components/imageBtn";
 import popover from "@/components/popover";
 import tooltip from "@/components/tooltip";
+import onlineStatus from "@/components/onlineStatus";
+import avatar from "@/components/avatar";
 import vueScroll from "vuescroll";
+import settings from "@/router-views/settings";
+import profile from "@/router-views/profile";
+import mainboard from "@/router-views/mainboard";
+import warehouse from "@/router-views/warehouse";
+import team from "@/router-views/team";
 import * as URL from "@/common/utils/url";
 import { eventBus } from "@/common/utils/eventBus";
-import { bell, ops } from "@/common/theme/style";
+import { bell, user, ops } from "@/common/theme/style";
 import { mapState, mapMutations, mapActions } from "vuex";
 import { mouseover, mouseleave, mouseclick } from "@/common/utils/mouse";
-import { createSocketConnection } from "@/common/utils/socket";
+import { parser } from "@/common/utils/array";
+import {
+  createSocketConnection,
+  establishSocketConnection,
+  fetchUserMessages
+} from "@/common/utils/socket";
 import { isEdited, generateLookup } from "@/common/utils/log";
 import { getUnreadCount } from "@/common/utils/message";
 export default {
@@ -226,13 +269,24 @@ export default {
     imageBtn,
     popover,
     tooltip,
-    vueScroll
+    onlineStatus,
+    avatar,
+    vueScroll,
+    mainboard,
+    settings,
+    profile,
+    warehouse,
+    team
   },
   data() {
     return {
       storyboardLoading: false,
       reloading: false,
+      socketConnecting: false,
+      visibleView: "mainboard",
+      viewNames: ["mainboard", "settings", "profile", "warehouse", "team"],
       bell,
+      user,
       ops,
       errorCode: -1
     };
@@ -245,7 +299,8 @@ export default {
       "username",
       "gender",
       "phone",
-      "email"
+      "email",
+      "socket"
     ]),
     ...mapState("project", [
       "projects",
@@ -272,11 +327,31 @@ export default {
     },
     computedUnreadMessageCount() {
       return getUnreadCount(this.messages);
+    },
+    computedUserGenderName() {
+      const { gender } = this;
+      if (gender === "m") return "malebody";
+      return "femalebody";
+    },
+    computedUserGenderStyle() {
+      const { gender } = this;
+      if (gender === "m") return "color: cornflowerblue";
+      return "color: lightpink";
+    },
+    computedIsOnline() {
+      const { socket } = this;
+      return socket && socket.connected;
+    },
+    viewIsVisible() {
+      return function(route) {
+        const { visibleView } = this;
+        return visibleView === route;
+      };
     }
   },
-  mounted() {
-    this.fetchInfo();
-    this.fetchMessage();
+  async mounted() {
+    await this.fetchInfo();
+    await this.connectToServer();
   },
   methods: {
     ...mapActions({
@@ -292,6 +367,7 @@ export default {
       reload_teams: "team/reload_teams",
       add_userinfo: "user/add_userinfo",
       add_socket: "user/add_socket",
+      remove_socket: "user/remove_socket",
       update_global_members: "project/update_global_members",
       update_global_member_status: "project/update_global_member_status",
       push_messages: "message/push_messages",
@@ -303,51 +379,69 @@ export default {
     isEdited,
     projectLabelClick(index) {
       this.select_index(index);
-      if (this.$route.name !== "mainboard") {
-        console.log("go to mainboard");
-        this.$router.replace("/storyboard");
-      }
+      this.goTo("mainboard");
     },
     resetVisibleComponents() {
       return eventBus.$emit("reset-visible-component");
     },
-    createSocket(user) {
-      const { id, token } = this;
-      const info = { id, token, user };
-      const options = {
-        online: this.userOnlineCallback,
-        offline: this.userOfflineCallback,
-        receiveMessage: this.userReceiveMessageCallback
-      };
+    fetchInfo() {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const url = URL.GET_USER_STORYBOARD(this.id);
+          this.storyboardLoading = true;
+          const resp = await this.$http.get(url);
+          const info = resp.data.data;
+          this.reload_projects(info.projects);
+          this.reload_teams(info.teams);
+          this.add_userinfo(info.user);
+          this.save_userinfo(info.user);
+          this.storyboardLoading = false;
+          return resolve(info.user);
+        } catch (err) {
+          this.errorCode = err.status;
+          this.storyboardLoading = false;
+          return reject(err);
+        }
+      });
     },
-    async fetchInfo() {
-      try {
-        const { id, token } = this;
-        const url = URL.GET_USER_STORYBOARD(id);
-        this.storyboardLoading = true;
-        const resp = await this.$http.get(url);
-        const info = resp.data.data;
-        this.reload_projects(info.projects);
-        this.reload_teams(info.teams);
-        this.add_userinfo(info.user);
-        this.save_userinfo(info.user);
-        this.add_socket(this.createSocket(info.user));
-      } catch (err) {
-        this.errorCode = err.status;
-      } finally {
-        this.storyboardLoading = false;
-      }
-    },
-    async fetchMessage() {
-      try {
-        const { id } = this;
-        this.restore_message();
-        const url = URL.GET_USER_MESSAGE(id);
-        const resp = await this.$http.get(url);
-        const msg = resp.data.data;
-        this.push_messages(msg);
-        this.save_message();
-      } catch (err) {}
+    connectToServer() {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const { id, token, username, avatar, gender } = this;
+          const userInfo = { id, token, username, avatar, gender };
+          this.socketConnecting = true;
+          this.restore_message();
+          const getUrl = URL.GET_USER_MESSAGE(id);
+          const getResp = await this.$http.get(getUrl);
+          const msg = getResp.data.data;
+          if (msg.length > 0) {
+            let messageIds = parser(msg, "_id");
+            const delUrl = URL.POST_DEL_USER_MESSAGE();
+            const delResp = await this.$http.post(delUrl, { id, messageIds });
+          }
+          const socket = createSocketConnection({
+            online: this.userOnlineCallback,
+            offline: this.userOfflineCallback,
+            receiveMessage: this.userReceiveMessageCallback
+          });
+          socket.emit("establish-connection", userInfo, ack => {
+            if (!ack) {
+              socket.close();
+              throw new Error("connect failed");
+            } else {
+              console.log("connected");
+              this.add_socket(socket);
+              this.push_messages(msg);
+              this.save_message();
+              this.socketConnecting = false;
+              return resolve();
+            }
+          });
+        } catch (err) {
+          this.socketConnecting = false;
+          return reject(err);
+        }
+      });
     },
     async reload() {
       try {
@@ -360,7 +454,6 @@ export default {
         this.reload_teams(info.teams);
         this.add_userinfo(info.user);
         this.save_userinfo(info.user);
-        this.add_socket(this.createSocket(info.user));
         this.errorCode = -1;
       } catch (err) {
         this.errorCode = err.status;
@@ -455,7 +548,12 @@ export default {
       });
     },
     goTo(route) {
-      if (this.$route.name !== route) return this.$router.push({ name: route });
+      const { visibleView, viewNames } = this;
+      if (viewNames.indexOf(route) === -1) {
+        this.visibleView = viewNames[0];
+      } else {
+        if (visibleView !== route) this.visibleView = route;
+      }
     },
     showMailbox() {
       const { id, avatar, username, gender } = this;
@@ -617,5 +715,81 @@ export default {
   right: 5px;
   top: 50%;
   transform: translateY(-50%);
+}
+.settings-user-thumbnail {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  .thumbnail-user {
+    width: 60%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    .thumbnail-username {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: flex-start;
+      flex: 1;
+      height: 60%;
+      padding: 10px;
+      span {
+        text-align: left;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 14px;
+      }
+    }
+  }
+  .thumbnail-status {
+    width: 40%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    position: relative;
+    .connecting {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      align-items: center;
+      font-size: 14px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      color: gray;
+    }
+    .reconnect {
+      position: absolute;
+      bottom: 10px;
+      width: 60%;
+      height: 20px;
+      border-radius: 10px;
+      background-color: lightblue;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-content: center;
+      color: var(--main-color-blue);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .reconnect:active {
+      -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+      box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    }
+  }
 }
 </style>

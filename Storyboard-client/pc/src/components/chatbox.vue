@@ -17,7 +17,7 @@
               />
             </div>
             <div class="chatbox-body">
-              <chat :to="to" :font="font" />
+              <chat :to="to" />
             </div>
           </div>
         </transition>
@@ -36,10 +36,6 @@ export default {
   props: {
     to: {
       type: Object
-    },
-    font: {
-      type: String,
-      default: "kai"
     }
   },
   data() {

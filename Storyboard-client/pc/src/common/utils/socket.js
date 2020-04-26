@@ -2,7 +2,7 @@ import io from "socket.io-client";
 import * as URL from "@/common/utils/url";
 import store from "@/store";
 
-const createSocketConnection = (user, options = {}) => {
+const createSocketConnection = (options = {}) => {
   try {
     // check if store has a socket connection
     let storeSocket = store.state.user.socket;
@@ -15,14 +15,6 @@ const createSocketConnection = (user, options = {}) => {
       reconnectionDelay: 1000 * 60 * 5, // 5 minutes
       reconnectionAttempts: 3,
       reconnectionDelayMax: 1000 * 60 * 10
-    });
-    socket.emit("establish-connection", user, ack => {
-      if (!ack) {
-        socket.close();
-        store.commit("user/remove_socket");
-      } else {
-        console.log("connected");
-      }
     });
     socket.on("connect", () => {
       console.log("connecting to server");
@@ -52,6 +44,26 @@ const createSocketConnection = (user, options = {}) => {
     console.log(err);
     return null;
   }
+};
+
+const establishSocketConnection = (socket, user) => {
+  return new Promise((resolve, reject) => {
+    socket.emit("establish-connection", user, ack => {
+      if (ack) return resolve(ack);
+      socket.close();
+      store.commit("user/remove_socket");
+      return reject(ack);
+    });
+  });
+};
+
+const fetchUserMessages = socket => {
+  return new Promise((resolve, reject) => {
+    socket.emit("fetch-message", null, ack => {
+      if (ack) return resolve(ack);
+      return reject(ack);
+    });
+  });
 };
 
 const updateGlobalProjectMembers = (state, members) => {
@@ -84,5 +96,7 @@ const updateGlobalMemberStatus = (state, user, status) => {
 export {
   createSocketConnection,
   updateGlobalProjectMembers,
-  updateGlobalMemberStatus
+  updateGlobalMemberStatus,
+  establishSocketConnection,
+  fetchUserMessages
 };

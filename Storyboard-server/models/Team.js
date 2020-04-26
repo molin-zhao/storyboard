@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("../mongodb");
 const Schema = mongoose.Schema;
 const { objectId } = require("../utils");
 
@@ -6,47 +6,47 @@ const TeamSchema = new Schema(
   {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     members: {
       type: [{ type: Schema.Types.ObjectId, ref: "User" }],
-      default: []
+      default: [],
     },
     creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true
-    }
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-TeamSchema.statics.fetchUserTeams = function(userId) {
+TeamSchema.statics.fetchUserTeams = function (userId) {
   let id = objectId(userId);
   return this.aggregate([
     {
       $match: {
-        $or: [{ members: id }, { creator: id }]
-      }
+        $or: [{ members: id }, { creator: id }],
+      },
     },
     {
       $lookup: {
         from: "users",
         localField: "creator",
         foreignField: "_id",
-        as: "creator"
-      }
+        as: "creator",
+      },
     },
     {
-      $unwind: "$creator"
+      $unwind: "$creator",
     },
     {
       $lookup: {
         from: "users",
         localField: "members",
         foreignField: "_id",
-        as: "members"
-      }
+        as: "members",
+      },
     },
     {
       $project: {
@@ -56,16 +56,16 @@ TeamSchema.statics.fetchUserTeams = function(userId) {
           _id: 1,
           username: 1,
           avatar: 1,
-          gender: 1
+          gender: 1,
         },
         creator: {
           _id: 1,
           username: 1,
           avatar: 1,
-          gender: 1
-        }
-      }
-    }
+          gender: 1,
+        },
+      },
+    },
   ]);
 };
 

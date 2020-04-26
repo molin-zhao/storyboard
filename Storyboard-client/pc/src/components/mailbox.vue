@@ -23,7 +23,7 @@
               <icon name="close" class="close" @click.native.stop="hide" />
             </div>
             <div class="mailbox-body">
-              <chat :font="font" :to="to" />
+              <chat :to="to" />
             </div>
           </div>
         </transition>

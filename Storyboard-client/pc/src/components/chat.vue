@@ -1,11 +1,15 @@
 <template>
-  <div class="chat-wrapper" @click.stop="resetVisibleComponents">
+  <div
+    v-if="to !== null"
+    class="chat-wrapper"
+    @click.stop="resetVisibleComponents"
+  >
     <div class="chat">
       <div class="chat-user">
         <div class="chat-user-avatar-wrapper">
           <avatar
             class="chat-user-avatar"
-            :user-id="to._id"
+            :user-id="to['_id']"
             :src="to['avatar']"
           />
         </div>
@@ -66,10 +70,6 @@ export default {
   props: {
     to: {
       type: Object
-    },
-    font: {
-      type: String,
-      default: "kai"
     }
   },
   data() {
@@ -103,11 +103,13 @@ export default {
     ...mapState("project", ["globalProjectMembers"]),
     computedMessages() {
       const { messages, to } = this;
-      if (messages[to._id]) return messages[to._id]["messages"];
+      if (!to || !messages) return [];
+      if (messages[to["_id"]]) return messages[to["_id"]]["messages"];
       return [];
     },
     computedUserOnline() {
       const { globalProjectMembers, to } = this;
+      if (!to || !globalProjectMembers) return false;
       const userId = to["_id"];
       const userOnline =
         typeof globalProjectMembers[userId] === "undefined"
@@ -172,6 +174,7 @@ export default {
       handler: function(newValue, oldValue) {
         console.log("message changed");
         const { to } = this;
+        if (!to || !to["_id"]) return;
         this.mark_read(to["_id"]);
         this.save_message();
       }

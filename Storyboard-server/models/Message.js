@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("../mongodb");
 const Schema = mongoose.Schema;
 const { objectId } = require("../utils");
 
@@ -43,18 +43,26 @@ MessageSchema.statics.createMessage = function (message) {
 };
 
 MessageSchema.statics.fetchMessages = function (userId) {
-  let id = objectId(userId);
-  return this.find({ to: id })
-    .populate({
-      path: "from",
-      select: "_id username avatar gender",
-      model: "User",
-    })
-    .populate({
-      path: "to",
-      select: "_id username avatar gender",
-      model: "User",
-    });
+  return new Promise(async (resolve, reject) => {
+    try {
+      let id = objectId(userId);
+      const resp = await this.find({ to: id })
+        .populate({
+          path: "from",
+          select: "_id username avatar gender",
+          model: "User",
+        })
+        .populate({
+          path: "to",
+          select: "_id username avatar gender",
+          model: "User",
+        });
+      if (!resp || resp.constructor !== Array) return resolve([]);
+      return resolve(resp);
+    } catch (err) {
+      return reject(err);
+    }
+  });
 };
 
 module.exports = mongoose.model("Message", MessageSchema);
