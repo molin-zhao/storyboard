@@ -4,7 +4,6 @@ module.exports = {
     {
       name: "storyboard-passport",
       script: "storyboard-passport/app.js",
-
       instances: 1,
       autorestart: true,
       watch: false,
