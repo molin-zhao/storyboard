@@ -67,7 +67,7 @@ export const POST_ADD_PROJECT_MEMBER = () => {
   return API_HOST + "/project/member/add";
 };
 
-export const POST_EDIT_TASK_MEMBER = () => {
+export const PUT_EDIT_TASK_MEMBER = () => {
   return API_HOST + "/project/task/member/edit";
 };
 

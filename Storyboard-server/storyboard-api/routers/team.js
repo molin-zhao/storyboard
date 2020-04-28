@@ -22,22 +22,56 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
     let newTeam = new Team({
       creator: user,
       name,
-      members
+      members,
     });
     let teamDoc = await newTeam.save();
     const team = await teamDoc
       .populate({
         path: "members",
         select: "_id username avatar gender",
-        model: "User"
+        model: "User",
       })
       .populate({
         path: "creator",
         select: "_id username avatar gender",
-        model: "User"
+        model: "User",
       })
       .execPopulate();
     return handleSuccess(res, team);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * delete team
+ */
+router.delete("/delete", verifyAuthorization, async (req, res) => {
+  try {
+    const teamId = req.query.id;
+    const resp = await Team.deleteOne({ _id: teamId });
+    return handleSuccess(res, resp);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+/**
+ * edit team members
+ */
+
+router.put("/member", verifyAuthorization, async (req, res) => {
+  try {
+    const memberIds = req.body.memberIds;
+    const teamId = req.body.teamId;
+    const resp = await Team.updateOne(
+      { _id: teamId },
+      { $set: { members: memberIds } }
+    );
+    if (resp.ok === 1 && resp.nModified === 1) {
+      return handleSuccess(res, "ok");
+    } else {
+      return handleSuccess(res, "accept");
+    }
   } catch (err) {
     return handleError(res, err);
   }

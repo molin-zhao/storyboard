@@ -294,14 +294,14 @@ export default {
           id,
           taskMembers
         } = this;
-        const url = URL.POST_EDIT_TASK_MEMBER();
+        const url = URL.PUT_EDIT_TASK_MEMBER();
         const data = {
           members: computedTaskMemberIds,
           user: id,
           taskId
         };
         this.processStatus = "doing";
-        const resp = await this.$http.post(url, data, { emulateJson: true });
+        const resp = await this.$http.put(url, data);
         this.processStatus = "done";
         this.edit_task_members({ groupId, taskId, members: taskMembers });
         setTimeout(() => {
