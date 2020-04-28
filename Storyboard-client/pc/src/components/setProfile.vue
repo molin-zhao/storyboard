@@ -19,7 +19,7 @@
       <label>{{ $t("GENDER") }}</label>
       <div class="input-group gender">
         <div class="gender-item">
-          <icon name="male" style="color: CornflowerBlue" />
+          <icon name="male" style="color: cornflowerblue" />
           <checkmark
             @click.native.stop="selectGender('m')"
             :checked="selectedGender === 'm'"
@@ -27,7 +27,7 @@
           <span class="display-only">{{ $t("MALE") }}</span>
         </div>
         <div class="gender-item">
-          <icon name="female" style="color: LightPink" />
+          <icon name="female" style="color: lightpink" />
           <checkmark
             @click.native.stop="selectGender('f')"
             :checked="selectedGender === 'f'"
@@ -137,7 +137,6 @@ import tooltip from "@/components/tooltip";
 import popover from "@/components/popover";
 import avatar from "@/components/avatar";
 import { mouseover, mouseleave } from "@/common/utils/mouse";
-import { generateRandomNumber } from "@/common/utils/number";
 import { getRandomAvatar, compressImage } from "@/common/utils/form";
 import { IMG_SRC } from "@/common/config/static";
 import * as URL from "@/common/utils/url";
@@ -185,6 +184,21 @@ export default {
         if (src === computedAvatar) return "border: 2px LightSalmon solid";
         return "";
       };
+    },
+    computedTouched() {
+      const {
+        computedAvatar,
+        selectedUsername,
+        selectedGender,
+        avatar,
+        username,
+        gender
+      } = this;
+      let avatarChanged = computedAvatar && computedAvatar !== avatar;
+      let usernameChanged = selectedUsername && selectedUsername !== username;
+      let genderChanged = selectedGender && selectedGender !== gender;
+      if (!avatarChanged && !usernameChanged && !genderChanged) return false;
+      return true;
     }
   },
   watch: {
@@ -253,31 +267,29 @@ export default {
       try {
         const {
           computedAvatar,
+          computedTouched,
           avatar,
           selectedGender,
           gender,
           username,
           selectedUsername
         } = this;
-        if (selectedUsername === "")
-          return (this.usernameError = this.$t("USERNAME_NOT_EMPTY"));
-        let avatarChanged = computedAvatar !== avatar;
-        let usernameChanged = selectedUsername !== username;
-        let genderChanged = selectedGender !== gender;
-        if (!avatarChanged && !usernameChanged && !genderChanged)
-          return this.$router.replace("/storyboard");
+        if (!selectedUsername) {
+          this.usernameError = this.$t("USERNAME_NOT_EMPTY");
+          return;
+        }
+        if (!computedTouched) return this.$router.replace("/storyboard");
+        let updateObj = {};
+        if (computedAvatar && computedAvatar !== avatar)
+          updateObj["avatar"] = computedAvatar;
+        if (selectedUsername && selectedUsername !== username)
+          updateObj["username"] = selectedUsername;
+        if (selectedGender && selectedGender !== gender)
+          updateObj["gender"] = selectedGender;
+
         let url = URL.POST_UPLOAD_USER_PROFILE();
         this.processing = true;
-        const updateProfileRes = await this.$http.post(
-          url,
-          {
-            user: this.id,
-            username: selectedUsername,
-            gender: selectedGender,
-            avatar: computedAvatar
-          },
-          { emulateJSON: true }
-        );
+        const updateProfileRes = await this.$http.post(url, updateObj);
         this.$router.replace("/storyboard");
       } catch (err) {
         console.log(err);

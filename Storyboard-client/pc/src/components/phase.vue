@@ -31,7 +31,7 @@
             :value="index"
             v-for="(showStrategyOption, index) in showStrategyList"
             :key="index"
-            >{{ showStrategyOption["name"] }}</option
+            >{{ showStrategyOption }}</option
           >
         </select>
         <search-input
@@ -95,10 +95,7 @@ export default {
     return {
       selectedPhaseIndex: 0,
       showStrategy: 0,
-      showStrategyList: [
-        { name: this.$t("SHOW_ALL_TASK") },
-        { name: this.$t("SHOW_MY_TASK") }
-      ],
+      showStrategyList: [this.$t("SHOW_ALL_TASK"), this.$t("SHOW_MY_TASK")],
       ops
     };
   },

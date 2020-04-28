@@ -74,7 +74,7 @@
                       <a
                         v-if="!computedIsOnline"
                         class="reconnect"
-                        @click="connectToServer"
+                        @click="reconnectToServer"
                       >
                         {{ $t("RECONNECT") }}
                       </a>
@@ -119,7 +119,7 @@
                     />
                     <span style="color: black;">{{ $t("SETTINGS") }}</span>
                   </a> -->
-                  <a @click="goTo('account')">
+                  <a @click="goTo('profile')">
                     <icon
                       class="setting-icon"
                       name="account"
@@ -207,10 +207,10 @@
       <!-- storyboard -->
       <div v-if="errorCode === -1" class="storyboard">
         <mainboard v-show="viewIsVisible('mainboard')" />
-        <settings v-show="viewIsVisible('settings')" />
-        <profile v-show="viewIsVisible('profile')" />
-        <warehouse v-show="viewIsVisible('warehouse')" />
-        <team v-show="viewIsVisible('team')" />
+        <!-- <settings v-if="viewIsVisible('settings')" /> -->
+        <profile v-if="viewIsVisible('profile')" />
+        <!-- <warehouse v-if="viewIsVisible('warehouse')" /> -->
+        <team v-if="viewIsVisible('team')" />
       </div>
       <div v-else class="storyboard">
         <div class="storyboard-empty">
@@ -227,7 +227,7 @@
               v-else
               class="text-primary display-only"
               style="cursor: pointer;"
-              @click.stop="reload"
+              @click="reload"
               >{{ $t("NETWORK_ERROR_RETRY") }}</a
             >
           </div>
@@ -350,8 +350,10 @@ export default {
     }
   },
   async mounted() {
-    await this.fetchInfo();
-    await this.connectToServer();
+    try {
+      await this.fetchInfo();
+      await this.connectToServer();
+    } catch (err) {}
   },
   methods: {
     ...mapActions({
@@ -424,10 +426,14 @@ export default {
             offline: this.userOfflineCallback,
             receiveMessage: this.userReceiveMessageCallback
           });
+          if (!socket.connected) {
+            socket.disconnect();
+            throw new Error("connection failed");
+          }
           socket.emit("establish-connection", userInfo, ack => {
             if (!ack) {
-              socket.close();
-              throw new Error("connect failed");
+              socket.disconnect();
+              throw new Error("connection failed");
             } else {
               console.log("connected");
               this.add_socket(socket);
@@ -483,6 +489,11 @@ export default {
           if (socket && socket.connected)
             socket.emit("notify-list", newMembers);
         }
+      } catch (err) {}
+    },
+    async reconnectToServer() {
+      try {
+        await this.connectToServer();
       } catch (err) {}
     },
     userOnlineCallback(user) {

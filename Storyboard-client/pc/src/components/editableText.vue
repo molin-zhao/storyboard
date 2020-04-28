@@ -30,7 +30,6 @@
 </template>
 
 <script>
-import en from "@/i18n/lang/en.js";
 export default {
   props: {
     value: {
@@ -62,7 +61,6 @@ export default {
   computed: {
     computedValue() {
       if (this.inputValue) return this.inputValue;
-      else if (en[this.defaultValue]) return this.$t(`${this.defaultValue}`);
       return this.defaultValue;
     },
     computedWrapperStyle() {

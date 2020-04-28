@@ -15,7 +15,7 @@
           ref="input"
           @on-focus="onFocus"
           @lost-focus="lostFocus"
-          defaultValue="ADD_TASK"
+          :default-value="$t('ADD_TASK')"
           @on-typing="onInputChange"
           input-style="border-radius: 0px"
         />

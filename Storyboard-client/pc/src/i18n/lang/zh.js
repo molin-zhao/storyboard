@@ -1,6 +1,7 @@
 export default {
   // labels
   LANGUAGE: "语言",
+  LANGUAGE_SELECT: "语言选择：",
   LOGIN: "登录",
   DEFAULT: "默认",
   LOGOUT: "登出",
@@ -185,6 +186,7 @@ export default {
   SHOW_MY_TASK: "仅显示我的任务",
 
   CHANGE_GROUP_COLOR: "更改颜色",
+  CHANGE_USERNAME: "更改用户名：",
   COLLAPSE_GROUP: "折叠该组",
   ADD_GROUP: "添加新组",
   ADD_GROUP_ERROR: "暂时无法添加组",
@@ -224,6 +226,8 @@ export default {
   CREATE_PHASE: "创建新阶段",
   IMPORT_FILE: "导入文件",
   CHOOSE_FILE: "选择文件",
+  CHOOSE_TEAM: "选择你的小组：",
+  TEAM_MEMBER: "小组成员：",
   FILE_SUPPORT: "文件格式支持{extension}",
   FILE_FIELD_FORMAT: "字段名称需要精确匹配",
   BROWSE: "浏览",

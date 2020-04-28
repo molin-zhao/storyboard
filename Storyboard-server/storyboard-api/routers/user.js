@@ -46,18 +46,30 @@ router.get("/storyboard", verifyAuthorization, verifyUser, async (req, res) => {
 });
 
 /**
- * edit or update profile
+ * upload profile
  */
-router.post("/profile", verifyAuthorization, verifyUser, async (req, res) => {
+router.post("/profile", verifyAuthorization, async (req, res) => {
   try {
-    let reqUser = req.body.user;
-    let username = req.body.username;
-    let gender = req.body.gender;
-    let avatar = req.body.avatar;
+    const reqUser = req.user._id;
+    const update = req.body;
     const user = await User.findByIdAndUpdate(reqUser, {
-      $set: { username, gender, avatar },
+      $set: update,
     });
-    handleSuccess(res, user);
+    return handleSuccess(res, user);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * update profile
+ */
+router.post("/profile/update", verifyAuthorization, async (req, res) => {
+  try {
+    const reqUser = req.user._id;
+    const update = req.body;
+    const user = await User.findByIdAndUpdate(reqUser, { $set: update });
+    return handleSuccess(res, user);
   } catch (err) {
     return handleError(res, err);
   }

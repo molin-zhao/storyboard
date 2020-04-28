@@ -21,7 +21,10 @@
       <div v-else class="ml-auto">
         <div class="navbar-nav header-items">
           <div>
-            <icon :name="computedLocalIcon" style="width: 20px; height: 20px" />
+            <icon
+              :name="computedLocaleIcon"
+              style="width: 20px; height: 20px"
+            />
           </div>
           <div class="header-item dropdown">
             <a
@@ -58,7 +61,9 @@
             >
           </div>
           <div v-show="!isMobile">
-            <span style="font-size:30px; color: whitesmoke">|</span>
+            <div
+              style="width: 2px; height: 90%; background-color: whitesmoke; border-radius: 1px"
+            />
           </div>
           <div
             v-show="!isMobile"
@@ -100,7 +105,7 @@ export default {
         return "";
       };
     },
-    computedLocalIcon() {
+    computedLocaleIcon() {
       return this.$i18n.locale;
     }
   },

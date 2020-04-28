@@ -8,7 +8,7 @@
         :editable="false"
         :value="task.name"
         :task-id="task._id"
-        default-value="ADD_TASK_NAME"
+        :default-value="$t('ADD_TASK_NAME')"
         :color="color"
       />
     </div>

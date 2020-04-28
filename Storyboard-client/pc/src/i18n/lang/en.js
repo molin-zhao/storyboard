@@ -1,6 +1,7 @@
 export default {
   // labels
   LANGUAGE: "Language",
+  LANGUAGE_SELECT: "Language select:",
   DEFAULT: "Default",
   LOGIN: "Login",
   LOGGEDIN: "Logged in",
@@ -186,6 +187,7 @@ export default {
   SHOW_MY_TASK: "only show my task(s)",
 
   CHANGE_GROUP_COLOR: "Change color",
+  CHANGE_USERNAME: "Change username:",
   COLLAPSE_GROUP: "Collapse group",
   ADD_GROUP: "Add group",
   ADD_GROUP_ERROR: "Cannot add a new group temporarily",
@@ -211,6 +213,8 @@ export default {
   NO_MESSAGE: "No messages",
   IMPORT_FILE: "Import File",
   CHOOSE_FILE: "Choose File",
+  CHOOSE_TEAM: "Choose your team:",
+  TEAM_MEMBER: "Team member(s):",
   FILE_SUPPORT: "support extension of {extension}",
   FILE_FIELD_FORMAT: "Field name should be precisely match",
   BROWSE: "Browse",
