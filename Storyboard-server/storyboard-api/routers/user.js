@@ -97,7 +97,7 @@ router.get("/online", async (req, res) => {
     let userId = req.query.id;
     if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const resp = await redisOps.getSocketServer(userId);
-    if (resp.status === 200 && resp.body.data) return handleSuccess(res, true);
+    if (resp) return handleSuccess(res, true);
     return handleSuccess(res, false);
   } catch (err) {
     return handleError(res, err);

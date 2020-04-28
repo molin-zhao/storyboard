@@ -274,31 +274,26 @@ export default {
       try {
         const { smsPassword, emailOrPhoneError, emailOrPhoneValue } = this;
         if (!smsPassword || emailOrPhoneError) return this.showSMSError();
-        let token = encrypt(emailOrPhoneValue, smsPassword);
-        let url = URL.POST_SMS_SEND_CODE(isPhone(emailOrPhoneValue));
+        const trimmedAccount = emailOrPhoneValue.trim();
+        let token = encrypt(trimmedAccount, smsPassword);
+        let url = URL.POST_SMS_SEND_CODE(isPhone(trimmedAccount));
         this.processing = true;
-        const res = await this.$http.post(
-          url,
-          { account: emailOrPhoneValue, token },
-          { emulateJSON: true }
-        );
-        if (res.status === 200) {
-          this.sent = true;
+        const res = await this.$http.post(url, {
+          account: trimmedAccount,
+          token
+        });
+        this.sent = true;
+        this.resendCount = 60;
+        this.renderInterval = setInterval(() => {
+          if (this.resendCount > 0) return this.resendCount--;
           this.resendCount = 60;
-          this.renderInterval = setInterval(() => {
-            if (this.resendCount > 0) return this.resendCount--;
-            this.resendCount = 60;
-            this.sent = false;
-            clearInterval(this.renderInterval);
-          }, 1000);
-        } else {
-          this.showSMSError();
-        }
-        this.processing = false;
-        this.smsPassword = "";
+          this.sent = false;
+          clearInterval(this.renderInterval);
+        }, 1000);
       } catch (err) {
         console.log(err);
         this.showSMSError();
+      } finally {
         this.processing = false;
         this.smsPassword = "";
       }

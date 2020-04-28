@@ -49,15 +49,13 @@ const createSocketServer = (server, app) => {
         // must provide credentials
         if (!client || !client.token || !client.id) return socket.disconnect();
         const tokenResp = await redisOps.getJwtToken(client.id);
-        if (tokenResp.status !== 200 || tokenResp.body.data !== client.token)
+        if (tokenResp !== client.token)
           throw new Error(ERROR.USER_AUTHENTICATION_FAILED);
         // token matched
         // 1. bind redis user <-> socket server
         // 2. bind mongodb user <-> status
         // 3. bind local user <-> socket
-        const nameResp = await redisOps.setSocketServer(client.id, SERVER_NAME);
-        if (nameResp.status !== 200)
-          throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
+        await redisOps.setSocketServer(client.id, SERVER_NAME);
         await User.setOnline(client.id);
         const user = {
           id: client.id,
@@ -78,8 +76,7 @@ const createSocketServer = (server, app) => {
       try {
         const { to } = message; // user id;
         const toUserId = to["_id"];
-        const resp = await redisOps.getSocketServer(toUserId);
-        let serverName = resp.body.data;
+        const serverName = await redisOps.getSocketServer(toUserId);
         let user_socket = app.locals.user_socket;
         if (serverName && serverName === SERVER_NAME) {
           // user is connected to this server
@@ -125,8 +122,7 @@ const createSocketServer = (server, app) => {
       socket.notifyList = newList;
       let user = socket.user;
       for (let userId in list) {
-        const resp = await redisOps.getSocketServer(userId);
-        let serverName = resp.body.data;
+        const serverName = await redisOps.getSocketServer(userId);
         let user_socket = app.locals.user_socket;
         if (serverName && serverName === SERVER_NAME) {
           let to_socket = user_socket[userId];
@@ -154,8 +150,7 @@ const createSocketServer = (server, app) => {
         await redisOps.delSocketServer(userId);
         await User.setOffline(userId);
         for (let uid in list) {
-          const resp = await redisOps.getSocketServer(uid);
-          let serverName = resp.body.data;
+          const serverName = await redisOps.getSocketServer(uid);
           let user_socket = app.locals.user_socket;
           if (serverName && serverName === SERVER_NAME) {
             let to_socket = user_socket[uid];
