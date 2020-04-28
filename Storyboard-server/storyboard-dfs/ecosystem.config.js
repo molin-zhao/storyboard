@@ -2,19 +2,19 @@ const { DFS_PROXY } = require("../config/pm2.config");
 module.exports = {
   apps: [
     {
-      name: "dfs",
+      name: "storyboard-dfs",
       script: "storyboard-dfs/app.js",
       instances: 1,
       autorestart: true,
       watch: false,
-      max_memory_restart: "256M",
+      max_memory_restart: "200M",
       env: {
-        NODE_ENV: "development"
+        NODE_ENV: "development",
       },
       env_production: {
-        NODE_ENV: "production"
-      }
-    }
+        NODE_ENV: "production",
+      },
+    },
   ],
 
   deploy: {
@@ -27,8 +27,8 @@ module.exports = {
       "post-deploy":
         "cd Storyboard-server/ && cnpm install && pm2 reload storyboard-dfs/ecosystem.config.js --env production",
       env: {
-        NODE_ENV: "production"
-      }
-    }
-  }
+        NODE_ENV: "production",
+      },
+    },
+  },
 };
