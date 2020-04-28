@@ -1,3 +1,9 @@
 **/node_modules
 **/dist
 **/package-lock.json
+**/config.js
+*test/
+**/*.config.js
+config/
+**/upload/
+!**/ecosystem.config.js

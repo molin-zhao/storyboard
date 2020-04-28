@@ -1,6 +1,0 @@
-**/config.js
-*test/
-**/*.config.js
-config/
-**/upload/
-!**/ecosystem.config.js
