@@ -77,4 +77,24 @@ router.put("/member", verifyAuthorization, async (req, res) => {
   }
 });
 
+/**
+ * leave team
+ */
+router.put("/leave", verifyAuthorization, async (req, res) => {
+  try {
+    const { teamId, userId } = req.body;
+    const resp = await Team.updateOne(
+      { _id: teamId },
+      { $pull: { members: userId } }
+    );
+    if (resp.ok === 1 && resp.nModified === 1) {
+      return handleSuccess(res, "ok");
+    } else {
+      return handleSuccess(res, "accept");
+    }
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
 module.exports = router;
