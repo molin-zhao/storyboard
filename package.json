@@ -25,6 +25,8 @@
     "passport": "^0.4.1",
     "qcloudsms_js": "^0.1.1",
     "socket.io": "^2.3.0",
-    "superagent": "^5.2.2"
+    "superagent": "^5.2.2",
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
   }
 }
