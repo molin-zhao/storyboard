@@ -52,9 +52,11 @@ router.post("/profile", verifyAuthorization, async (req, res) => {
   try {
     const reqUser = req.user._id;
     const update = req.body;
-    const user = await User.findByIdAndUpdate(reqUser, {
-      $set: update,
-    });
+    const user = await User.findByIdAndUpdate(
+      reqUser,
+      { $set: update },
+      { upsert: true }
+    );
     return handleSuccess(res, user);
   } catch (err) {
     return handleError(res, err);
@@ -68,7 +70,11 @@ router.post("/profile/update", verifyAuthorization, async (req, res) => {
   try {
     const reqUser = req.user._id;
     const update = req.body;
-    const user = await User.findByIdAndUpdate(reqUser, { $set: update });
+    const user = await User.findByIdAndUpdate(
+      reqUser,
+      { $set: update },
+      { upsert: true }
+    );
     return handleSuccess(res, user);
   } catch (err) {
     return handleError(res, err);

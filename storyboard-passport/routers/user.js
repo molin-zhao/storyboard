@@ -28,6 +28,7 @@ const {
   decodeToken,
 } = require("../../authenticate");
 const User = require("../../models/User");
+const mongoose = require("../../mongodb");
 
 /**
  * verify and renew token
@@ -267,6 +268,39 @@ router.get("/logout", verifyAuthorization, verifyUser, async (req, res) => {
     let user = req.query.user;
     await redisOps.delJwtToken(user);
     return handleSuccess(res);
+  } catch (err) {
+    return handleError(res, err);
+  }
+});
+
+/**
+ * logout with async messages
+ */
+router.post("logout", verifyAuthorization, verifyUser, async (req, res) => {
+  try {
+    let user = req.body.user;
+    let messages = req.body.messages;
+    const session = await mongoose.startSession();
+    await session.startTransaction();
+    try {
+      const update = await User.updateOne(
+        { _id: user },
+        { $set: { messages } },
+        { upsert: true }
+      );
+      if (update.ok === 1 && update.nModified === 1) {
+        await redisOps.delJwtToken(user);
+        await session.commitTransaction();
+        return handleSuccess(res, "ok");
+      } else {
+        throw new Error(ERROR.DATA_PERSISTENCE_ERROR);
+      }
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      await session.endSession();
+    }
   } catch (err) {
     return handleError(res, err);
   }
