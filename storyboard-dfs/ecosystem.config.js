@@ -25,7 +25,7 @@ module.exports = {
       repo: "https://github.com/RayMoore/storyboard.git",
       path: "/home/root/app/storyboard",
       "post-deploy":
-        "cd Storyboard-server/ && cnpm install && pm2 reload storyboard-dfs/ecosystem.config.js --env production",
+        "cnpm install && pm2 reload storyboard-dfs/ecosystem.config.js --env production",
       env: {
         NODE_ENV: "production",
       },

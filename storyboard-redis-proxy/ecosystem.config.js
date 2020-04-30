@@ -10,12 +10,12 @@ module.exports = {
       watch: false,
       max_memory_restart: "200M",
       env: {
-        NODE_ENV: "development"
+        NODE_ENV: "development",
       },
       env_production: {
-        NODE_ENV: "production"
-      }
-    }
+        NODE_ENV: "production",
+      },
+    },
   ],
 
   deploy: {
@@ -26,10 +26,10 @@ module.exports = {
       repo: "https://github.com/RayMoore/storyboard.git",
       path: "/home/ubuntu/app/storyboard",
       "post-deploy":
-        "cd Storyboard-server/ && cnpm install && pm2 reload storyboard-redis-proxy/ecosystem.config.js --env production",
+        "cnpm install && pm2 reload storyboard-redis-proxy/ecosystem.config.js --env production",
       env: {
-        NODE_ENV: "production"
-      }
-    }
-  }
+        NODE_ENV: "production",
+      },
+    },
+  },
 };
