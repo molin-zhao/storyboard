@@ -1,4 +1,4 @@
-const { DFS_PROXY } = require("../config/pm2.config");
+const { DFS } = require("../config/pm2.config");
 module.exports = {
   apps: [
     {
@@ -20,7 +20,7 @@ module.exports = {
   deploy: {
     production: {
       user: "ubuntu",
-      host: DFS_PROXY,
+      host: DFS,
       ref: "origin/master",
       repo: "https://github.com/RayMoore/storyboard.git",
       path: "/home/ubuntu/app/storyboard",
