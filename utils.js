@@ -15,10 +15,10 @@ const mailTransport = nodemailer.createTransport(
   smtpTransport({
     host: HOST,
     port: PORT,
-    auth: AUTH
+    auth: AUTH,
   })
 );
-const normalizePort = val => {
+const normalizePort = (val) => {
   let port = parseInt(val, 10);
   if (isNaN(port)) return val;
   if (port >= 0) return port;
@@ -51,7 +51,7 @@ const sendEmail = (email, subject, html, lang) => {
     from,
     to: email,
     subject,
-    html
+    html,
   });
 };
 
@@ -93,14 +93,14 @@ const generateCode = (length = 6) => {
   return code;
 };
 
-const generateRandomColor = arr => {
+const generateRandomColor = (arr) => {
   if (arr.constructor !== Array)
     throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
   let randomIndex = generateRandomNumber(0, arr.length - 1);
   return arr[randomIndex];
 };
 
-const getClientIP = req => {
+const getClientIP = (req) => {
   let ip =
     req.headers["x-forwarded-for"] ||
     req.connection.remoteAddress ||
@@ -111,7 +111,7 @@ const getClientIP = req => {
   return ip;
 };
 
-const getClientPos = ip => {
+const getClientPos = (ip) => {
   return geoip.lookup(ip);
 };
 
@@ -120,7 +120,7 @@ const getDFSConnection = () => {
     trackers: TRACKERS,
     timeout: TIMEOUT,
     defaultExt: EXT,
-    charset: CHARSET
+    charset: CHARSET,
   });
 };
 
@@ -128,12 +128,12 @@ const decrypt = (val, secret) => {
   let s = cryptoJS.enc.Utf8.parse(secret);
   let decrypted = cryptoJS.AES.decrypt(val, s, {
     mode: cryptoJS.mode.ECB,
-    padding: cryptoJS.pad.Pkcs7
+    padding: cryptoJS.pad.Pkcs7,
   });
   return cryptoJS.enc.Utf8.stringify(decrypted).toString();
 };
 
-const isEmailOrPhone = function(value) {
+const isEmailOrPhone = function (value) {
   if (!value) return false;
   let emailReg = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
   let phoneReg = /^1[3456789]\d{9}$/;
@@ -143,34 +143,34 @@ const isEmailOrPhone = function(value) {
   return true;
 };
 
-const isPassword = function(value, errorMsg) {
+const isPassword = function (value, errorMsg) {
   if (!value) return false;
   let reg = /^.*(?=.{8,16})(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&*?\(\)+=\[\]\{\}_<>,.;:'"-]).*$/;
   if (reg.test(value)) return true;
   return false;
 };
 
-const isPhone = value => {
+const isPhone = (value) => {
   if (!value) return false;
   let reg = /^1[3456789]\d{9}$/;
   if (value.length === 11 && reg.test(value)) return true;
   return false;
 };
 
-const isEmail = value => {
+const isEmail = (value) => {
   if (!value) return false;
   let reg = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
   if (reg.test(value)) return true;
   return false;
 };
 
-const objectId = val => {
+const objectId = (val) => {
   if (!val) throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
-  if (val.constructor === Array) return val.map(item => ObjectId(item));
+  if (val.constructor === Array) return val.map((item) => ObjectId(item));
   return ObjectId(val);
 };
 
-const fdel = path => {
+const fdel = (path) => {
   if (fs.existsSync(path) && fs.statSync(path).isFile()) {
     return fs.unlinkSync(path);
   }
@@ -195,5 +195,5 @@ module.exports = {
   isPhone,
   isEmail,
   objectId,
-  fdel
+  fdel,
 };

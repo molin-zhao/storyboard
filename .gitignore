@@ -4,6 +4,8 @@
 **/config.js
 *test/
 **/*.config.js
-config/
 **/upload/
 !**/ecosystem.config.js
+**/*.j2
+**/templates
+**/*.hosts

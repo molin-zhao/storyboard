@@ -11,6 +11,7 @@ const { SERVER_DFS_PORT } = require("../config/server.config");
 
 const indexRouter = require("./routers/index");
 const dfsRouter = require("./routers/dfs");
+const testRouter = require("./routers/test");
 
 const app = express();
 app.use(logger("dev"));
@@ -22,6 +23,7 @@ app.use(cors());
 // 1. setup routers
 app.use("/", indexRouter);
 app.use("/dfs", dfsRouter);
+// app.use("/test", testRouter);
 
 // 2. setup error 404 and 500
 app.use((req, res) => {

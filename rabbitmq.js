@@ -1,14 +1,14 @@
 const amqp = require("amqp-connection-manager");
-const RABBITMQ_CLUSTER = require("./config/rabbitmq-cluster.config");
+const {
+  EXCHANGE,
+  HOST,
+  USER,
+  PASSWORD,
+} = require("./config/rabbitmq-cluster.config");
 const { getRabbitmqUrl } = require("./utils");
 const { SERVER_NAME } = require("./config/server.config");
 
-// 4. setup rabbitmq connection
-const rabbitHost = getRabbitmqUrl(
-  RABBITMQ_CLUSTER.HOST,
-  RABBITMQ_CLUSTER.USER,
-  RABBITMQ_CLUSTER.PASSWORD
-);
+const rabbitHost = getRabbitmqUrl(HOST, USER, PASSWORD);
 const rabbitmqConn = amqp.connect(rabbitHost);
 rabbitmqConn.on("connect", () => {
   console.log("rabbitmq cluster connected");
@@ -17,27 +17,25 @@ rabbitmqConn.on("disconnect", () => {
   console.log(`rabbitmq cluster disconnected`);
 });
 
+const makeChannel = () => {
+  return rabbitmqConn.createChannel({
+    json: true,
+  });
+};
+
 const makeBroadcastChannel = (callback) => {
   return rabbitmqConn.createChannel({
     json: true,
     setup: (channel) =>
       Promise.all([
         channel.assertExchange(
-          RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.NAME,
-          RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.TYPE,
+          EXCHANGE.BROADCAST.NAME,
+          EXCHANGE.BROADCAST.TYPE,
           { durable: true }
         ),
         channel.assertQueue("", { exclusive: true }),
-        channel.bindQueue("", RABBITMQ_CLUSTER.EXCHANGE.BROADCAST.NAME, ""),
-        channel.consume("", async (data) => {
-          try {
-            const message = JSON.parse(data.content.toString());
-            await callback(message);
-            broadcastChannel.ack(data);
-          } catch (err) {
-            console.log(err);
-          }
-        }),
+        channel.bindQueue("", EXCHANGE.BROADCAST.NAME, ""),
+        channel.consume("", (data) => callback(data)),
       ]),
   });
 };
@@ -47,28 +45,12 @@ const makeUnicastChannel = (callback) => {
     json: true,
     setup: (channel) =>
       Promise.all([
-        channel.assertExchange(
-          RABBITMQ_CLUSTER.EXCHANGE.UNICAST.NAME,
-          RABBITMQ_CLUSTER.EXCHANGE.UNICAST.TYPE,
-          {
-            durable: true,
-          }
-        ),
-        channel.assertQueue(SERVER_NAME, { exclusive: true }),
-        channel.bindQueue(
-          SERVER_NAME,
-          RABBITMQ_CLUSTER.EXCHANGE.UNICAST.NAME,
-          SERVER_NAME
-        ),
-        channel.consume(SERVER_NAME, async (data) => {
-          try {
-            const message = JSON.parse(data.content.toString());
-            await callback(message);
-            unicastChannel.ack(data);
-          } catch (err) {
-            console.log(err);
-          }
+        channel.assertExchange(EXCHANGE.UNICAST.NAME, EXCHANGE.UNICAST.TYPE, {
+          durable: true,
         }),
+        channel.assertQueue(SERVER_NAME, { exclusive: true }),
+        channel.bindQueue(SERVER_NAME, EXCHANGE.UNICAST.NAME, SERVER_NAME),
+        channel.consume(SERVER_NAME, (data) => callback(data)),
       ]),
   });
 };
@@ -76,4 +58,5 @@ const makeUnicastChannel = (callback) => {
 module.exports = {
   makeBroadcastChannel,
   makeUnicastChannel,
+  makeChannel,
 };

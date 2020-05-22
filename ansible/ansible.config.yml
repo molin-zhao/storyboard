@@ -1,0 +1,8 @@
+---
+- hosts: "{{svrs}}"
+  become: yes
+  become_user: root
+  become_method: sudo
+  tasks:
+    - name: copy config folder to /home/root/app/storyboard/source/
+      copy: src=../config/ dest=/home/root/app/storyboard/source/config/

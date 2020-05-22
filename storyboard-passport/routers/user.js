@@ -18,6 +18,8 @@ const {
   decrypt,
   isPassword,
   isPhone,
+  getClientIP,
+  getClientPos,
 } = require("../../utils");
 const redisOps = require("../../redisOps");
 const { ERROR, handleError, handleSuccess } = require("../../response");
@@ -63,31 +65,6 @@ router.get("/token/verify", async (req, res) => {
 });
 
 /**
- * get sms crypto password
- */
-router.get("/sms/password", async (req, res) => {
-  try {
-    let id = req.query.id;
-    if (!id) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
-    if (!isEmailOrPhone(id))
-      throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
-    // check if the id is already registered
-    const user = await User.findAccount(id);
-    if (user)
-      return handleError(
-        res,
-        new Error(ERROR.EMAIL_ADDRESS_OR_USERNAME_EXISTS),
-        id
-      );
-    let pass = generateCode(CRYPTO.LENGTH);
-    await redisOps.setSmsPassword(id, pass);
-    return handleSuccess(res, pass);
-  } catch (err) {
-    return handleError(res, err);
-  }
-});
-
-/**
  * get sms code for phone
  *   1. token is encrypted by sms password and account
  *   2. decrypt the token with sms password, should get the account value
@@ -96,18 +73,27 @@ router.get("/sms/password", async (req, res) => {
  */
 router.post("/sms/phone", async (req, res) => {
   try {
-    let account = req.body.account;
-    let token = req.body.token;
-    if (!account || !token)
+    const { account, code, token } = req.body;
+    if (!account || !code || !token)
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
-    const resPwd = await redisOps.getSmsPassword(account);
-    if (account !== decrypt(token, resPwd))
+    const decryptedAcnt = decrypt(token, code);
+    console.log(code);
+    console.log(decryptedAcnt);
+    console.log(account);
+    if (account !== decryptedAcnt)
       throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
+    const user = await User.findAccount(account);
+    if (user)
+      return handleError(
+        res,
+        new Error(ERROR.EMAIL_ADDRESS_OR_USERNAME_EXISTS),
+        account
+      );
     let templateId = TEMPLATE.REGISTER;
-    let code = generateCode(REGISTER_LENGTH);
+    let smsCode = generateCode(REGISTER_LENGTH);
     let expire = REGISTER_EXPIRE / 60;
-    let params = [code, expire];
-    await redisOps.setSmsCode(account, code);
+    let params = [smsCode, expire];
+    await redisOps.setSmsCode(account, smsCode);
     let resSend = await sendSMS(account, templateId, params);
     return handleSuccess(res, resSend.body.tel);
   } catch (err) {
@@ -121,26 +107,31 @@ router.post("/sms/phone", async (req, res) => {
  */
 router.post("/sms/email", async (req, res) => {
   try {
-    let account = req.body.account;
-    let token = req.body.token;
-    let lang = req.body.lang;
-    if (!account || !token)
+    const { account, token, code, lang } = req.body;
+    if (!account || !token || !code)
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
-    const resPwd = await redisOps.getSmsPassword(account);
-    if (account !== decrypt(token, resPwd))
+    if (account !== decrypt(token, code))
       throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
-    let code = generateCode(REGISTER_LENGTH);
+    const user = await User.findAccount(account);
+    if (user)
+      return handleError(
+        res,
+        new Error(ERROR.EMAIL_ADDRESS_OR_USERNAME_EXISTS),
+        account
+      );
+    let smsCode = generateCode(REGISTER_LENGTH);
     let expire = REGISTER_EXPIRE / 60;
     let subject = REGISTER_SUBJECT[lang]
       ? REGISTER_SUBJECT[lang]
       : REGISTER_SUBJECT["DEFAULT"];
     let template = REGISTER_TEMPLATE[lang]
-      ? REGISTER_TEMPLATE[lang]([code, expire])
-      : REGISTER_TEMPLATE["DEFAULT"]([code, expire]);
-    let html = REGISTER_HTML(template);
-    await redisOps.setSmsCode(account, code);
-    let resSend = await sendEmail(account, subject, html, lang);
-    return handleSuccess(res, resSend.response);
+      ? REGISTER_TEMPLATE[lang]([smsCode, expire])
+      : REGISTER_TEMPLATE["DEFAULT"]([smsCode, expire]);
+    const html = REGISTER_HTML(template);
+    await redisOps.setSmsCode(account, smsCode);
+    const resSend = await sendEmail(account, subject, html, lang);
+    const destEamil = resSend.envelope.to.pop();
+    return handleSuccess(res, destEamil);
   } catch (err) {
     return handleError(res, err);
   }
@@ -151,12 +142,8 @@ router.post("/sms/email", async (req, res) => {
  */
 router.post("/register/local", async (req, res) => {
   try {
-    let account = req.body.account;
-    let code = req.body.code;
-    let encryptPassword = req.body.password;
+    const { account, code, encryptPassword, avatar, gender } = req.body;
     let password = decrypt(encryptPassword, account.substr(0, CRYPTO.LENGTH));
-    let avatar = req.body.avatar;
-    let gender = req.body.gender;
     if (!isEmailOrPhone(account) || !isPassword(password))
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const codeRes = await redisOps.getSmsCode(account);
@@ -220,12 +207,11 @@ router.post("/login/password", async (req, res) => {
     let account = req.body.account;
     let encryptPassword = req.body.password;
     let password = decrypt(encryptPassword, account.substr(0, CRYPTO.LENGTH));
-    if (!isEmailOrPhone(account))
+    if (!isEmailOrPhone(account) || !isPassword(password))
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
-    if (!isPassword(password))
-      throw new Error(ERROR.SERVICE_ERROR.ARGUMENTS_INVALID);
-    const user = await User.loginUser(account, password);
-    return handleSuccess(res, user);
+    const user = await User.loginUser(account, password, ip, geo);
+    if (user) return handleSuccess(res, user);
+    return handleSuccess(res, null, 202);
   } catch (err) {
     return handleError(res, err);
   }
@@ -276,7 +262,7 @@ router.get("/logout", verifyAuthorization, verifyUser, async (req, res) => {
 /**
  * logout with async messages
  */
-router.post("logout", verifyAuthorization, verifyUser, async (req, res) => {
+router.post("/logout", verifyAuthorization, verifyUser, async (req, res) => {
   try {
     let user = req.body.user;
     let messages = req.body.messages;

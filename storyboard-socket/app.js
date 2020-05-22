@@ -8,7 +8,7 @@ const cors = require("cors");
 const { normalizePort } = require("../utils");
 const { ERROR } = require("../response");
 const { SERVER_SOCKET_PORT } = require("../config/server.config");
-const createSocketServer = require("./socket");
+const { createSocketServer } = require("./socket");
 
 const indexRouter = require("./routers/index");
 
@@ -44,7 +44,7 @@ app.set("port", port);
 const server = http.createServer(app);
 
 // 4. setup socket
-app.locals.user_socket = {};
+app.locals.userSockets = {};
 createSocketServer(server, app);
 
 // 5. start server

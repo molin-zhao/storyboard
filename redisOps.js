@@ -191,6 +191,43 @@ const delSocketServer = (id) => {
   });
 };
 
+const setLoginAttempt = (id, attemptInfo) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const resp = await agent
+        .post(REDIS_SET)
+        .set("accept", "json")
+        .send({
+          auth: AUTH,
+          key: `${id}:${REDIS_KEY.LOGIN_ATTEMPT}`,
+          value: JSON.stringify(attemptInfo),
+        });
+      if (resp.status !== 200) return reject(UNAVAILABLE);
+      return resolve(resp.body.data);
+    } catch (err) {
+      return reject(err);
+    }
+  });
+};
+
+const getLoginAttempt = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const resp = await agent
+        .post(REDIS_GET)
+        .set("accept", "json")
+        .send({
+          auth: AUTH,
+          key: `${id}:${REDIS_KEY.LOGIN_ATTEMPT}`,
+        });
+      if (resp.status !== 200) return reject(UNAVAILABLE);
+      return resolve(JSON.parse(resp.body.data));
+    } catch (err) {
+      return reject(err);
+    }
+  });
+};
+
 module.exports = {
   setJwtToken,
   getJwtToken,
@@ -202,4 +239,6 @@ module.exports = {
   setSocketServer,
   getSocketServer,
   delSocketServer,
+  setLoginAttempt,
+  getLoginAttempt,
 };

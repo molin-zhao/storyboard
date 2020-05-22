@@ -1,0 +1,8 @@
+---
+- hosts: storyboard_dfssvrs
+  become: yes
+  become_user: root
+  become_method: sudo
+  tasks:
+    - name: copy template dfs.config.js.j2 to /home/root/app/storyboard/source/storyboard/config/dfs.config.js
+      template: src=dfs.config.js.j2 dest=/home/root/app/storyboard/source/config/dfs.config.js

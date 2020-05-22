@@ -2,10 +2,22 @@ const mongoose = require("../mongodb");
 const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
 const { BCRYPT } = require("../config/encrypt.config");
+const { EXCHANGE } = require("../config/rabbitmq-cluster.config");
 const { getToken } = require("../authenticate");
 const redisOps = require("../redisOps");
 const { ERROR } = require("../response");
 const { objectId } = require("../utils");
+const { makeChannel } = require("../rabbitmq");
+
+// make a unicast channel and publish message
+const channel = makeChannel();
+channel.addSetup((channel) =>
+  Promise.all([
+    channel.assertExchange(EXCHANGE.UNICAST.NAME, EXCHANGE.UNICAST.TYPE, {
+      durable: true,
+    }),
+  ])
+);
 
 const UserSchema = new Schema(
   {
@@ -57,15 +69,33 @@ UserSchema.pre("save", function (next) {
   });
 });
 
-UserSchema.statics.loginUser = function (account, password) {
+UserSchema.statics.loginUser = function (account, password, ip, geo) {
   return new Promise((resolve, reject) => {
     let criteria =
       account.indexOf("@") === -1 ? { phone: account } : { email: account };
     return this.findOne(criteria)
       .select("password avatar username gender email phone")
-      .exec((err, user) => {
+      .exec(async (err, user) => {
         if (err) return reject(err);
         if (!user) return reject(ERROR.USER_NAME_NOT_FOUND);
+        const userId = user._id;
+        const userToken = await redisOps.getJwtToken(userId);
+        if (userToken) {
+          /**
+           * user already loggin
+           * check if user is connected to the socket server
+           * if user is connected, send user a message
+           * else generate a login message
+           */
+          const serverName = await redisOps.getSocketServer(userId);
+          const message = { type: "login-attempt", ip, geo, to: userId };
+          if (serverName) {
+            await channel.publish(EXCHANGE.UNICAST.NAME, serverName, message);
+          } else {
+            await redisOps.setLoginAttempt(userId, message);
+          }
+          return resolve(null);
+        }
         bcrypt.compare(password, user.password, async (err, isMatch) => {
           if (err) return reject(err);
           if (!isMatch) return reject(ERROR.USER_PASSWORD_INCORRECT);
@@ -73,9 +103,7 @@ UserSchema.statics.loginUser = function (account, password) {
           try {
             let userCreds = { _id: user._id };
             let token = getToken(userCreds);
-            const tokenRes = await redisOps.setJwtToken(user._id, token);
-            if (tokenRes.status !== 200)
-              return reject(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
+            await redisOps.setJwtToken(user._id, token);
             const { _id, avatar, gender, phone, email, username } = user;
             return resolve({
               id: _id,

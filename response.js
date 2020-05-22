@@ -1,6 +1,6 @@
 const ERROR = {
   NOT_FOUND: "Requested resource not found.",
-  UNAUTHORIZED: "unauthorized request, permission denied.",
+  UNAUTHORIZED: "Unauthorized request, permission denied.",
   USER_AUTHENTICATION_FAILED: "Authentication failed.",
   FORBIDDEN: "Resource forbidden, no permission for this action.",
   NO_TOKEN_PROVIDED: "No token provided.",
@@ -25,10 +25,11 @@ const ERROR = {
     SERVICE_NOT_AVAILABLE: "Service not available",
     SERVICE_NOT_ACCEPTABLE: "Service not acceptable",
   },
+  PARAM_FORMAT_INVALID: "Params format is invalid",
 };
 const SUCCESS = {
-  OK: "success.",
-  ACCEPTED: "server accepted the request.",
+  OK: "Success.",
+  ACCEPTED: "Server accepted the request.",
 };
 
 const handleError = (res, err, data = null) => {

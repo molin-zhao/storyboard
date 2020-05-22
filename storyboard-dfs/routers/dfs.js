@@ -3,12 +3,7 @@ const multer = require("multer");
 const router = express.Router();
 const upload = multer({ dest: "upload/" });
 const { getDFSConnection, fdel } = require("../../utils");
-const {
-  SUCCESS,
-  ERROR,
-  handleError,
-  handleSuccess,
-} = require("../../response");
+const { ERROR, handleError, handleSuccess } = require("../../response");
 const { verifyAuthorization } = require("../../authenticate");
 const User = require("../../models/User");
 
