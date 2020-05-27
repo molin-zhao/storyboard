@@ -17,6 +17,9 @@ rabbitmqConn.on("disconnect", () => {
   console.log(`rabbitmq cluster disconnected`);
 });
 
+rabbitmqConn.on("error", (err) => {
+  console.log(`rabbitmq cluster error: ${err}`);
+});
 const makeChannel = () => {
   return rabbitmqConn.createChannel({
     json: true,
