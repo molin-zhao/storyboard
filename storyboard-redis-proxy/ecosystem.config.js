@@ -4,7 +4,6 @@ module.exports = {
     {
       name: "redis-proxy",
       script: "storyboard-redis-proxy/app.js",
-
       instances: 1,
       autorestart: true,
       watch: false,
@@ -17,7 +16,6 @@ module.exports = {
       },
     },
   ],
-
   deploy: {
     production: {
       user: "ubuntu",
