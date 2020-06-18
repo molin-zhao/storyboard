@@ -4,5 +4,5 @@
   become_user: root
   become_method: sudo
   tasks:
-    - name: copy template server.config.js.j2 to /home/root/app/storyboard/source/storyboard/config/server.config.js
-      template: src=server.config.js.j2 dest=/home/root/app/storyboard/source/config/server.config.js
+    - name: copy template server.config.js.j2 to /home/ubuntu/app/storyboard/source/storyboard/config/server.config.js
+      template: src=server.config.js.j2 dest=/home/ubuntu/app/storyboard/source/config/server.config.js
