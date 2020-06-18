@@ -24,7 +24,7 @@ module.exports = {
       repo: "https://github.com/RayMoore/storyboard.git",
       path: "/home/ubuntu/app/storyboard",
       "post-deploy":
-        "cnpm install && pm2 reload storyboard-redis-proxy/ecosystem.config.js --env production",
+        "cd storyboard-redis-proxy && cnpm install && pm2 reload ecosystem.config.js --env production",
       env: {
         NODE_ENV: "production",
       },
