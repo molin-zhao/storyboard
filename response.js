@@ -70,6 +70,7 @@ const handleError = (res, err, data = null) => {
 };
 
 const handleSuccess = (res, data = null, code = 200) => {
+  if (data) console.log(data);
   return res.status(code).json({
     message: SUCCESS.OK,
     data,

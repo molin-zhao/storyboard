@@ -4,9 +4,9 @@ const { verifyAuthorization, verifyUser } = require("../../authenticate");
 const { handleError, handleSuccess } = require("../../response");
 const Team = require("../../models/Team");
 
-router.get("/", verifyAuthorization, verifyUser, async (req, res) => {
+router.get("/:id", verifyAuthorization, verifyUser, async (req, res) => {
   try {
-    let reqId = req.query.id;
+    let reqId = req.params.id;
     const userTeams = await Team.fetchUserTeams(reqId);
     return handleSuccess(res, userTeams);
   } catch (err) {
@@ -46,9 +46,9 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
 /**
  * delete team
  */
-router.delete("/delete", verifyAuthorization, async (req, res) => {
+router.delete("/:id", verifyAuthorization, async (req, res) => {
   try {
-    const teamId = req.query.id;
+    const teamId = req.params.id;
     const resp = await Team.deleteOne({ _id: teamId });
     return handleSuccess(res, resp);
   } catch (err) {

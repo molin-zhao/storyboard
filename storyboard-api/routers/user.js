@@ -28,22 +28,27 @@ router.post("/search", async (req, res) => {
  * get user projects, teams and personal info entering the storyboard
  * returns data of projects array, teams array and user object
  */
-router.get("/storyboard", verifyAuthorization, verifyUser, async (req, res) => {
-  try {
-    let reqId = req.query.user;
-    const userProjs = await Project.fetchUserProjects(reqId);
-    const userTeams = await Team.fetchUserTeams(reqId);
-    const userInfo = await User.fetchUserInfo(reqId);
-    let data = {
-      projects: userProjs,
-      teams: userTeams,
-      user: userInfo,
-    };
-    return handleSuccess(res, data);
-  } catch (err) {
-    return handleError(res, err);
+router.get(
+  "/storyboard/:user",
+  verifyAuthorization,
+  verifyUser,
+  async (req, res) => {
+    try {
+      let reqId = req.params.user;
+      const userProjs = await Project.fetchUserProjects(reqId);
+      const userTeams = await Team.fetchUserTeams(reqId);
+      const userInfo = await User.fetchUserInfo(reqId);
+      let data = {
+        projects: userProjs,
+        teams: userTeams,
+        user: userInfo,
+      };
+      return handleSuccess(res, data);
+    } catch (err) {
+      return handleError(res, err);
+    }
   }
-});
+);
 
 /**
  * upload profile
@@ -84,9 +89,9 @@ router.post("/profile/update", verifyAuthorization, async (req, res) => {
 /**
  * get user avatar by user id
  */
-router.get("/avatar", async (req, res) => {
+router.get("/avatar/:id", async (req, res) => {
   try {
-    let userId = req.query.id;
+    let userId = req.params.id;
     if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const resp = await User.findOne({ _id: userId }).select("avatar");
     return handleSuccess(res, resp.avatar);
@@ -98,9 +103,9 @@ router.get("/avatar", async (req, res) => {
 /**
  * get user online status by id
  */
-router.get("/online", async (req, res) => {
+router.get("/online/:id", async (req, res) => {
   try {
-    let userId = req.query.id;
+    let userId = req.params.id;
     if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const resp = await redisOps.getSocketServer(userId);
     if (resp) return handleSuccess(res, true);
@@ -128,9 +133,9 @@ router.post("/online", verifyAuthorization, async (req, res) => {
 /**
  * get message sent to the user
  */
-router.get("/message", verifyAuthorization, async (req, res) => {
+router.get("/message/:id", verifyAuthorization, async (req, res) => {
   try {
-    let userId = req.query.id;
+    let userId = req.params.id;
     if (!userId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const resp = await Message.fetchMessages(userId);
     return handleSuccess(res, resp);

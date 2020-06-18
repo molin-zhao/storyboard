@@ -4,9 +4,9 @@ const { verifyAuthorization, verifyUser } = require("../../authenticate");
 const { handleError, handleSuccess } = require("../../response");
 const Warehouse = require("../../models/Warehouse");
 
-router.get("/", verifyAuthorization, verifyUser, async (req, res) => {
+router.get("/:user", verifyAuthorization, verifyUser, async (req, res) => {
   try {
-    let reqId = req.query.user;
+    let reqId = req.params.user;
     const userWarehouse = await Warehouse.fetchUserWarehouse(reqId);
     return handleSuccess(res, userWarehouse);
   } catch (err) {
@@ -26,19 +26,19 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
       name,
       members,
       description,
-      fields
+      fields,
     });
     let warehouseDoc = await newWarehouse.save();
     const warehouse = await warehouseDoc
       .populate({
         path: "members",
         select: "_id username avatar gender",
-        model: "User"
+        model: "User",
       })
       .populate({
         path: "creator",
         select: "_id username avatar gender",
-        model: "User"
+        model: "User",
       })
       .execPopulate();
     return handleSuccess(res, warehouse);

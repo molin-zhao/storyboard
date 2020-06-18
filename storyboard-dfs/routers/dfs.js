@@ -26,9 +26,9 @@ router.post(
   }
 );
 
-router.delete("/delete", verifyAuthorization, async (req, res) => {
+router.delete("/:id", verifyAuthorization, async (req, res) => {
   try {
-    let fileId = req.query.id;
+    let fileId = req.params.id;
     if (!fileId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     await fdfs.del(fileId);
     return handleSuccess(res, "ok");

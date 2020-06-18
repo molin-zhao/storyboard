@@ -55,9 +55,9 @@ router.post("/create", verifyAuthorization, verifyUser, async (req, res) => {
   }
 });
 
-router.delete("/delete", verifyAuthorization, verifyUser, async (req, res) => {
+router.delete("/:id", verifyAuthorization, verifyUser, async (req, res) => {
   try {
-    let projectId = req.query.id;
+    let projectId = req.params.id;
     const session = await mongoose.startSession();
     await session.startTransaction();
     try {
@@ -169,10 +169,10 @@ router.post("/task/create", verifyAuthorization, async (req, res) => {
   }
 });
 
-router.delete("/task/delete", verifyAuthorization, async (req, res) => {
+router.delete("/task/:id/:group", verifyAuthorization, async (req, res) => {
   try {
-    let taskId = req.query.id;
-    let groupId = req.query.group;
+    let taskId = req.params.id;
+    let groupId = req.params.group;
     const session = await mongoose.startSession();
     await session.startTransaction();
     try {
@@ -190,10 +190,10 @@ router.delete("/task/delete", verifyAuthorization, async (req, res) => {
   }
 });
 
-router.delete("/group/delete", verifyAuthorization, async (req, res) => {
+router.delete("/group/:id/:phase", verifyAuthorization, async (req, res) => {
   try {
-    let groupId = req.query.id;
-    let phaseId = req.query.phase;
+    let groupId = req.params.id;
+    let phaseId = req.params.phase;
     const session = await mongoose.startSession();
     await session.startTransaction();
     try {
@@ -211,10 +211,10 @@ router.delete("/group/delete", verifyAuthorization, async (req, res) => {
   }
 });
 
-router.delete("/phase/delete", verifyAuthorization, async (req, res) => {
+router.delete("/phase/:id/:project", verifyAuthorization, async (req, res) => {
   try {
-    let phaseId = req.query.id;
-    let projectId = req.query.project;
+    let phaseId = req.params.id;
+    let projectId = req.params.project;
     const session = await mongoose.startSession();
     await session.startTransaction();
     try {
@@ -235,9 +235,9 @@ router.delete("/phase/delete", verifyAuthorization, async (req, res) => {
 /**
  * get project online users
  */
-router.get("/member/online", async (req, res) => {
+router.get("/member/online/:id", async (req, res) => {
   try {
-    let projectId = req.query.id;
+    let projectId = req.params.id;
     const resp = await Project.fetchOnlineMembers(projectId);
     return handleSuccess(res, resp.shift());
   } catch (err) {

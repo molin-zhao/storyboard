@@ -35,9 +35,9 @@ const mongoose = require("../../mongodb");
 /**
  * verify and renew token
  */
-router.get("/token/verify", async (req, res) => {
+router.get("/token/verify/:token", async (req, res) => {
   try {
-    let token = req.query.token;
+    let token = req.params.token;
     const decoded = await decodeToken(token);
     let userId = decoded._id;
     const tokenLookup = await redisOps.getJwtToken(userId);
@@ -142,45 +142,36 @@ router.post("/sms/email", async (req, res) => {
  */
 router.post("/register/local", async (req, res) => {
   try {
-    const { account, code, encryptPassword, avatar, gender } = req.body;
-    let password = decrypt(encryptPassword, account.substr(0, CRYPTO.LENGTH));
-    if (!isEmailOrPhone(account) || !isPassword(password))
+    const { account, code, password, avatar, gender, length } = req.body;
+    let decryptedPassword = decrypt(
+      password,
+      account.substr(0, parseInt(length))
+    );
+    if (!isEmailOrPhone(account) || !isPassword(decryptedPassword))
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const codeRes = await redisOps.getSmsCode(account);
-    if (codeRes.status !== 200)
-      throw new Error(ERROR.SERVICE_ERROR.SERVICE_NOT_AVAILABLE);
-    if (code !== codeRes.body.data) throw new Error(ERROR.INFO_NOT_MATCHED);
+    if (code !== codeRes) throw new Error(ERROR.INFO_NOT_MATCHED);
     // register user
-    let newUser;
+    let user = {
+      strategy: "local",
+      password: decryptedPassword,
+      avatar,
+      gender,
+    };
     if (isPhone(account)) {
-      newUser = new User({
-        strategy: "local",
-        username: account,
-        phone: account,
-        password,
-        avatar,
-        gender,
-      });
+      user["username"] = account;
+      user["phone"] = account;
     } else {
-      newUser = new User({
-        strategy: "local",
-        username: account.substr(0, account.indexOf("@")),
-        email: account,
-        password,
-        avatar,
-        gender,
-      });
+      user["username"] = account.substr(0, account.indexOf("@"));
+      user["email"] = acount;
     }
-    const user = await newUser.save(); // user contains all fields
-    const token = await User.getUserToken(user);
+    newUser = new User(user);
+    const createdUser = await newUser.save(); // user contains all fields
+    const token = await User.getUserToken(createdUser);
     let resData = {
       token,
       id: user._id,
-      avatar: user.avatar,
-      username: user.username,
-      gender: user.gender,
-      phone: user.phone,
-      email: user.email,
+      ...createdUser,
     };
     return handleSuccess(res, resData);
   } catch (err) {
@@ -204,12 +195,14 @@ router.post("/login/password", async (req, res) => {
   try {
     let ip = getClientIP(req);
     let geo = getClientPos(ip);
-    let account = req.body.account;
-    let encryptPassword = req.body.password;
-    let password = decrypt(encryptPassword, account.substr(0, CRYPTO.LENGTH));
-    if (!isEmailOrPhone(account) || !isPassword(password))
+    const { account, password, length } = req.body;
+    let decryptedPassword = decrypt(
+      password,
+      account.substr(0, parseInt(length))
+    );
+    if (!isEmailOrPhone(account) || !isPassword(decryptedPassword))
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
-    const user = await User.loginUser(account, password, ip, geo);
+    const user = await User.loginUser(account, decryptedPassword, ip, geo);
     if (user) return handleSuccess(res, user);
     return handleSuccess(res, null, 202);
   } catch (err) {
@@ -249,15 +242,20 @@ router.post("/login/sms", async (req, res) => {
   }
 });
 
-router.get("/logout", verifyAuthorization, verifyUser, async (req, res) => {
-  try {
-    let user = req.query.user;
-    await redisOps.delJwtToken(user);
-    return handleSuccess(res);
-  } catch (err) {
-    return handleError(res, err);
+router.get(
+  "/logout/:user",
+  verifyAuthorization,
+  verifyUser,
+  async (req, res) => {
+    try {
+      let user = req.params.user;
+      await redisOps.delJwtToken(user);
+      return handleSuccess(res);
+    } catch (err) {
+      return handleError(res, err);
+    }
   }
-});
+);
 
 /**
  * logout with async messages

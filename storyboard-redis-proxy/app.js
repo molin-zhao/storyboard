@@ -19,20 +19,20 @@ app.use(cookieParser());
 
 // 1. setup routers
 app.use("/", indexRouter);
-app.use("/redis", proxyRouter);
+app.use("/", proxyRouter);
 
 // 2. setup error 404 and 500
 app.use((req, res) => {
   console.log(req.url);
   return res.status(404).json({
-    message: ERROR.NOT_FOUND
+    message: ERROR.NOT_FOUND,
   });
 });
 
 app.use((err, req, res, next) => {
   console.log(`${err.message} ${req.url} ${next}`);
   return res.status(500).json({
-    message: ERROR.SERVER_ERROR
+    message: ERROR.SERVER_ERROR,
   });
 });
 
