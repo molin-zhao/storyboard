@@ -3,7 +3,7 @@ module.exports = {
   apps: [
     {
       name: "redis-proxy",
-      script: "storyboard-redis-proxy/app.js",
+      script: "app.js",
       instances: 1,
       autorestart: true,
       watch: false,
