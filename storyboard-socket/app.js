@@ -5,14 +5,16 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
-const { normalizePort } = require("../utils");
-const { ERROR } = require("../response");
+const { normalizePort, getServerId } = require("../common/utils");
+const { ERROR } = require("../common/response");
 const { SERVER_SOCKET_PORT } = require("../config/server.config");
+const { APP_NAME } = require("../config/project.config");
 const { createSocketServer } = require("./socket");
 
 const indexRouter = require("./routers/index");
 
 const app = express();
+const SERVER_NAME = getServerId(APP_NAME);
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -44,7 +46,8 @@ app.set("port", port);
 const server = http.createServer(app);
 
 // 4. setup socket
-app.locals.userSockets = {};
+app.locals.sockerMap = {};
+app.locals.serverName = SERVER_NAME;
 createSocketServer(server, app);
 
 // 5. start server

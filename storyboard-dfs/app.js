@@ -5,12 +5,12 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
-const { normalizePort } = require("../utils");
-const { ERROR } = require("../response");
+const { normalizePort } = require("../common/utils");
+const { ERROR } = require("../common/response");
 const { SERVER_DFS_PORT } = require("../config/server.config");
 
 const indexRouter = require("./routers/index");
-const dfsRouter = require("./routers/dfs");
+const uploadRouter = require("./routers/upload");
 const testRouter = require("./routers/test");
 
 const app = express();
@@ -22,8 +22,8 @@ app.use(cors());
 
 // 1. setup routers
 app.use("/", indexRouter);
-app.use("/dfs", dfsRouter);
-// app.use("/test", testRouter);
+app.use("/upload", uploadRouter);
+app.use("/upload/test", testRouter);
 
 // 2. setup error 404 and 500
 app.use((req, res) => {

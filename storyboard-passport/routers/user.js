@@ -9,7 +9,6 @@ const {
   REGISTER_SUBJECT,
   REGISTER_TEMPLATE,
 } = require("../../config/code.config");
-const { CRYPTO } = require("../../config/encrypt.config");
 const {
   sendSMS,
   sendEmail,
@@ -20,17 +19,17 @@ const {
   isPhone,
   getClientIP,
   getClientPos,
-} = require("../../utils");
-const redisOps = require("../../redisOps");
-const { ERROR, handleError, handleSuccess } = require("../../response");
+} = require("../../common/utils");
+const redisOps = require("../../common/redis");
+const { ERROR, handleError, handleSuccess } = require("../../common/response");
 const {
   verifyAuthorization,
   verifyUser,
   getToken,
   decodeToken,
-} = require("../../authenticate");
+} = require("../../common/authenticate");
 const User = require("../../models/User");
-const mongoose = require("../../mongodb");
+const mongoose = require("../../common/mongodb");
 
 /**
  * verify and renew token
@@ -223,20 +222,9 @@ router.post("/login/sms", async (req, res) => {
       throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     const redisCode = await redisOps.getSmsCode(account);
     if (code !== redisCode) throw new Error(ERROR.USER_AUTHENTICATION_FAILED);
-    const user = await User.findAccount(account);
-    if (!user) throw new Error(ERROR.USER_NAME_NOT_FOUND);
-    const token = await User.getUserToken(user);
-    const { avatar, username, email, phone, gender } = user;
-    let resData = {
-      id: user._id,
-      token,
-      avatar,
-      username,
-      email,
-      phone,
-      gender,
-    };
-    return handleSuccess(res, resData);
+    const user = await User.loginUser(account, null, ip, geo);
+    if (user) return handleSuccess(res, user);
+    return handleSuccess(res, null, 202);
   } catch (err) {
     return handleError(res, err);
   }

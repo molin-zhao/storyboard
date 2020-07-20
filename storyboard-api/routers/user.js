@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { ERROR, handleError, handleSuccess } = require("../../response");
-const { verifyAuthorization, verifyUser } = require("../../authenticate");
-const redisOps = require("../../redisOps");
+const { ERROR, handleError, handleSuccess } = require("../../common/response");
+const {
+  verifyAuthorization,
+  verifyUser,
+} = require("../../common/authenticate");
+const redisOps = require("../../common/redis");
 const Project = require("../../models/Project");
 const Team = require("../../models/Team");
 const User = require("../../models/User");

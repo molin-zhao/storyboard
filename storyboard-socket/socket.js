@@ -1,12 +1,12 @@
 const socketIo = require("socket.io");
-const redisOps = require("../redisOps");
-const { SERVER_NAME } = require("../config/server.config");
+const redisOps = require("../redis");
 const { makeUnicastChannel } = require("../rabbitmq");
 const { EXCHANGE } = require("../config/rabbitmq-cluster.config");
 const Message = require("../models/Message");
 const User = require("../models/User");
 
 const createSocketServer = (server, app) => {
+  console.log(`socket server id: ${app.locals.serverName}`);
   const unicastChannel = makeUnicastChannel(async (data) => {
     try {
       const message = JSON.parse(data.content.toString());
@@ -39,7 +39,7 @@ const createSocketServer = (server, app) => {
       if (!token || !id) return socket.disconnect();
       const resp = await redisOps.getJwtToken(id);
       if (resp !== token) return socket.disconnect();
-      await redisOps.setSocketServer(id, SERVER_NAME);
+      await redisOps.setSocketServer(id, app.locals.serverName);
       await User.setOnline(id);
       socket.user = { id, username, avatar, gender };
       app.locals.socketMap[id] = socket;
@@ -54,7 +54,7 @@ const createSocketServer = (server, app) => {
           let fu = socketMap[fromId] ? socketMap[fromId]["user"] : null;
           if (fu && fu["avatar"] !== avatar) fu["avatar"] = avatar;
           if (fu && fu["username"] !== username) fu["username"] = username;
-          if (serverName && serverName === SERVER_NAME) {
+          if (serverName && serverName === app.locals.serverName) {
             // user is connected to this server
             let toSocket = socketMap[toId];
             if (toSocket && toSocket.connected)
@@ -97,7 +97,7 @@ const createSocketServer = (server, app) => {
         for (let userId of list) {
           const serverName = await redisOps.getSocketServer(userId);
           let socketMap = app.locals.socketMap;
-          if (serverName && serverName === SERVER_NAME) {
+          if (serverName && serverName === app.locals.serverName) {
             let toSocket = socketMap[userId];
             if (toSocket && toSocket.connected)
               toSocket.emit("online", { data: user });
@@ -125,7 +125,7 @@ const createSocketServer = (server, app) => {
           for (let uid of list) {
             const serverName = await redisOps.getSocketServer(uid);
             let socketMap = app.locals.socketMap;
-            if (serverName && serverName === SERVER_NAME) {
+            if (serverName && serverName === app.locals.serverName) {
               let toSocket = socketMap[uid];
               if (toSocket && toSocket.connected)
                 toSocket.emit("offline", { data: user });

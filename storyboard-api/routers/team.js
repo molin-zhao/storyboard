@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { verifyAuthorization, verifyUser } = require("../../authenticate");
-const { handleError, handleSuccess } = require("../../response");
+const {
+  verifyAuthorization,
+  verifyUser,
+} = require("../../common/authenticate");
+const { handleError, handleSuccess } = require("../../common/response");
 const Team = require("../../models/Team");
 
 router.get("/:id", verifyAuthorization, verifyUser, async (req, res) => {

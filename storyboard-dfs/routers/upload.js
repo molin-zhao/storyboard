@@ -2,16 +2,16 @@ const express = require("express");
 const multer = require("multer");
 const router = express.Router();
 const upload = multer({ dest: "upload/" });
-const { getDFSConnection, fdel } = require("../../utils");
-const { ERROR, handleError, handleSuccess } = require("../../response");
-const { verifyAuthorization } = require("../../authenticate");
+const { getDFSConnection, fdel } = require("../../common/utils");
+const { ERROR, handleError, handleSuccess } = require("../../common/response");
+const { verifyAuthorization } = require("../../common/authenticate");
 const User = require("../../models/User");
 
 // init fdfs client
 const fdfs = getDFSConnection();
 
 router.post(
-  "/upload",
+  "/",
   verifyAuthorization,
   upload.single("file"),
   async (req, res) => {
@@ -26,9 +26,9 @@ router.post(
   }
 );
 
-router.delete("/:id", verifyAuthorization, async (req, res) => {
+router.delete("/", verifyAuthorization, async (req, res) => {
   try {
-    let fileId = req.params.id;
+    let fileId = req.query.id;
     if (!fileId) throw new Error(ERROR.SERVICE_ERROR.PARAM_NOT_PROVIDED);
     await fdfs.del(fileId);
     return handleSuccess(res, "ok");
@@ -41,7 +41,7 @@ router.delete("/:id", verifyAuthorization, async (req, res) => {
  * upload user avatar
  */
 router.post(
-  "/upload/avatar",
+  "/avatar",
   verifyAuthorization,
   upload.single("file"),
   async (req, res) => {
@@ -68,12 +68,11 @@ router.post(
 /**
  * delete user avatar
  */
-router.post("/delete/avatar", verifyAuthorization, async (req, res) => {
+router.delete("/avatar", verifyAuthorization, async (req, res) => {
   try {
     const userId = req.user._id;
-    const fileId = req.body.fileId;
-    const replacement = req.body.replacement;
-    await fdfs.del(fileId);
+    const { replacement, original } = req.query;
+    await fdfs.del(original);
     const user = await User.findOneAndUpdate(
       { _id: userId },
       { $set: { avatar: replacement } }

@@ -1,13 +1,14 @@
-const mongoose = require("../mongodb");
-const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
+const passport = require("passport");
 const { BCRYPT } = require("../config/encrypt.config");
 const { EXCHANGE } = require("../config/rabbitmq-cluster.config");
-const { getToken } = require("../authenticate");
-const redisOps = require("../redisOps");
-const { ERROR } = require("../response");
-const { objectId } = require("../utils");
-const { makeChannel } = require("../rabbitmq");
+const { getToken } = require("../common/authenticate");
+const redisOps = require("../common/redis");
+const { ERROR } = require("../common/response");
+const { objectId } = require("../common/utils");
+const { makeChannel } = require("../common/rabbitmq");
+const mongoose = require("../common/mongodb");
+const Schema = mongoose.Schema;
 
 // make a unicast channel and publish message
 const channel = makeChannel();
@@ -90,16 +91,38 @@ UserSchema.statics.loginUser = function (account, password, ip, geo) {
           const serverName = await redisOps.getSocketServer(userId);
           const message = { type: "login-attempt", ip, geo, to: userId };
           if (serverName) {
+            // notify online user
             await channel.publish(EXCHANGE.UNICAST.NAME, serverName, message);
           } else {
+            // set login attempt to redis
             await redisOps.setLoginAttempt(userId, message);
           }
           return resolve(null);
         }
-        bcrypt.compare(password, user.password, async (err, isMatch) => {
-          if (err) return reject(err);
-          if (!isMatch) return reject(ERROR.USER_PASSWORD_INCORRECT);
-          // password matched, login user
+        if (password) {
+          bcrypt.compare(password, user.password, async (err, isMatch) => {
+            if (err) return reject(err);
+            if (!isMatch) return reject(ERROR.USER_PASSWORD_INCORRECT);
+            // password matched, login user
+            try {
+              let userCreds = { _id: user._id };
+              let token = getToken(userCreds);
+              await redisOps.setJwtToken(user._id, token);
+              const { _id, avatar, gender, phone, email, username } = user;
+              return resolve({
+                id: _id,
+                token,
+                avatar,
+                gender,
+                phone,
+                email,
+                username,
+              });
+            } catch (err) {
+              return reject(err);
+            }
+          });
+        } else {
           try {
             let userCreds = { _id: user._id };
             let token = getToken(userCreds);
@@ -117,7 +140,7 @@ UserSchema.statics.loginUser = function (account, password, ip, geo) {
           } catch (err) {
             return reject(err);
           }
-        });
+        }
       });
   });
 };

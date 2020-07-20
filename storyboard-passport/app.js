@@ -5,8 +5,8 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
-const { normalizePort } = require("../utils");
-const { ERROR } = require("../response");
+const { normalizePort } = require("../common/utils");
+const { ERROR } = require("../common/response");
 const { SERVER_PASSPORT_PORT } = require("../config/server.config");
 
 const indexRouter = require("./routers/index");

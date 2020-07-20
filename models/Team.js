@@ -1,6 +1,6 @@
-const mongoose = require("../mongodb");
+const mongoose = require("../common/mongodb");
 const Schema = mongoose.Schema;
-const { objectId } = require("../utils");
+const { objectId } = require("../common/utils");
 
 const TeamSchema = new Schema(
   {

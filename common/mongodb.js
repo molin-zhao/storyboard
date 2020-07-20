@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { getMongoUrl } = require("./utils");
-const MONGO_CLUSTER = require("./config/mongo-cluster.config");
+const MONGO_CLUSTER = require("../config/mongo-cluster.config");
 
 // 3. setup mongodb connection
 let dbUrl = getMongoUrl(MONGO_CLUSTER.NODES, MONGO_CLUSTER.DB_NAME);

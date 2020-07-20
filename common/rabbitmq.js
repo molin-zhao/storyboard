@@ -4,9 +4,8 @@ const {
   HOST,
   USER,
   PASSWORD,
-} = require("./config/rabbitmq-cluster.config");
+} = require("../config/rabbitmq-cluster.config");
 const { getRabbitmqUrl } = require("./utils");
-const { SERVER_NAME } = require("./config/server.config");
 
 const rabbitHost = getRabbitmqUrl(HOST, USER, PASSWORD);
 const rabbitmqConn = amqp.connect(rabbitHost);
@@ -18,8 +17,9 @@ rabbitmqConn.on("disconnect", () => {
 });
 
 rabbitmqConn.on("error", (err) => {
-  console.log(`rabbitmq cluster error: ${err}`);
+  console.log(`rabbitmq cluster error: ${listError(err)}`);
 });
+
 const makeChannel = () => {
   return rabbitmqConn.createChannel({
     json: true,
@@ -43,7 +43,7 @@ const makeBroadcastChannel = (callback) => {
   });
 };
 
-const makeUnicastChannel = (callback) => {
+const makeUnicastChannel = (serverName, callback) => {
   return rabbitmqConn.createChannel({
     json: true,
     setup: (channel) =>
@@ -51,13 +51,22 @@ const makeUnicastChannel = (callback) => {
         channel.assertExchange(EXCHANGE.UNICAST.NAME, EXCHANGE.UNICAST.TYPE, {
           durable: true,
         }),
-        channel.assertQueue(SERVER_NAME, { exclusive: true }),
-        channel.bindQueue(SERVER_NAME, EXCHANGE.UNICAST.NAME, SERVER_NAME),
-        channel.consume(SERVER_NAME, (data) => callback(data)),
+        channel.assertQueue(serverName, { exclusive: true }),
+        channel.bindQueue(serverName, EXCHANGE.UNICAST.NAME, serverName),
+        channel.consume(serverName, (data) => callback(data)),
       ]),
   });
 };
 
+const listError = (err) => {
+  Object.keys(err).forEach((key) => {
+    if (err[key].constructor === Object) {
+      listError(err[key]);
+    } else {
+      console.log(err[key]);
+    }
+  });
+};
 module.exports = {
   makeBroadcastChannel,
   makeUnicastChannel,

@@ -7,9 +7,9 @@ const geoip = require("geoip-lite");
 const cryptoJS = require("crypto-js");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
-const { TRACKERS, TIMEOUT, EXT, CHARSET } = require("./config/dfs.config");
-const { APP_ID, APP_KEY, APP_SIGN } = require("./config/sms.config");
-const { HOST, PORT, AUTH, FROM } = require("./config/mail.config");
+const { TRACKERS, TIMEOUT, EXT, CHARSET } = require("../config/dfs.config");
+const { APP_ID, APP_KEY, APP_SIGN } = require("../config/sms.config");
+const { HOST, PORT, AUTH, FROM } = require("../config/mail.config");
 const { ERROR } = require("./response");
 const mailTransport = nodemailer.createTransport(
   smtpTransport({
@@ -53,6 +53,12 @@ const sendEmail = (email, subject, html, lang) => {
     subject,
     html,
   });
+};
+
+const getServerId = (prefix = null) => {
+  const hostname = require("os").hostname();
+  if (prefix) return `${prefix}-${hostname}`;
+  return hostname;
 };
 
 const getMongoUrl = (urlArr, dbName) => {
@@ -172,9 +178,12 @@ const objectId = (val) => {
 
 const fdel = (path) => {
   if (fs.existsSync(path) && fs.statSync(path).isFile()) {
+    console.log(`removing file at path: ${path}`);
     return fs.unlinkSync(path);
+  } else {
+    console.log(`cannot remove file at path: ${path}`);
+    return;
   }
-  return;
 };
 
 module.exports = {
@@ -189,6 +198,7 @@ module.exports = {
   getClientPos,
   generateCode,
   getDFSConnection,
+  getServerId,
   decrypt,
   isEmailOrPhone,
   isPassword,

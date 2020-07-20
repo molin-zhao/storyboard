@@ -1,6 +1,6 @@
-const mongoose = require("../mongodb");
+const mongoose = require("../common/mongodb");
 const Schema = mongoose.Schema;
-const { objectId, generateRandomColor } = require("../utils");
+const { objectId, generateRandomColor } = require("../common/utils");
 const { COLORS } = require("../config/project.config");
 const Phase = require("./Phase");
 const Group = require("./Group");

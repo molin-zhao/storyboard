@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require("../../mongodb");
-const { verifyAuthorization, verifyUser } = require("../../authenticate");
-const { handleError, handleSuccess } = require("../../response");
+const mongoose = require("../../common/mongodb");
+const {
+  verifyAuthorization,
+  verifyUser,
+} = require("../../common/authenticate");
+const { handleError, handleSuccess } = require("../../common/response");
 const Project = require("../../models/Project");
 
 /**

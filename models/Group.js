@@ -1,4 +1,4 @@
-const mongoose = require("../mongodb");
+const mongoose = require("../common/mongodb");
 const Schema = mongoose.Schema;
 const GroupSchema = new Schema(
   {

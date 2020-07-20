@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
-const { JSONWEBTOKEN } = require("./config/encrypt.config");
-const redisOps = require("./redisOps");
-const { AUTH } = require("./config/redis-cluster.config");
+const { JSONWEBTOKEN } = require("../config/encrypt.config");
+const { AUTH } = require("../config/redis-cluster.config");
 const { ERROR, handleError } = require("./response");
 
 const getToken = (cred) => {
